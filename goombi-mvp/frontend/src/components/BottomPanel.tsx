@@ -96,9 +96,9 @@ export function BottomPanel({ listings, selected, loading, error, onSelect, onSh
           <p className="py-2 text-sm text-slate-500">No listings match the current filters.</p>
         )}
         {isListingTab && !loading && !error && visibleListings.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className="flex flex-col gap-3 overflow-y-auto max-h-[340px]">
             {visibleListings.map((listing) => (
-              <div key={listing.id} className="w-56 shrink-0">
+              <div key={listing.id} className="w-full">
                 {isWorkspace(listing)
                   ? <WorkspaceCard listing={listing} onSelect={onSelect} />
                   : <ListingCard listing={listing} onSelect={onSelect} />}
