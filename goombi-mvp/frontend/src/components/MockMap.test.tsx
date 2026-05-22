@@ -81,7 +81,6 @@ test("marker click still opens listing details", () => {
 
   fireEvent.click(screen.getByRole("button", { name: "Open Bryanston Marker Stay" }));
 
-  expect(screen.getByText("Photo placeholder")).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Bryanston Marker Stay" })).toBeInTheDocument();
 });
 

@@ -45,6 +45,23 @@ vi.mock("react-leaflet", () => ({
       {children}
     </button>
   ),
+  Marker: ({
+    children,
+    eventHandlers,
+    position,
+  }: {
+    children?: React.ReactNode;
+    eventHandlers?: { click?: () => void };
+    position: [number, number];
+  }) => (
+    <button
+      data-testid="workspace-marker"
+      aria-label={`Marker at ${position[0]},${position[1]}`}
+      onClick={eventHandlers?.click}
+    >
+      {children}
+    </button>
+  ),
   Tooltip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   useMap: () => ({ setView: mockSetView, fitBounds: mockFitBounds }),
 }));
