@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { divIcon } from "leaflet";
+import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { Map as LeafletMapInstance } from "leaflet";
 
 import { isWorkspace, type Listing } from "../types/listing";
@@ -54,23 +55,25 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
     mapRef.current?.setView(JHB_CENTER, JHB_ZOOM);
   }
 
-  function workspacePolygon(listing: Listing): [number, number][] {
-    const diamond = listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom";
-    const offset = selectedId === listing.id ? 0.011 : 0.008;
-    const { latitude, longitude } = listing;
-    return diamond
-      ? [
-          [latitude - offset, longitude],
-          [latitude, longitude + offset],
-          [latitude + offset, longitude],
-          [latitude, longitude - offset],
-        ]
-      : [
-          [latitude - offset, longitude - offset],
-          [latitude - offset, longitude + offset],
-          [latitude + offset, longitude + offset],
-          [latitude + offset, longitude - offset],
-        ];
+  function workspaceIcon(isDiamond: boolean, isSelected: boolean) {
+    const sz = isSelected ? 18 : 14;
+    const bw = isSelected ? 3 : 2;
+    if (isDiamond) {
+      const outer = Math.round(sz * 1.42);
+      const pad = Math.round((outer - sz) / 2);
+      return divIcon({
+        html: `<div style="width:${sz}px;height:${sz}px;margin:${pad}px;background:#a21caf;border:${bw}px solid #fff;border-radius:3px;box-sizing:border-box;transform:rotate(45deg);"></div>`,
+        iconSize: [outer, outer],
+        iconAnchor: [outer / 2, outer / 2],
+        className: "",
+      });
+    }
+    return divIcon({
+      html: `<div style="width:${sz}px;height:${sz}px;background:#a21caf;border:${bw}px solid #fff;border-radius:3px;box-sizing:border-box;"></div>`,
+      iconSize: [sz, sz],
+      iconAnchor: [sz / 2, sz / 2],
+      className: "",
+    });
   }
 
   return (
@@ -104,20 +107,17 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
         )}
         {listings.map((listing) =>
           isWorkspace(listing) ? (
-            <Polygon
-              eventHandlers={{ click: () => onSelect(listing), mousedown: () => onSelect(listing) }}
+            <Marker
               key={listing.id}
-              pathOptions={{
-                className: "goombi-workspace-shape",
-                fillColor: "#a21caf",
-                fillOpacity: 0.92,
-                color: "#ffffff",
-                weight: selectedId === listing.id ? 3 : 2,
-              }}
-              positions={workspacePolygon(listing)}
+              position={[listing.latitude, listing.longitude]}
+              icon={workspaceIcon(
+                listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom",
+                selectedId === listing.id,
+              )}
+              eventHandlers={{ click: () => onSelect(listing) }}
             >
               <Tooltip>{listing.name}</Tooltip>
-            </Polygon>
+            </Marker>
           ) : (
             <CircleMarker
               key={listing.id}
