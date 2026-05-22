@@ -1,25 +1,18 @@
-import { useMemo, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { fetchNearbyServices } from "../services/overpass";
-import { isWorkspace, type Listing } from "../types/listing";
+import type { Listing } from "../types/listing";
 import type { ServiceGroup } from "../types/services";
-import { ListingCard } from "./ListingCard";
 import { ServiceCard } from "./ServiceCard";
-import { WorkspaceCard } from "./WorkspaceCard";
 
 const JHB = { lat: -26.1076, lon: 28.0567 };
 
 type Props = {
-  listings: Listing[];
   selected?: Listing;
-  loading: boolean;
-  error: string;
-  onSelect: (listing: Listing) => void;
   onShowOnMap?: (lat: number, lon: number, label: string) => void;
 };
 
-export function BottomPanel({ listings, selected, loading, error, onSelect, onShowOnMap }: Props) {
-  const [showServices, setShowServices] = useState(false);
+export function BottomPanel({ selected, onShowOnMap }: Props) {
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
@@ -27,127 +20,61 @@ export function BottomPanel({ listings, selected, loading, error, onSelect, onSh
 
   const coordKey = selected
     ? `${selected.latitude.toFixed(4)},${selected.longitude.toFixed(4)}`
-    : `${JHB.lat.toFixed(4)},${JHB.lon.toFixed(4)}`;
+    : null;
 
   useEffect(() => {
-    if (!showServices) return;
-    const cached = serviceCacheRef.current.get(coordKey);
+    if (!selected) return;
+    const key = coordKey!;
+    const cached = serviceCacheRef.current.get(key);
     if (cached) { setServiceGroups(cached); return; }
 
-    const lat = selected?.latitude ?? JHB.lat;
-    const lon = selected?.longitude ?? JHB.lon;
     setServicesLoading(true);
     setServicesError(null);
     setServiceGroups([]);
-    fetchNearbyServices(lat, lon)
-      .then((data) => { serviceCacheRef.current.set(coordKey, data); setServiceGroups(data); })
+    fetchNearbyServices(selected.latitude, selected.longitude)
+      .then((data) => { serviceCacheRef.current.set(key, data); setServiceGroups(data); })
       .catch((err) => setServicesError(err instanceof Error ? err.message : "Failed to load services"))
       .finally(() => setServicesLoading(false));
-  }, [showServices, coordKey, selected?.latitude, selected?.longitude]);
-
-  const accommodationListings = useMemo(() => listings.filter((l) => !isWorkspace(l)), [listings]);
-  const workspaceListings = useMemo(() => listings.filter(isWorkspace), [listings]);
+  }, [coordKey, selected]);
 
   const hasServiceResults = serviceGroups.some((g) => g.nearest !== null);
 
   return (
     <section className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto rounded-lg border border-white/70 bg-white/95 shadow-panel md:bottom-4 md:left-[22rem] md:right-[27rem]">
-      {/* Tab bar — Services toggle only */}
-      <div className="flex items-center gap-1 px-3 pt-2.5 pb-2">
-        <button
-          type="button"
-          onClick={() => setShowServices((v) => !v)}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-            showServices
-              ? "bg-emerald-700 text-white"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-          }`}
-        >
-          Services
-        </button>
+      {/* Header */}
+      <div className="px-3 pt-2.5 pb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
       </div>
 
-      {/* Card area */}
+      {/* Content */}
       <div className="px-3 pb-3">
-        {/* Two-column listing layout */}
-        {!showServices && (
-          <>
-            {loading && (
-              <p className="py-2 text-sm text-slate-600">Loading demo listings…</p>
-            )}
-            {error && (
-              <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</p>
-            )}
-            {!loading && !error && (
-              <div className="flex gap-3">
-                {/* Accommodation column */}
-                <div className="flex-1 min-w-0">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Accommodation ({accommodationListings.length})
-                  </p>
-                  {accommodationListings.length === 0 ? (
-                    <p className="text-sm text-slate-500">No results.</p>
-                  ) : (
-                    <div className="flex flex-col gap-3 overflow-y-auto max-h-[320px]">
-                      {accommodationListings.map((listing) => (
-                        <ListingCard key={listing.id} listing={listing} onSelect={onSelect} />
-                      ))}
-                    </div>
-                  )}
-                </div>
+        {!selected && (
+          <p className="py-2 text-sm text-slate-500">Select a listing on the map to see nearby services.</p>
+        )}
 
-                {/* Workspaces column */}
-                <div className="flex-1 min-w-0">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Workspaces ({workspaceListings.length})
-                  </p>
-                  {workspaceListings.length === 0 ? (
-                    <p className="text-sm text-slate-500">No results.</p>
-                  ) : (
-                    <div className="flex flex-col gap-3 overflow-y-auto max-h-[320px]">
-                      {workspaceListings.map((listing) => (
-                        <WorkspaceCard key={listing.id} listing={listing} onSelect={onSelect} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+        {selected && servicesLoading && (
+          <p className="py-2 text-sm text-slate-500">Fetching services from OpenStreetMap…</p>
+        )}
+
+        {selected && servicesError && (
+          <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{servicesError}</p>
+        )}
+
+        {selected && !servicesLoading && !servicesError && hasServiceResults && (
+          <>
+            <p className="mb-2 text-xs text-slate-400">Near {selected.name} · within 5 km</p>
+            <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto">
+              {serviceGroups
+                .filter((g) => g.nearest !== null)
+                .map((g) => (
+                  <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} />
+                ))}
+            </div>
           </>
         )}
 
-        {/* Services panel */}
-        {showServices && (
-          <>
-            {servicesLoading && (
-              <p className="py-2 text-sm text-slate-500">Fetching services from OpenStreetMap…</p>
-            )}
-            {servicesError && (
-              <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{servicesError}</p>
-            )}
-            {!servicesLoading && !servicesError && hasServiceResults && (
-              <>
-                <p className="mb-2 text-xs text-slate-400">
-                  {selected ? `Near ${selected.name}` : "Near Johannesburg centre"} · within 5 km
-                </p>
-                <div className="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto">
-                  {serviceGroups
-                    .filter((g) => g.nearest !== null)
-                    .map((g) => (
-                      <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} />
-                    ))}
-                </div>
-              </>
-            )}
-            {!servicesLoading && !servicesError && serviceGroups.length > 0 && !hasServiceResults && (
-              <p className="py-2 text-sm text-slate-500">No services found within 5 km.</p>
-            )}
-            {!servicesLoading && !servicesError && serviceGroups.length === 0 && (
-              <p className="py-2 text-sm text-slate-500">
-                Select a listing or click Services to load nearby facilities.
-              </p>
-            )}
-          </>
+        {selected && !servicesLoading && !servicesError && serviceGroups.length > 0 && !hasServiceResults && (
+          <p className="py-2 text-sm text-slate-500">No services found within 5 km.</p>
         )}
       </div>
     </section>

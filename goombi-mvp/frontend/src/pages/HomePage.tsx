@@ -50,11 +50,7 @@ export function HomePage() {
         />
       </div>
       <BottomPanel
-        listings={filteredListings}
         selected={selected}
-        loading={loading}
-        error={error}
-        onSelect={selectListing}
         onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
       />
       {plannerOpen && selected && (
