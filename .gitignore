@@ -14,3 +14,6 @@ goombi-mvp/frontend/.env
 # OS
 .DS_Store
 Thumbs.db
+
+# Test artefacts
+tmp_pytest/
