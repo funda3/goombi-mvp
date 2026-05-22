@@ -3,7 +3,7 @@ import { FileUp, Pencil, Plus, Trash2 } from "lucide-react";
 import Papa from "papaparse";
 
 import { api } from "../services/api";
-import { isWorkspace, type Listing, type ListingDraft } from "../types/listing";
+import { isWorkspace, type Enquiry, type Listing, type ListingDraft } from "../types/listing";
 
 const emptyDraft: ListingDraft = {
   name: "",
@@ -71,6 +71,7 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
 
 export function AdminPage() {
   const [listings, setListings] = useState<Listing[]>([]);
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [draft, setDraft] = useState<ListingDraft>(emptyDraft);
   const [editingId, setEditingId] = useState("");
   const [status, setStatus] = useState("");
@@ -83,6 +84,9 @@ export function AdminPage() {
     refresh()
       .catch((error) => setStatus(error instanceof Error ? error.message : "Admin listings failed to load."))
       .finally(() => setLoading(false));
+    api.enquiries()
+      .then((data) => setEnquiries([...data].sort((a, b) => b.created_at.localeCompare(a.created_at))))
+      .catch(() => {});
   }, []);
 
   const suburbs = useMemo(() => Array.from(new Set(listings.map((listing) => listing.suburb))).sort(), [listings]);
@@ -146,6 +150,21 @@ export function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[#e7f1ec] px-4 pb-10 pt-24 text-slate-950 lg:px-8">
+      {/* Enquiry stats card */}
+      <div className="mx-auto mb-6 max-w-7xl rounded-lg border border-emerald-100 bg-white p-5 shadow-panel">
+        <p className="text-xs font-bold uppercase text-emerald-700">Enquiries</p>
+        <p className="mt-1 text-3xl font-semibold">{enquiries.length} total</p>
+        {enquiries.length > 0 && (
+          <ul className="mt-3 grid gap-1">
+            {enquiries.slice(0, 3).map((enq) => (
+              <li key={enq.id} className="flex items-center justify-between gap-3 text-sm text-slate-700">
+                <span className="font-medium truncate">{enq.listing_name ?? enq.listing_id}</span>
+                <span className="shrink-0 text-xs text-slate-400">{enq.created_at.slice(0, 10)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[24rem_1fr]">
         <form className="h-fit rounded-lg border border-emerald-100 bg-white p-5 shadow-panel" onSubmit={save}>
           <div className="flex items-center justify-between gap-3">

@@ -84,8 +84,15 @@ class Listing(ListingBase):
 class EnquiryCreate(BaseModel):
     listing_id: str
     name: str = Field(min_length=2)
-    cellphone: str = Field(min_length=7)
-    message: str = Field(min_length=4)
+    cellphone: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    listing_name: str | None = None
+    message: str | None = None
+    check_in: str | None = None
+    check_out: str | None = None
+    guests: int | None = Field(default=None, ge=1)
+    start_date: str | None = None
     otp_verified: bool = False
 
 

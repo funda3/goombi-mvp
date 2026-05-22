@@ -46,6 +46,29 @@ export type EnquiryDraft = {
   otp_verified: boolean;
 };
 
+export type BookingEnquiryDraft = {
+  listing_id: string;
+  listing_name: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message?: string;
+  check_in?: string;
+  check_out?: string;
+  guests?: number;
+  start_date?: string;
+};
+
+export type Enquiry = {
+  id: string;
+  listing_id: string;
+  listing_name?: string | null;
+  name: string;
+  email?: string | null;
+  cellphone?: string | null;
+  created_at: string;
+};
+
 export type Filters = {
   region: "all" | "Gauteng" | "Western Cape" | "KwaZulu-Natal";
   category: "all" | "accommodation" | "workspace";

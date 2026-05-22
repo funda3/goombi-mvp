@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { BadgeCheck, MapPin, Users, X } from "lucide-react";
 
 import { displayCategory, isWorkspace, type Listing } from "../types/listing";
+import { BookingEnquiryModal } from "./BookingEnquiryModal";
 import { EnquiryFlow } from "./EnquiryFlow";
 import { NearbyListings } from "./NearbyListings";
 import { NearbyServices } from "./NearbyServices";
@@ -16,6 +18,7 @@ type Props = {
 };
 
 export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onShowOnMap, onOpenPlanner }: Props) {
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   if (!listing) return null;
 
   return (
@@ -62,6 +65,13 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
             {listing.verified_status ? "Partner verified" : "Demo/public-source record"}
           </span>
           {listing.booking_url && <a className="primary-button" href={listing.booking_url} rel="noreferrer" target="_blank">Open booking page</a>}
+          <button
+            type="button"
+            className="w-full rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 transition"
+            onClick={() => setEnquiryOpen(true)}
+          >
+            Send Enquiry
+          </button>
           <p><strong className="text-slate-950">Source note:</strong> {listing.source_note}</p>
         </div>
       ) : (
@@ -78,6 +88,9 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
         <NearbyListings selected={listing} allListings={allListings} onSelect={onSelect} />
       )}
       <NearbyServices listing={listing} onShowOnMap={onShowOnMap} />
+      {enquiryOpen && (
+        <BookingEnquiryModal listing={listing} onClose={() => setEnquiryOpen(false)} />
+      )}
     </aside>
   );
 }

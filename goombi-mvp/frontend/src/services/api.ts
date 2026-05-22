@@ -1,4 +1,4 @@
-import type { EnquiryDraft, Listing, ListingDraft } from "../types/listing";
+import type { BookingEnquiryDraft, Enquiry, EnquiryDraft, Listing, ListingDraft } from "../types/listing";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -26,6 +26,9 @@ export const api = {
   deleteListing: (id: string) => request<void>(`/api/listings/${id}`, { method: "DELETE" }),
   createEnquiry: (payload: EnquiryDraft) =>
     request("/api/enquiries", { method: "POST", body: JSON.stringify(payload) }),
+  createBookingEnquiry: (payload: BookingEnquiryDraft) =>
+    request("/api/enquiries", { method: "POST", body: JSON.stringify(payload) }),
+  enquiries: () => request<Enquiry[]>("/api/enquiries"),
   requestOtp: (cellphone: string) =>
     request<{ message: string }>("/api/otp/request", {
       method: "POST",
