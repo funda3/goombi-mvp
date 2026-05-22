@@ -56,7 +56,7 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
 
   function workspacePolygon(listing: Listing): [number, number][] {
     const diamond = listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom";
-    const offset = selectedId === listing.id ? 0.0026 : 0.0019;
+    const offset = selectedId === listing.id ? 0.011 : 0.008;
     const { latitude, longitude } = listing;
     return diamond
       ? [
