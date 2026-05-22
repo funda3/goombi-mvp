@@ -13,6 +13,7 @@ const REGION_LABELS: Record<string, string> = {
   all: "South Africa",
   Gauteng: "Gauteng",
   "Western Cape": "Western Cape",
+  "KwaZulu-Natal": "KwaZulu-Natal",
 };
 
 export function FilterPanel({ filters, suburbs, resultCount, onChange }: Props) {
@@ -36,6 +37,7 @@ export function FilterPanel({ filters, suburbs, resultCount, onChange }: Props) 
           <option value="all">All regions</option>
           <option value="Gauteng">Gauteng</option>
           <option value="Western Cape">Western Cape</option>
+          <option value="KwaZulu-Natal">KwaZulu-Natal</option>
         </select>
       </label>
       <label className="label">

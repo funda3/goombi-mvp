@@ -16,6 +16,7 @@ type Props = {
 
 const JHB_CENTER: [number, number] = [-26.1076, 28.0567];
 const CPT_CENTER: [number, number] = [-33.9249, 18.4241];
+const DBN_CENTER: [number, number] = [-29.8587, 31.0218];
 const SA_CENTER: [number, number] = [-30.5595, 22.9375];
 const JHB_ZOOM = 11;
 const SA_ZOOM = 5;
@@ -36,6 +37,8 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
     if (!mapRef.current || !centerRegion || centerRegion === "all") return;
     if (centerRegion === "Western Cape") {
       mapRef.current.setView(CPT_CENTER, JHB_ZOOM);
+    } else if (centerRegion === "KwaZulu-Natal") {
+      mapRef.current.setView(DBN_CENTER, JHB_ZOOM);
     } else {
       mapRef.current.setView(JHB_CENTER, JHB_ZOOM);
     }
@@ -175,6 +178,14 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
           type="button"
         >
           CPT
+        </button>
+        <button
+          aria-label="Durban view"
+          className="rounded px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+          onClick={() => mapRef.current?.setView(DBN_CENTER, JHB_ZOOM)}
+          type="button"
+        >
+          DBN
         </button>
       </div>
     </div>
