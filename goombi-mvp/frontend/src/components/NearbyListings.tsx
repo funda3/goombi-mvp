@@ -3,6 +3,7 @@ import { MapPin, Clock } from "lucide-react";
 
 import { driveMinutes, haversineKm } from "../utils/haversine";
 import { isWorkspace, type Listing } from "../types/listing";
+import { getListingPhoto } from "../utils/listingPhoto";
 
 type NearbyItem = {
   listing: Listing;
@@ -55,22 +56,29 @@ export function NearbyListings({ selected, allListings, onSelect }: Props) {
               onClick={() => onSelect(listing)}
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left transition hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900">{listing.name}</p>
-                  <p className="mt-0.5 text-xs capitalize text-slate-500">{typeLabel(listing)}</p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-slate-600">
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {distanceKm < 1
-                      ? `${Math.round(distanceKm * 1000)} m`
-                      : `${distanceKm.toFixed(1)} km`}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    ~{driveMin} min
-                  </span>
+              <div className="flex items-center gap-3">
+                <img
+                  src={getListingPhoto(listing, 0)}
+                  alt=""
+                  className="h-[60px] w-[60px] shrink-0 rounded-md object-cover bg-slate-200"
+                />
+                <div className="flex flex-1 items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">{listing.name}</p>
+                    <p className="mt-0.5 text-xs capitalize text-slate-500">{typeLabel(listing)}</p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-slate-600">
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {distanceKm < 1
+                        ? `${Math.round(distanceKm * 1000)} m`
+                        : `${distanceKm.toFixed(1)} km`}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      ~{driveMin} min
+                    </span>
+                  </div>
                 </div>
               </div>
             </button>

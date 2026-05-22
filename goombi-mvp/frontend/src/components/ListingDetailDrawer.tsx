@@ -4,6 +4,7 @@ import { displayCategory, isWorkspace, type Listing } from "../types/listing";
 import { EnquiryFlow } from "./EnquiryFlow";
 import { NearbyListings } from "./NearbyListings";
 import { NearbyServices } from "./NearbyServices";
+import { PhotoCarousel } from "./PhotoCarousel";
 
 type Props = {
   listing?: Listing;
@@ -22,8 +23,8 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       <div className="flex justify-end">
         <button aria-label="Close detail" className="secondary-button h-9 w-9 p-0" type="button" onClick={onClose}><X className="h-4 w-4" /></button>
       </div>
-      <div className="mt-3 grid aspect-[16/8] place-items-center rounded-lg bg-[linear-gradient(135deg,#c9eadb,#f2d18b)] text-sm font-semibold text-slate-700">
-        Photo placeholder
+      <div className="mt-3">
+        <PhotoCarousel key={listing.id} listing={listing} />
       </div>
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
