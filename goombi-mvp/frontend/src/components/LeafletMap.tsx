@@ -10,9 +10,11 @@ type Props = {
   selectedId?: string;
   onSelect: (listing: Listing) => void;
   serviceMarker?: ServiceMarker | null;
+  centerRegion?: string;
 };
 
 const JHB_CENTER: [number, number] = [-26.1076, 28.0567];
+const CPT_CENTER: [number, number] = [-33.9249, 18.4241];
 const SA_CENTER: [number, number] = [-30.5595, 22.9375];
 const JHB_ZOOM = 11;
 const SA_ZOOM = 5;
@@ -26,8 +28,17 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapIn
   return null;
 }
 
-export function LeafletMap({ listings, selectedId, onSelect, serviceMarker }: Props) {
+export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, centerRegion }: Props) {
   const mapRef = useRef<LeafletMapInstance | null>(null);
+
+  useEffect(() => {
+    if (!mapRef.current || !centerRegion || centerRegion === "all") return;
+    if (centerRegion === "Western Cape") {
+      mapRef.current.setView(CPT_CENTER, JHB_ZOOM);
+    } else {
+      mapRef.current.setView(JHB_CENTER, JHB_ZOOM);
+    }
+  }, [centerRegion]);
 
   function fitResults() {
     if (!mapRef.current || listings.length === 0) return;
@@ -156,6 +167,14 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker }: Pr
           type="button"
         >
           JHB
+        </button>
+        <button
+          aria-label="Cape Town view"
+          className="rounded px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+          onClick={() => mapRef.current?.setView(CPT_CENTER, JHB_ZOOM)}
+          type="button"
+        >
+          CPT
         </button>
       </div>
     </div>

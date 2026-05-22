@@ -9,17 +9,35 @@ type Props = {
   onChange: (filters: Filters) => void;
 };
 
+const REGION_LABELS: Record<string, string> = {
+  all: "South Africa",
+  Gauteng: "Gauteng",
+  "Western Cape": "Western Cape",
+};
+
 export function FilterPanel({ filters, suburbs, resultCount, onChange }: Props) {
   return (
     <aside className="pointer-events-auto flex max-h-[calc(100vh-7rem)] w-full flex-col gap-5 overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-80">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase text-emerald-700">Goombi</p>
-          <h1 className="mt-1 text-xl font-semibold text-slate-950">Johannesburg North</h1>
-          <p className="mt-1 text-sm text-slate-600">{resultCount} demo accommodation and workspace results</p>
+          <h1 className="mt-1 text-xl font-semibold text-slate-950">{REGION_LABELS[filters.region] ?? "South Africa"}</h1>
+          <p className="mt-1 text-sm text-slate-600">{resultCount} results</p>
         </div>
         <SlidersHorizontal className="mt-1 h-5 w-5 text-slate-500" />
       </div>
+      <label className="label">
+        Region
+        <select
+          className="field"
+          value={filters.region}
+          onChange={(event) => onChange({ ...filters, region: event.target.value as Filters["region"], suburb: "all" })}
+        >
+          <option value="all">All regions</option>
+          <option value="Gauteng">Gauteng</option>
+          <option value="Western Cape">Western Cape</option>
+        </select>
+      </label>
       <label className="label">
         Category
         <select

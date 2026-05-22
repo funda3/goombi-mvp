@@ -9,6 +9,7 @@ type Props = {
   selectedId?: string;
   onSelect: (listing: Listing) => void;
   serviceMarker?: ServiceMarker | null;
+  region?: string;
 };
 
 type Point = {

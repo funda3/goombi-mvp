@@ -10,6 +10,7 @@ type Props = {
   selectedId?: string;
   onSelect: (listing: Listing) => void;
   serviceMarker?: ServiceMarker | null;
+  region?: string;
 };
 
 type GoogleState = "idle" | "loading" | "ready" | "failed";
@@ -125,5 +126,5 @@ export function MapCanvas(props: Props) {
   if (googleState === "loading") {
     return <div className="grid min-h-screen place-items-center bg-emerald-50 text-slate-700">Loading map…</div>;
   }
-  return import.meta.env.VITE_MAP_MODE === "mock" ? <MockMap {...props} /> : <LeafletMap {...props} />;
+  return import.meta.env.VITE_MAP_MODE === "mock" ? <MockMap {...props} /> : <LeafletMap {...props} centerRegion={props.region} />;
 }

@@ -1,6 +1,7 @@
 import type { Filters, Listing } from "../types/listing";
 
 export const defaultFilters: Filters = {
+  region: "all",
   category: "all",
   workspaceType: "all",
   suburb: "all",
@@ -12,6 +13,7 @@ export const defaultFilters: Filters = {
 
 export function filterListings(listings: Listing[], filters: Filters): Listing[] {
   return listings.filter((listing) => {
+    const matchesRegion = filters.region === "all" || listing.province === filters.region;
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
     const isWorkspace = listing.category === "workspace";
     const recordCategory = isWorkspace ? "workspace" : "accommodation";
@@ -23,6 +25,6 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
       (listing.price_per_night >= filters.minPrice && listing.price_per_night <= filters.maxPrice);
     const matchesGuests = isWorkspace || listing.max_guests >= filters.minGuests;
     const matchesVerified = !filters.verifiedOnly || listing.verified_status;
-    return matchesCategory && matchesWorkspaceType && matchesSuburb && matchesPrice && matchesGuests && matchesVerified;
+    return matchesRegion && matchesCategory && matchesWorkspaceType && matchesSuburb && matchesPrice && matchesGuests && matchesVerified;
   });
 }

@@ -47,6 +47,7 @@ export type EnquiryDraft = {
 };
 
 export type Filters = {
+  region: "all" | "Gauteng" | "Western Cape";
   category: "all" | "accommodation" | "workspace";
   workspaceType: "all" | WorkspaceType;
   suburb: string;

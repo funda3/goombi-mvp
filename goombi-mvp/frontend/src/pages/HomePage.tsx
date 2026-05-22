@@ -36,7 +36,7 @@ export function HomePage() {
     <main className="relative h-screen w-full overflow-hidden">
       {/* Map fills the background at z-0 so all UI overlays sit above it */}
       <div className="absolute inset-0 z-0">
-        <MapCanvas listings={filteredListings} selectedId={selected?.id} onSelect={selectListing} serviceMarker={serviceMarker} />
+        <MapCanvas listings={filteredListings} selectedId={selected?.id} onSelect={selectListing} serviceMarker={serviceMarker} region={filters.region} />
       </div>
       <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between gap-4 p-4 pt-24 md:flex-row md:items-start">
         <FilterPanel filters={filters} suburbs={suburbs} resultCount={filteredListings.length} onChange={setFilters} />
