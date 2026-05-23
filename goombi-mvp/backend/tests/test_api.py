@@ -1,5 +1,7 @@
 import json
+import pathlib
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
@@ -84,3 +86,304 @@ def test_otp_placeholder(tmp_path):
     )
     assert requested.json()["status"] == "placeholder"
     assert verified.json()["otp_verified"] is True
+
+
+# ── GMB-01: listing_type and partner_status tests ──────────────────────────────
+
+def test_listing_type_defaults(tmp_path):
+    """POST without listing_type → response has listing_type='accommodation' (derived from category)."""
+    api = client(tmp_path)
+    payload = listing_payload()
+    assert "listing_type" not in payload
+    created = api.post("/api/listings", json=payload).json()
+    assert created["listing_type"] == "accommodation"
+
+
+def test_partner_status_defaults(tmp_path):
+    """POST without partner_status → response has partner_status='seed'."""
+    api = client(tmp_path)
+    payload = listing_payload()
+    assert "partner_status" not in payload
+    created = api.post("/api/listings", json=payload).json()
+    assert created["partner_status"] == "seed"
+
+
+def test_explicit_listing_type_preserved(tmp_path):
+    """POST with listing_type='tourism_experience' → response preserves it."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "listing_type": "tourism_experience"}
+    created = api.post("/api/listings", json=payload).json()
+    assert created["listing_type"] == "tourism_experience"
+
+
+def test_invalid_listing_type_rejected(tmp_path):
+    """POST with listing_type='hotel' (not in Literal) → 422 Unprocessable Entity."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "listing_type": "hotel"}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 422
+
+
+def test_property_opportunity_rejected(tmp_path):
+    """POST with listing_type='property_opportunity' is rejected — Goombi is not a property platform."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "listing_type": "property_opportunity"}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 422
+
+
+def test_business_hub_rejected(tmp_path):
+    """POST with listing_type='business_hub' is rejected — Goombi is not a business-intelligence platform."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "listing_type": "business_hub"}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 422
+
+
+def test_relocation_zone_rejected(tmp_path):
+    """POST with listing_type='relocation_zone' is rejected — Relocation layer removed in GMB-01F."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "listing_type": "relocation_zone"}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 422
+
+
+def test_invalid_partner_status_rejected(tmp_path):
+    """POST with partner_status='partner' (not in Literal) → 422 Unprocessable Entity."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "partner_status": "partner"}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 422
+
+
+# ── GMB-01D: rooms/max_guests nullable for non-accommodation layers ───────────
+
+def _seed_client(tmp_path) -> TestClient:
+    seed_path = pathlib.Path(__file__).parent.parent / "app" / "data" / "listings.json"
+    listings_path = tmp_path / "listings.json"
+    enquiries_path = tmp_path / "enquiries.json"
+    listings_path.write_text(seed_path.read_text(encoding="utf-8"), encoding="utf-8")
+    enquiries_path.write_text("[]", encoding="utf-8")
+    return TestClient(create_app(JsonStore(listings_path, enquiries_path)))
+
+
+def test_get_listings_returns_200_with_seed_data(tmp_path):
+    """GET /api/listings with seed data returns 200 and at least one record."""
+    api = _seed_client(tmp_path)
+    response = api.get("/api/listings")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+def test_seed_contains_accommodation(tmp_path):
+    """Seed data must include at least one accommodation record."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    accommodation = [r for r in data if r.get("listing_type") == "accommodation"]
+    assert len(accommodation) > 0
+
+
+def test_seed_contains_workspace(tmp_path):
+    """Seed data must include at least one workspace record."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    workspaces = [r for r in data if r.get("listing_type") == "workspace"]
+    assert len(workspaces) > 0
+
+
+def test_seed_contains_estate_living_zone(tmp_path):
+    """Seed data must include at least one estate_living_zone record."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
+    assert len(estates) >= 1
+
+
+def test_seed_has_no_relocation_zone(tmp_path):
+    """Seed data must contain zero relocation_zone records after GMB-01F."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    relocation = [r for r in data if r.get("listing_type") == "relocation_zone"]
+    assert len(relocation) == 0
+
+
+def test_non_accommodation_with_null_rooms_validates(tmp_path):
+    """Non-accommodation records with rooms=null and max_guests=null validate successfully."""
+    api = client(tmp_path)
+    payload = {
+        **listing_payload(),
+        "listing_type": "restaurant",
+        "rooms": None,
+        "max_guests": None,
+    }
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    assert response.json()["rooms"] is None
+    assert response.json()["max_guests"] is None
+
+
+def test_non_accommodation_with_zero_rooms_coerced_to_null(tmp_path):
+    """Non-accommodation records with rooms=0 / max_guests=0 are normalised to null."""
+    api = client(tmp_path)
+    payload = {
+        **listing_payload(),
+        "listing_type": "transport_node",
+        "rooms": 0,
+        "max_guests": 0,
+    }
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    assert response.json()["rooms"] is None
+    assert response.json()["max_guests"] is None
+
+
+def test_accommodation_missing_rooms_defaults_to_1(tmp_path):
+    """Accommodation records with missing rooms/max_guests are defaulted to 1."""
+    api = client(tmp_path)
+    payload = listing_payload()
+    payload.pop("rooms", None)
+    payload.pop("max_guests", None)
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    assert response.json()["rooms"] == 1
+    assert response.json()["max_guests"] == 1
+
+
+def test_accommodation_zero_rooms_normalised_to_1(tmp_path):
+    """Accommodation records with rooms=0 / max_guests=0 are normalised to 1."""
+    api = client(tmp_path)
+    payload = {**listing_payload(), "rooms": 0, "max_guests": 0}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    assert response.json()["rooms"] == 1
+    assert response.json()["max_guests"] == 1
+
+
+def test_estate_with_null_rooms_validates(tmp_path):
+    """Estate living zone records with null rooms and max_guests validate successfully."""
+    api = client(tmp_path)
+    payload = {
+        **listing_payload(),
+        "listing_type": "estate_living_zone",
+        "rooms": None,
+        "max_guests": None,
+        "estate_type": "Parkland Residence",
+        "lifestyle_summary": "Luxury estate living in Johannesburg North.",
+    }
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    assert response.json()["rooms"] is None
+    assert response.json()["max_guests"] is None
+    assert response.json()["listing_type"] == "estate_living_zone"
+
+
+# ── GMB-01E / GMB-01F: all 7 valid listing_type values can be posted and retrieved
+
+_ALL_LAYER_PAYLOADS = [
+    ("accommodation", {
+        "listing_type": "accommodation",
+        "rooms": 2,
+        "max_guests": 4,
+    }),
+    ("workspace", {
+        "listing_type": "workspace",
+        "category": "workspace",
+        "provider_name": "Workshop17",
+        "workspace_type": "coworking",
+        "pricing_status": "not_publicly_available",
+        "source_url": "https://example.com",
+        "source_note": "Public provider page.",
+        "rooms": None,
+        "max_guests": None,
+    }),
+    ("tourism_experience", {
+        "listing_type": "tourism_experience",
+        "rooms": None,
+        "max_guests": None,
+        "capacity": 20,
+    }),
+    ("restaurant", {
+        "listing_type": "restaurant",
+        "rooms": None,
+        "max_guests": None,
+    }),
+    ("transport_node", {
+        "listing_type": "transport_node",
+        "rooms": None,
+        "max_guests": None,
+    }),
+    ("estate_living_zone", {
+        "listing_type": "estate_living_zone",
+        "rooms": None,
+        "max_guests": None,
+    }),
+    ("event_space", {
+        "listing_type": "event_space",
+        "rooms": None,
+        "max_guests": None,
+        "capacity": 200,
+    }),
+]
+
+
+@pytest.mark.parametrize("layer_name,overrides", _ALL_LAYER_PAYLOADS)
+def test_each_listing_type_can_be_created(tmp_path, layer_name, overrides):
+    """Every valid listingType can be POST-ed and round-trips through the API as 201."""
+    api = client(tmp_path)
+    base = listing_payload(f"{layer_name.title()} Demo")
+    base.pop("rooms", None)
+    base.pop("max_guests", None)
+    payload = {**base, **overrides}
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201, f"{layer_name} POST failed: {response.text}"
+    data = response.json()
+    assert data["listing_type"] == layer_name
+
+
+@pytest.mark.parametrize("layer_name,overrides", _ALL_LAYER_PAYLOADS)
+def test_each_listing_type_appears_in_get_all(tmp_path, layer_name, overrides):
+    """Every valid listingType that is created appears in GET /api/listings."""
+    api = client(tmp_path)
+    base = listing_payload(f"{layer_name.title()} Demo")
+    base.pop("rooms", None)
+    base.pop("max_guests", None)
+    payload = {**base, **overrides}
+    created = api.post("/api/listings", json=payload).json()
+    all_listings = api.get("/api/listings").json()
+    assert any(l["id"] == created["id"] for l in all_listings), f"{layer_name} not found in GET /api/listings"
+
+
+def test_old_seed_record_loads(tmp_path):
+    """Old-format JSON without listing_type/partner_status can be read by list_listings().
+    The model_validator defaults them to 'accommodation' and 'seed' respectively.
+    """
+    listings_path = tmp_path / "listings.json"
+    enquiries_path = tmp_path / "enquiries.json"
+    old_record = {
+        "id": "legacy-001",
+        "name": "Legacy Stay",
+        "category": "guesthouse",
+        "province": "Gauteng",
+        "city": "Johannesburg",
+        "suburb": "Bryanston",
+        "address": "Old address",
+        "latitude": -26.053,
+        "longitude": 28.024,
+        "price_per_night": 800,
+        "max_guests": 2,
+        "rooms": 1,
+        "description": "Legacy record without new fields.",
+        "amenities": [],
+        "photos": [],
+        "owner_name": "Old Owner",
+        "owner_phone": "+27110000000",
+        "verified_status": False,
+        "source_type": "manual_seed",
+        "created_at": "2025-01-01T00:00:00+00:00",
+        "updated_at": "2025-01-01T00:00:00+00:00",
+    }
+    listings_path.write_text(json.dumps([old_record]), encoding="utf-8")
+    enquiries_path.write_text("[]", encoding="utf-8")
+    store = JsonStore(listings_path, enquiries_path)
+    listings = store.list_listings()
+    assert len(listings) == 1
+    assert listings[0].listing_type == "accommodation"
+    assert listings[0].partner_status == "seed"

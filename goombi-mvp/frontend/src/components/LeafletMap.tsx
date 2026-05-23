@@ -3,7 +3,7 @@ import { divIcon } from "leaflet";
 import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { Map as LeafletMapInstance } from "leaflet";
 
-import { isWorkspace, type Listing } from "../types/listing";
+import { getListingType, type Listing, type ListingType } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
 export type FlyTo = { lat: number; lng: number; zoom: number };
@@ -23,6 +23,17 @@ const DBN_CENTER: [number, number] = [-29.8587, 31.0218];
 const SA_CENTER: [number, number] = [-30.5595, 22.9375];
 const JHB_ZOOM = 11;
 const SA_ZOOM = 5;
+
+/** Marker fill colours by listing layer type. Accommodation uses verified_status override. */
+const LAYER_COLORS: Record<ListingType, string> = {
+  accommodation: "#0f766e",      // teal — overridden by verified_status below
+  workspace: "#a21caf",          // purple — rendered as diamond Marker, not CircleMarker
+  tourism_experience: "#d97706", // amber
+  restaurant: "#dc2626",         // red
+  transport_node: "#475569",     // slate
+  estate_living_zone: "#92400e", // warm amber-brown (distinct from all other layers)
+  event_space: "#db2777",        // pink
+};
 
 /** Captures the Leaflet map instance into a ref so controls outside MapContainer can call it. */
 function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapInstance | null> }) {
@@ -117,26 +128,34 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
             <Tooltip permanent direction="top" offset={[0, -12]}>{serviceMarker.label}</Tooltip>
           </CircleMarker>
         )}
-        {listings.map((listing) =>
-          isWorkspace(listing) ? (
-            <Marker
-              key={listing.id}
-              position={[listing.latitude, listing.longitude]}
-              icon={workspaceIcon(
-                listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom",
-                selectedId === listing.id,
-              )}
-              eventHandlers={{ click: () => onSelect(listing) }}
-            >
-              <Tooltip>{listing.name}</Tooltip>
-            </Marker>
-          ) : (
+        {listings.map((listing) => {
+          const lt = getListingType(listing);
+          if (lt === "workspace") {
+            return (
+              <Marker
+                key={listing.id}
+                position={[listing.latitude, listing.longitude]}
+                icon={workspaceIcon(
+                  listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom",
+                  selectedId === listing.id,
+                )}
+                eventHandlers={{ click: () => onSelect(listing) }}
+              >
+                <Tooltip>{listing.name}</Tooltip>
+              </Marker>
+            );
+          }
+          const fillColor =
+            lt === "accommodation"
+              ? listing.verified_status ? "#0f766e" : "#e8790a"
+              : (LAYER_COLORS[lt] ?? "#475569");
+          return (
             <CircleMarker
               key={listing.id}
               center={[listing.latitude, listing.longitude]}
               radius={selectedId === listing.id ? 16 : 12}
               pathOptions={{
-                fillColor: listing.verified_status ? "#0f766e" : "#e8790a",
+                fillColor,
                 fillOpacity: 0.88,
                 color: "#ffffff",
                 weight: selectedId === listing.id ? 3 : 2,
@@ -145,8 +164,8 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
             >
               <Tooltip>{listing.name}</Tooltip>
             </CircleMarker>
-          ),
-        )}
+          );
+        })}
       </MapContainer>
 
       {/* Map control buttons rendered outside Leaflet's canvas for full React event handling */}

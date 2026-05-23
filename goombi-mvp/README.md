@@ -1,13 +1,49 @@
 # Goombi MVP
 
-Goombi is a narrow map-first MVP for discovering verified B&B and guesthouse demo listings in Johannesburg North. It deliberately excludes scraping, marketplace data, payments, and real telco integrations.
+Goombi is a **layer-ready spatial discovery platform** for finding accommodation, workspaces, experiences, restaurants, transport nodes, estate-living environments, and event spaces across South Africa. The map runs on **Leaflet + OpenStreetMap** tiles — no Google Maps API key required.
+
+The MVP deliberately excludes scraping, marketplace data, payments, and real telco integrations. OTP is a demo placeholder that always succeeds.
+
+## Supported listing layers
+
+Goombi currently supports 7 discovery layers:
+
+| Layer | Map colour | Description |
+|---|---|---|
+| Stays | Teal (verified) / Orange | B&Bs, guesthouses, self-catering |
+| Workspace | Purple diamond | Coworking, meeting rooms, offices |
+| Experiences | Amber | Tours, attractions, activities |
+| Eats | Red | Restaurants, cafés, food markets |
+| Transport | Slate | Bus depots, taxi ranks, airports |
+| Estates | Amber-brown | Estate-living environments (discovery only) |
+| Events | Pink | Conference venues, function halls |
+
+> **Scope note:** Goombi does not provide generic relocation advisory, generic property discovery, property sales, rental listings, business-hub intelligence, estate tours, purchase-interest workflows, mortgage workflows, or investment advice. Estate Living is a discovery-only layer for estate-living environments shown on the map. Users seeking property listings, relocation advisory, or investment services should use dedicated platforms.
 
 ## Project layout
 
-- `backend/`: FastAPI API with local JSON listing and enquiry storage.
-- `frontend/`: React, Vite, TypeScript, Tailwind UI with Google Maps JavaScript API support and a mock-map fallback.
+```
+goombi-mvp/
+├── backend/    # FastAPI + Python, JSON file storage
+├── frontend/   # React 19 + TypeScript + Vite + Tailwind + Leaflet
+└── start-goombi.ps1   # One-command launcher (Windows PowerShell)
+```
 
-## Run locally
+## Quick start (recommended)
+
+From the `goombi-mvp/` folder:
+
+```powershell
+.\start-goombi.ps1
+```
+
+This:
+1. Checks that ports 8000 and 5173 are free
+2. Activates the Python virtual environment and starts `uvicorn`
+3. Starts the Vite dev server
+4. Opens `http://127.0.0.1:5173` in your default browser
+
+## Manual start
 
 1. Start the backend:
 
@@ -19,7 +55,7 @@ Goombi is a narrow map-first MVP for discovering verified B&B and guesthouse dem
    uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
    ```
 
-2. Start the frontend in another terminal:
+2. Start the frontend in a separate terminal:
 
    ```powershell
    cd frontend
@@ -28,20 +64,68 @@ Goombi is a narrow map-first MVP for discovering verified B&B and guesthouse dem
    npm run dev
    ```
 
-3. Open `http://127.0.0.1:5173` for map discovery and `http://127.0.0.1:5173/admin` for admin listing management.
+3. Open:
+   - `http://127.0.0.1:5173` — map discovery
+   - `http://127.0.0.1:5173/admin` — listing management
 
-Without `VITE_GOOGLE_MAPS_API_KEY`, the frontend uses the built-in clickable mock map mode.
+## Map
+
+The map uses **Leaflet + OpenStreetMap** tiles. It supports:
+
+- Full zoom from world level down to street/suburb level
+- Pan, scroll-wheel zoom, and pinch-to-zoom
+- Colour-coded CircleMarkers per layer type (see table above); workspace uses a distinctive diamond Marker
+- Click-to-open listing detail drawer
+- Fit-to-results, South Africa view, and city shortcuts (JHB / CPT / DBN)
+- FlyTo animation when selecting a listing from search
+- Service markers for nearby amenities (gym, ATM, fuel, etc.)
+
+Google Maps is optionally supported via `VITE_GOOGLE_MAPS_API_KEY`. MockMap is retained as a last-resort error fallback only.
+
+## Key features
+
+| Feature | Description |
+|---|---|
+| Layer toggles | Show / hide any of the 7 listing layers directly from the filter panel |
+| Search bar | Search by suburb name or listing name; flies to result on map |
+| Filters | Suburb, price range, guests, region, category, verified-only, favourites-only |
+| Listing detail drawer | Photos, tags, partner status, short/long description, contact buttons |
+| Journey planner | Route and distance overview between listings |
+| Favourites | Persist favourite listings in browser localStorage |
+| Bottom panel | Quick-view panel for the selected listing |
+| Admin page | Full CRUD, JSON/CSV import, layer-type and partner-status management at `/admin` |
+| OTP flow | Demo placeholder — always succeeds; no telco API connected |
+
+## Data model highlights (GMB-01)
+
+Each listing now carries a `listing_type` field (one of the 7 layer values above) in addition to the legacy `category` field. New optional fields include: `partner_status`, `tags`, `short_description`, `long_description`, `price_from/to`, `contact_email`, `contact_phone`, `website_url`, `whatsapp_url`, `featured`, and audience flags (`diaspora_relevant`, `luxury_relevant`, `business_travel_relevant`, `relocation_relevant`, `township_tourism_relevant`).
+
+Old seed records without `listing_type` migrate silently — the backend model validator defaults `listing_type` from `category`.
 
 ## Tests
 
 ```powershell
-cd backend
-pytest
+# Backend (10 tests)
+cd backend; python -m pytest -v
 ```
 
 ```powershell
-cd frontend
-npm test
+# Frontend (21 tests)
+cd frontend; npm test -- --run
 ```
 
-The 20 bundled listings are synthetic manual seed records with plausible demo coordinates only.
+```powershell
+# TypeScript check + production build
+cd frontend; npm run build
+```
+
+The bundled seed data covers Gauteng, Western Cape, and KwaZulu-Natal with synthetic demo coordinates. Seed records include accommodation, workspaces, tourism experiences, restaurants, transport nodes, 6 estate living zones (2 per province), and event spaces. All estate records are clearly marked as demo/sample data.
+
+## What this MVP does NOT include
+
+- Real scraping or automated data ingestion
+- Marketplace / transactional payments
+- Real OTP / telco API (placeholder only)
+- AI recommendations or search
+- Authentication or user accounts
+

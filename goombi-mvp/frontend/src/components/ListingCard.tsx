@@ -31,8 +31,12 @@ export function ListingCard({ listing, onSelect }: Props) {
         ) : (
           <>
             <strong>R{listing.price_per_night}/night</strong>
-            <span className="inline-flex items-center gap-1"><Users className="h-4 w-4" />{listing.max_guests}</span>
-            <span className="inline-flex items-center gap-1"><BedDouble className="h-4 w-4" />{listing.rooms}</span>
+            {listing.max_guests != null && (
+              <span className="inline-flex items-center gap-1"><Users className="h-4 w-4" />{listing.max_guests}</span>
+            )}
+            {listing.rooms != null && (
+              <span className="inline-flex items-center gap-1"><BedDouble className="h-4 w-4" />{listing.rooms}</span>
+            )}
           </>
         )}
       </div>

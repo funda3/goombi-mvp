@@ -3,11 +3,21 @@ import { Building2, FileUp, MapPinned, Pencil, Plus, Trash2 } from "lucide-react
 import Papa from "papaparse";
 
 import { api } from "../services/api";
-import { isWorkspace, type Enquiry, type Listing, type ListingDraft } from "../types/listing";
+import {
+  ALL_LISTING_TYPES,
+  ALL_PARTNER_STATUSES,
+  isWorkspace,
+  type Enquiry,
+  type Listing,
+  type ListingDraft,
+} from "../types/listing";
 
 const emptyDraft: ListingDraft = {
   name: "",
   category: "guesthouse",
+  listing_type: "accommodation",
+  partner_status: "seed",
+  featured: false,
   province: "Gauteng",
   city: "Johannesburg",
   suburb: "",
@@ -18,19 +28,33 @@ const emptyDraft: ListingDraft = {
   max_guests: 2,
   rooms: 1,
   description: "Synthetic manually uploaded Goombi demo listing.",
+  short_description: "",
+  long_description: "",
   amenities: ["WiFi"],
   photos: [],
+  images: [],
+  tags: [],
   owner_name: "Manual Demo Owner",
   owner_phone: "+27110000000",
+  contact_email: "",
+  contact_phone: "",
+  website_url: "",
+  whatsapp_url: "",
   provider_name: "",
+  provider_type: "",
   workspace_type: "serviced_office",
   pricing_status: "not_publicly_available",
   price_amount: null,
   price_unit: "",
+  price_from: null,
+  price_to: null,
   capacity: null,
   booking_url: "",
   source_url: "",
   source_note: "",
+  estate_type: "",
+  lifestyle_summary: "",
+  long_stay_relevant: false,
   verified_status: false,
   source_type: "manual_seed",
 };
@@ -43,6 +67,8 @@ function draftFromListing(listing: Listing): ListingDraft {
 function coerceDraft(row: Record<string, unknown>): ListingDraft {
   const amenities = typeof row.amenities === "string" ? row.amenities.split("|").filter(Boolean) : row.amenities;
   const photos = typeof row.photos === "string" ? row.photos.split("|").filter(Boolean) : row.photos;
+  const images = typeof row.images === "string" ? row.images.split("|").filter(Boolean) : row.images;
+  const tags = typeof row.tags === "string" ? row.tags.split("|").filter(Boolean) : row.tags;
   return {
     ...emptyDraft,
     ...row,
@@ -52,15 +78,27 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
         : row.category === "bnb" || row.category === "guesthouse"
           ? row.category
           : "accommodation",
+    listing_type: ALL_LISTING_TYPES.includes(row.listing_type as never)
+      ? (row.listing_type as ListingDraft["listing_type"])
+      : "accommodation",
+    partner_status: ALL_PARTNER_STATUSES.includes(row.partner_status as never)
+      ? (row.partner_status as ListingDraft["partner_status"])
+      : "seed",
     latitude: Number(row.latitude ?? emptyDraft.latitude),
     longitude: Number(row.longitude ?? emptyDraft.longitude),
     price_per_night: Number(row.price_per_night ?? emptyDraft.price_per_night),
     max_guests: Number(row.max_guests ?? emptyDraft.max_guests),
     rooms: Number(row.rooms ?? emptyDraft.rooms),
     price_amount: row.price_amount === "" || row.price_amount === undefined ? null : Number(row.price_amount),
+    price_from: row.price_from === "" || row.price_from === undefined ? null : Number(row.price_from),
+    price_to: row.price_to === "" || row.price_to === undefined ? null : Number(row.price_to),
     capacity: row.capacity === "" || row.capacity === undefined ? null : Number(row.capacity),
     amenities: Array.isArray(amenities) ? amenities.map(String) : emptyDraft.amenities,
     photos: Array.isArray(photos) ? photos.map(String) : emptyDraft.photos,
+    images: Array.isArray(images) ? images.map(String) : emptyDraft.images,
+    tags: Array.isArray(tags) ? tags.map(String) : emptyDraft.tags,
+    featured:
+      row.featured === true || row.featured === "true" || row.featured === "TRUE",
     verified_status:
       row.verified_status === true ||
       row.verified_status === "true" ||
@@ -217,12 +255,54 @@ export function AdminPage() {
             ) : (
               <div className="grid grid-cols-3 gap-3">
                 <label className="label">Price<input className="field" min={0} type="number" value={draft.price_per_night} onChange={(event) => setDraft({ ...draft, price_per_night: Number(event.target.value) })} /></label>
-                <label className="label">Guests<input className="field" min={1} type="number" value={draft.max_guests} onChange={(event) => setDraft({ ...draft, max_guests: Number(event.target.value) })} /></label>
-                <label className="label">Rooms<input className="field" min={1} type="number" value={draft.rooms} onChange={(event) => setDraft({ ...draft, rooms: Number(event.target.value) })} /></label>
+                <label className="label">Guests<input className="field" min={1} type="number" value={draft.max_guests ?? ""} onChange={(event) => setDraft({ ...draft, max_guests: Number(event.target.value) || null })} /></label>
+                <label className="label">Rooms<input className="field" min={1} type="number" value={draft.rooms ?? ""} onChange={(event) => setDraft({ ...draft, rooms: Number(event.target.value) || null })} /></label>
               </div>
             )}
             <label className="label">Description<textarea className="field min-h-20" required value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
             <label className="label">Amenities, comma separated<input className="field" value={draft.amenities.join(", ")} onChange={(event) => setDraft({ ...draft, amenities: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) })} /></label>
+
+            {/* Discovery & partner fields */}
+            <div className="rounded-md border border-slate-200 p-3 grid gap-3">
+              <p className="text-xs font-bold uppercase text-slate-500">Layer & Discovery</p>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="label">Layer type
+                  <select className="field" value={draft.listing_type ?? "accommodation"} onChange={(event) => setDraft({ ...draft, listing_type: event.target.value as ListingDraft["listing_type"] })}>
+                    {ALL_LISTING_TYPES.map((t) => <option key={t} value={t}>{t.replace(/_/g, " ")}</option>)}
+                  </select>
+                </label>
+                <label className="label">Partner status
+                  <select className="field" value={draft.partner_status ?? "seed"} onChange={(event) => setDraft({ ...draft, partner_status: event.target.value as ListingDraft["partner_status"] })}>
+                    {ALL_PARTNER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+                  </select>
+                </label>
+              </div>
+              <label className="label">Tags (pipe-separated)<input className="field" placeholder="e.g. pool|pet-friendly|garden" value={(draft.tags ?? []).join("|")} onChange={(event) => setDraft({ ...draft, tags: event.target.value.split("|").map((t) => t.trim()).filter(Boolean) })} /></label>
+              <label className="label">Provider / operator type<input className="field" value={draft.provider_type ?? ""} onChange={(event) => setDraft({ ...draft, provider_type: event.target.value })} /></label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="label">Website URL<input className="field" type="url" value={draft.website_url ?? ""} onChange={(event) => setDraft({ ...draft, website_url: event.target.value })} /></label>
+                <label className="label">WhatsApp URL<input className="field" type="url" value={draft.whatsapp_url ?? ""} onChange={(event) => setDraft({ ...draft, whatsapp_url: event.target.value })} /></label>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="label">Contact phone<input className="field" value={draft.contact_phone ?? ""} onChange={(event) => setDraft({ ...draft, contact_phone: event.target.value })} /></label>
+                <label className="label">Contact email<input className="field" type="email" value={draft.contact_email ?? ""} onChange={(event) => setDraft({ ...draft, contact_email: event.target.value })} /></label>
+              </div>
+              <label className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm font-medium">
+                Featured listing
+                <input checked={draft.featured ?? false} className="h-4 w-4 accent-emerald-700" type="checkbox" onChange={(event) => setDraft({ ...draft, featured: event.target.checked })} />
+              </label>
+              {draft.listing_type === "estate_living_zone" && (
+                <>
+                  <label className="label">Estate type (e.g. Security Estate)<input className="field" placeholder="Security Estate" value={draft.estate_type ?? ""} onChange={(event) => setDraft({ ...draft, estate_type: event.target.value })} /></label>
+                  <label className="label">Lifestyle summary<textarea className="field min-h-16" placeholder="Describe the estate lifestyle..." value={draft.lifestyle_summary ?? ""} onChange={(event) => setDraft({ ...draft, lifestyle_summary: event.target.value })} /></label>
+                  <label className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm font-medium">
+                    Long stay friendly
+                    <input checked={draft.long_stay_relevant ?? false} className="h-4 w-4 accent-emerald-700" type="checkbox" onChange={(event) => setDraft({ ...draft, long_stay_relevant: event.target.checked })} />
+                  </label>
+                </>
+              )}
+            </div>
+
             {draft.category !== "workspace" && <div className="grid grid-cols-2 gap-3">
               <label className="label">Owner<input className="field" required value={draft.owner_name} onChange={(event) => setDraft({ ...draft, owner_name: event.target.value })} /></label>
               <label className="label">Phone<input className="field" required value={draft.owner_phone} onChange={(event) => setDraft({ ...draft, owner_phone: event.target.value })} /></label>

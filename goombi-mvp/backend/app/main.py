@@ -7,6 +7,8 @@ from .routes import enquiries, listings, otp
 from .storage import JsonStore
 
 _DEFAULT_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
+# Matches any HTTP origin on private LAN ranges (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+_LAN_ORIGIN_RE = r"http://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?"
 
 
 def _cors_origins() -> list[str]:
@@ -21,6 +23,7 @@ def create_app(store: JsonStore | None = None) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_cors_origins(),
+        allow_origin_regex=_LAN_ORIGIN_RE,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -58,3 +58,109 @@ test("filters workspace records by category and workspace type", () => {
     }),
   ).toEqual([workspace]);
 });
+
+test("hiddenLayers hides listings of the specified layer type", () => {
+  const tourismListing: Listing = {
+    ...baseListing,
+    id: "tour-1",
+    name: "Soweto Tour",
+    category: "accommodation",
+    listing_type: "tourism_experience",
+  };
+  const restaurantListing: Listing = {
+    ...baseListing,
+    id: "rest-1",
+    name: "Waterfront Eats",
+    category: "accommodation",
+    listing_type: "restaurant",
+  };
+
+  // Hide tourism_experience — only accommodation and restaurant should remain
+  expect(
+    filterListings([baseListing, tourismListing, restaurantListing], {
+      ...defaultFilters,
+      hiddenLayers: ["tourism_experience"],
+    }),
+  ).toEqual([baseListing, restaurantListing]);
+
+  // Hide both accommodation and restaurant — only tourism stays
+  expect(
+    filterListings([baseListing, tourismListing, restaurantListing], {
+      ...defaultFilters,
+      hiddenLayers: ["accommodation", "restaurant"],
+    }),
+  ).toEqual([tourismListing]);
+});
+
+test("defaultFilters has empty hiddenLayers (all layers visible)", () => {
+  expect(defaultFilters.hiddenLayers).toEqual([]);
+});
+
+test("empty hiddenLayers shows all listings", () => {
+  const tourismListing: Listing = {
+    ...baseListing,
+    id: "tour-2",
+    listing_type: "tourism_experience",
+    category: "accommodation",
+  };
+  const result = filterListings([baseListing, tourismListing], {
+    ...defaultFilters,
+    hiddenLayers: [],
+  });
+  expect(result).toHaveLength(2);
+});
+
+// ── GMB-01D: guest filter must not drop non-stay listings ─────────────────────
+
+test("minGuests filter does not remove restaurants with null max_guests", () => {
+  const restaurant: Listing = {
+    ...baseListing,
+    id: "rest-null",
+    name: "Open Kitchen",
+    category: "accommodation",
+    listing_type: "restaurant",
+    max_guests: null,
+    rooms: null,
+  };
+  const result = filterListings([baseListing, restaurant], {
+    ...defaultFilters,
+    minGuests: 2,
+  });
+  // restaurant should survive because minGuests only applies to accommodation
+  expect(result.some((l) => l.id === "rest-null")).toBe(true);
+});
+
+test("minGuests filter does not remove transport_node with null max_guests", () => {
+  const node: Listing = {
+    ...baseListing,
+    id: "transport-null",
+    name: "Sandton Gautrain",
+    category: "accommodation",
+    listing_type: "transport_node",
+    max_guests: null,
+    rooms: null,
+  };
+  const result = filterListings([node], { ...defaultFilters, minGuests: 4 });
+  expect(result).toHaveLength(1);
+});
+
+test("minGuests filter does not remove estate_living_zone with null max_guests", () => {
+  const estate: Listing = {
+    ...baseListing,
+    id: "estate-null",
+    name: "Waterfall Estate",
+    category: "accommodation",
+    listing_type: "estate_living_zone",
+    max_guests: null,
+    rooms: null,
+  };
+  const result = filterListings([estate], { ...defaultFilters, minGuests: 3 });
+  expect(result).toHaveLength(1);
+});
+
+test("minGuests still filters out accommodation listings below threshold", () => {
+  const smallStay: Listing = { ...baseListing, id: "small", max_guests: 1 };
+  const bigStay: Listing = { ...baseListing, id: "big", max_guests: 5 };
+  const result = filterListings([smallStay, bigStay], { ...defaultFilters, minGuests: 3 });
+  expect(result).toEqual([bigStay]);
+});

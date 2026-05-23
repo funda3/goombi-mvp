@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { isWorkspace, type Listing } from "../types/listing";
+import { getListingType, isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 import { LeafletMap, type FlyTo } from "./LeafletMap";
 import { MockMap } from "./MockMap";
@@ -15,6 +15,16 @@ type Props = {
 };
 
 type GoogleState = "idle" | "loading" | "ready" | "failed";
+
+const GOOGLE_LAYER_COLORS: Record<string, string> = {
+  accommodation: "#0f766e",
+  workspace: "#a21caf",
+  tourism_experience: "#d97706",
+  restaurant: "#dc2626",
+  transport_node: "#475569",
+  estate_living_zone: "#92400e",
+  event_space: "#db2777",
+};
 
 const MAP_CENTER = { lat: -26.083, lng: 28.022 };
 
@@ -91,11 +101,15 @@ function GoogleCircleMap({ listings, selectedId, onSelect, serviceMarker }: Prop
         bounds.extend(marker.getPosition());
         return marker;
       }
+      const lt = getListingType(listing);
+      const fillColor = lt === "accommodation"
+        ? (listing.verified_status ? "#0f766e" : "#e8790a")
+        : (GOOGLE_LAYER_COLORS[lt] ?? "#475569");
       const circle = new googleApi.maps.Circle({
         map,
         center: { lat: listing.latitude, lng: listing.longitude },
         radius: selectedId === listing.id ? 850 : 620,
-        fillColor: listing.verified_status ? "#0f766e" : "#e8790a",
+        fillColor,
         fillOpacity: 0.88,
         strokeColor: "#ffffff",
         strokeWeight: selectedId === listing.id ? 3 : 2,

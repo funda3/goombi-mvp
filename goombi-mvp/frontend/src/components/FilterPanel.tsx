@@ -1,7 +1,7 @@
 import { Heart, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 
 import { useIsMobile } from "../hooks/useIsMobile";
-import type { Filters } from "../types/listing";
+import { type Filters, type ListingType } from "../types/listing";
 
 type Props = {
   filters: Filters;
@@ -19,6 +19,25 @@ const REGION_LABELS: Record<string, string> = {
   "Western Cape": "Western Cape",
   "KwaZulu-Natal": "KwaZulu-Natal",
 };
+
+const LAYER_CONFIG: { type: ListingType; label: string; color: string }[] = [
+  { type: "accommodation",      label: "Stays",       color: "#0f766e" },
+  { type: "workspace",          label: "Workspace",   color: "#a21caf" },
+  { type: "tourism_experience", label: "Experiences", color: "#d97706" },
+  { type: "restaurant",         label: "Eats",        color: "#dc2626" },
+  { type: "transport_node",     label: "Transport",   color: "#475569" },
+  { type: "estate_living_zone", label: "Estates",     color: "#92400e" },
+  { type: "event_space",        label: "Events",      color: "#db2777" },
+];
+
+function toggleLayer(filters: Filters, type: ListingType): Filters {
+  const hidden = filters.hiddenLayers ?? [];
+  const isHidden = hidden.includes(type);
+  return {
+    ...filters,
+    hiddenLayers: isHidden ? hidden.filter((t) => t !== type) : [...hidden, type],
+  };
+}
 
 export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, onChange, isOpen = false, onClose }: Props) {
   const isMobile = useIsMobile();
@@ -72,6 +91,30 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           </span>
         )}
       </button>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Layers</p>
+        <div className="flex flex-wrap gap-1.5">
+          {LAYER_CONFIG.map(({ type, label, color }) => {
+            const hidden = (filters.hiddenLayers ?? []).includes(type);
+            return (
+              <button
+                key={type}
+                type="button"
+                aria-pressed={!hidden}
+                className="rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all"
+                style={
+                  hidden
+                    ? { borderColor: color, color, backgroundColor: "transparent" }
+                    : { borderColor: color, backgroundColor: color, color: "#fff" }
+                }
+                onClick={() => onChange(toggleLayer(filters, type))}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <label className="label">
         Region
         <select

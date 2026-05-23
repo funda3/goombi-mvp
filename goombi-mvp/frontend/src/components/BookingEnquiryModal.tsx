@@ -234,7 +234,7 @@ export function BookingEnquiryModal({ listing, onClose }: Props) {
                     className="field"
                     type="number"
                     min={1}
-                    max={listing.max_guests}
+                    max={listing.max_guests ?? undefined}
                     value={form.guests}
                     onChange={(e) => set("guests", Number(e.target.value))}
                     onBlur={() => blur("guests")}

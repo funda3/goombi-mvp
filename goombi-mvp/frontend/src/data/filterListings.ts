@@ -1,4 +1,4 @@
-import type { Filters, Listing } from "../types/listing";
+import { getListingType, type Filters, type Listing } from "../types/listing";
 
 export const defaultFilters: Filters = {
   region: "all",
@@ -10,6 +10,7 @@ export const defaultFilters: Filters = {
   minGuests: 1,
   verifiedOnly: false,
   favouritesOnly: false,
+  hiddenLayers: [],
 };
 
 export function filterListings(listings: Listing[], filters: Filters): Listing[] {
@@ -24,8 +25,21 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const matchesPrice =
       isWorkspace ||
       (listing.price_per_night >= filters.minPrice && listing.price_per_night <= filters.maxPrice);
-    const matchesGuests = isWorkspace || listing.max_guests >= filters.minGuests;
+    const effectiveType = getListingType(listing);
+    const isStay = effectiveType === "accommodation";
+    const matchesGuests = !isStay || (listing.max_guests != null && listing.max_guests >= filters.minGuests);
     const matchesVerified = !filters.verifiedOnly || listing.verified_status;
-    return matchesRegion && matchesCategory && matchesWorkspaceType && matchesSuburb && matchesPrice && matchesGuests && matchesVerified;
+    const matchesLayer =
+      filters.hiddenLayers.length === 0 || !filters.hiddenLayers.includes(effectiveType);
+    return (
+      matchesRegion &&
+      matchesCategory &&
+      matchesWorkspaceType &&
+      matchesSuburb &&
+      matchesPrice &&
+      matchesGuests &&
+      matchesVerified &&
+      matchesLayer
+    );
   });
 }

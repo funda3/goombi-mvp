@@ -9,11 +9,36 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+ListingTypeLiteral = Literal[
+    "accommodation",
+    "workspace",
+    "tourism_experience",
+    "restaurant",
+    "transport_node",
+    "estate_living_zone",
+    "event_space",
+]
+
+PartnerStatusLiteral = Literal[
+    "seed",
+    "identified",
+    "contacted",
+    "interested",
+    "loi_requested",
+    "loi_signed",
+    "active",
+    "declined",
+]
+
+
 class ListingBase(BaseModel):
     name: str = Field(min_length=2)
     category: Literal["bnb", "guesthouse", "accommodation", "workspace"]
+    # Spatial layer — defaults from category if omitted (migration-safe)
+    listing_type: ListingTypeLiteral | None = None
     accommodation_type: Literal["bnb", "guesthouse"] | None = None
     provider_name: str | None = None
+    provider_type: str | None = None
     workspace_type: Literal[
         "coworking", "meeting_room", "boardroom", "serviced_office", "virtual_office"
     ] | None = None
@@ -24,25 +49,68 @@ class ListingBase(BaseModel):
     latitude: float
     longitude: float
     price_per_night: int = Field(default=0, ge=0)
-    max_guests: int = Field(default=1, ge=1)
-    rooms: int = Field(default=1, ge=1)
+    # rooms and max_guests are meaningful only for accommodation/workspace records;
+    # non-stay listing types (restaurant, transport_node, etc.) may have null.
+    max_guests: int | None = None
+    rooms: int | None = None
     description: str
+    short_description: str | None = None
+    long_description: str | None = None
     amenities: list[str] = Field(default_factory=list)
     photos: list[str] = Field(default_factory=list)
+    images: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
     owner_name: str = ""
     owner_phone: str = ""
+    contact_email: str | None = None
+    contact_phone: str | None = None
+    website_url: str | None = None
+    whatsapp_url: str | None = None
     pricing_status: Literal["public_price", "not_publicly_available"] | None = None
     price_amount: float | None = Field(default=None, ge=0)
     price_unit: str | None = None
+    price_from: float | None = Field(default=None, ge=0)
+    price_to: float | None = Field(default=None, ge=0)
     capacity: int | None = Field(default=None, ge=1)
     booking_url: str | None = None
     source_url: str | None = None
     source_note: str | None = None
+    featured: bool = False
     verified_status: bool = False
+    partner_status: PartnerStatusLiteral = "seed"
+    diaspora_relevant: bool = False
+    luxury_relevant: bool = False
+    business_travel_relevant: bool = False
+    relocation_relevant: bool = False
+    township_tourism_relevant: bool = False
+    # Estate Living fields (discovery only — no transactional fields)
+    estate_type: str | None = None
+    lifestyle_summary: str | None = None
+    long_stay_relevant: bool = False
     source_type: Literal["manual_seed"] = "manual_seed"
 
     @model_validator(mode="after")
-    def validate_workspace_source(self):
+    def _validate_and_set_defaults(self):
+        # Default listing_type from category when not explicitly provided
+        if self.listing_type is None:
+            self.listing_type = "workspace" if self.category == "workspace" else "accommodation"
+
+        _stay_types = {"accommodation", "workspace"}
+
+        if self.listing_type in _stay_types:
+            # Accommodation / workspace: ensure positive values (normalise legacy 0s)
+            if self.rooms is None or self.rooms < 1:
+                self.rooms = 1
+            if self.max_guests is None or self.max_guests < 1:
+                self.max_guests = 1
+        else:
+            # Non-stay layers: coerce 0 → null; null is fine
+            if self.rooms is not None and self.rooms < 1:
+                self.rooms = None
+            if self.max_guests is not None and self.max_guests < 1:
+                self.max_guests = None
+
+        # Workspace records require specific provenance fields (preserved from original)
         if self.category == "workspace":
             required = {
                 "provider_name": self.provider_name,
@@ -54,6 +122,7 @@ class ListingBase(BaseModel):
             missing = [field for field, value in required.items() if not value]
             if missing:
                 raise ValueError(f"Workspace records require: {', '.join(missing)}")
+
         return self
 
 
