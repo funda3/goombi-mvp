@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgeCheck, Heart, MapPin, Users, X } from "lucide-react";
 
+import { useIsMobile } from "../hooks/useIsMobile";
 import { displayCategory, isWorkspace, type Listing } from "../types/listing";
 import { BookingEnquiryModal } from "./BookingEnquiryModal";
 import { EnquiryFlow } from "./EnquiryFlow";
@@ -20,24 +21,33 @@ type Props = {
 };
 
 export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onShowOnMap, onOpenPlanner, isFavourite, onToggleFavourite }: Props) {
+  const isMobile = useIsMobile();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
-  if (!listing) return null;
 
-  return (
-    <aside className="pointer-events-auto flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-[25rem]">
-      <div className="flex justify-end gap-2">
-        {onToggleFavourite && (
-          <button
-            aria-label={isFavourite ? "Remove from favourites" : "Save to favourites"}
-            className="secondary-button h-9 w-9 p-0"
-            type="button"
-            onClick={() => onToggleFavourite(listing.id)}
-          >
-            <Heart className={`h-4 w-4 transition-colors ${isFavourite ? "fill-rose-500 text-rose-500" : ""}`} />
-          </button>
-        )}
-        <button aria-label="Close detail" className="secondary-button h-9 w-9 p-0" type="button" onClick={onClose}><X className="h-4 w-4" /></button>
-      </div>
+  useEffect(() => {
+    setEnquiryOpen(false);
+  }, [listing?.id]);
+
+  const actionButtons = (
+    <div className="flex justify-end gap-2">
+      {onToggleFavourite && listing && (
+        <button
+          aria-label={isFavourite ? "Remove from favourites" : "Save to favourites"}
+          className="secondary-button h-9 w-9 p-0"
+          type="button"
+          onClick={() => onToggleFavourite(listing.id)}
+        >
+          <Heart className={`h-4 w-4 transition-colors ${isFavourite ? "fill-rose-500 text-rose-500" : ""}`} />
+        </button>
+      )}
+      <button aria-label="Close detail" className="secondary-button h-9 w-9 p-0" type="button" onClick={onClose}>
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+
+  const body = listing ? (
+    <>
       <div className="mt-3">
         <PhotoCarousel key={listing.id} listing={listing} />
       </div>
@@ -46,7 +56,11 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
           <p className="text-xs font-bold uppercase text-emerald-700">{displayCategory(listing)}</p>
           <h2 className="mt-1 text-2xl font-semibold text-slate-950">{listing.name}</h2>
         </div>
-        {listing.verified_status && <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 px-2 py-1 text-xs font-bold text-teal-800"><BadgeCheck className="h-4 w-4" />Verified</span>}
+        {listing.verified_status && (
+          <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 px-2 py-1 text-xs font-bold text-teal-800">
+            <BadgeCheck className="h-4 w-4" />Verified
+          </span>
+        )}
       </div>
       {isWorkspace(listing) ? (
         <div className="mt-4 grid gap-2 text-sm text-slate-700">
@@ -69,7 +83,9 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       )}
       <p className="mt-4 text-sm leading-6 text-slate-700">{listing.description}</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        {listing.amenities.map((amenity) => <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700" key={amenity}>{amenity}</span>)}
+        {listing.amenities.map((amenity) => (
+          <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700" key={amenity}>{amenity}</span>
+        ))}
       </div>
       {isWorkspace(listing) ? (
         <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 text-sm text-slate-700">
@@ -79,7 +95,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
           {listing.booking_url && <a className="primary-button" href={listing.booking_url} rel="noreferrer" target="_blank">Open booking page</a>}
           <button
             type="button"
-            className="w-full rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 transition"
+            className="w-full rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-50"
             onClick={() => setEnquiryOpen(true)}
           >
             Send Enquiry
@@ -103,6 +119,30 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       {enquiryOpen && (
         <BookingEnquiryModal listing={listing} onClose={() => setEnquiryOpen(false)} />
       )}
+    </>
+  ) : null;
+
+  if (isMobile) {
+    return (
+      <aside
+        aria-label="Listing detail"
+        className={`fixed inset-x-0 bottom-0 z-40 flex flex-col h-[60vh] rounded-t-2xl bg-white/95 shadow-[0_-4px_32px_rgba(0,0,0,0.15)] backdrop-blur transition-transform duration-300 ease-out ${listing ? "translate-y-0 pointer-events-auto" : "translate-y-full pointer-events-none"}`}
+      >
+        <div className="flex shrink-0 justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-slate-200" />
+        </div>
+        <div className="shrink-0 px-4 pb-1">{actionButtons}</div>
+        <div className="flex-1 overflow-y-auto px-4 pb-6">{body}</div>
+      </aside>
+    );
+  }
+
+  if (!listing) return null;
+
+  return (
+    <aside className="pointer-events-auto flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-[25rem]">
+      {actionButtons}
+      {body}
     </aside>
   );
 }

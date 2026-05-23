@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Building2, MapPinned } from "lucide-react";
+import { Building2, MapPinned, SlidersHorizontal } from "lucide-react";
 
 import { BottomPanel } from "../components/BottomPanel";
 import { FilterPanel } from "../components/FilterPanel";
@@ -21,6 +21,7 @@ export function HomePage() {
   const [selected, setSelected] = useState<Listing>();
   const [serviceMarker, setServiceMarker] = useState<ServiceMarker | null>(null);
   const [plannerOpen, setPlannerOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [flyTo, setFlyTo] = useState<FlyTo | null>(null);
@@ -60,17 +61,40 @@ export function HomePage() {
 
   return (
     <>
-      <nav className="fixed left-4 right-4 top-4 z-30 flex items-center gap-3 rounded-lg border border-white/70 bg-white/95 px-2 py-1 shadow-panel backdrop-blur">
-        <div className="flex shrink-0 gap-1">
-          <a className="nav-link nav-link-active" href="/" title="Map discovery">
-            <MapPinned className="h-4 w-4" />Map
-          </a>
-          <a className="nav-link" href="/admin" title="Admin listings">
-            <Building2 className="h-4 w-4" />Admin
-          </a>
-        </div>
-        <div className="flex flex-1 justify-center">
+      <nav className="fixed left-4 right-4 top-4 z-30 rounded-lg border border-white/70 bg-white/95 shadow-panel backdrop-blur">
+        {/* Mobile: two-row layout */}
+        <div className="flex flex-col gap-1.5 p-1.5 md:hidden">
+          <div className="flex items-center gap-1">
+            <a className="nav-link nav-link-active" href="/" title="Map discovery">
+              <MapPinned className="h-4 w-4" />Map
+            </a>
+            <a className="nav-link" href="/admin" title="Admin listings">
+              <Building2 className="h-4 w-4" />Admin
+            </a>
+            <button
+              type="button"
+              className="ml-auto flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              onClick={() => setFilterOpen(true)}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Filters
+            </button>
+          </div>
           <SearchBar listings={listings} mapCenter={mapCenter} onResultSelect={handleResultSelect} />
+        </div>
+        {/* Desktop: single-row layout */}
+        <div className="hidden md:flex md:items-center md:gap-3 md:px-2 md:py-1">
+          <div className="flex shrink-0 gap-1">
+            <a className="nav-link nav-link-active" href="/" title="Map discovery">
+              <MapPinned className="h-4 w-4" />Map
+            </a>
+            <a className="nav-link" href="/admin" title="Admin listings">
+              <Building2 className="h-4 w-4" />Admin
+            </a>
+          </div>
+          <div className="flex flex-1 justify-center">
+            <SearchBar listings={listings} mapCenter={mapCenter} onResultSelect={handleResultSelect} />
+          </div>
         </div>
       </nav>
       <main className="relative h-screen w-full overflow-hidden">
@@ -78,7 +102,15 @@ export function HomePage() {
           <MapCanvas listings={displayedListings} selectedId={selected?.id} onSelect={selectListing} serviceMarker={serviceMarker} region={filters.region} flyTo={flyTo} />
         </div>
         <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between gap-4 p-4 pt-16 md:flex-row md:items-start">
-          <FilterPanel filters={filters} suburbs={suburbs} resultCount={displayedListings.length} favouriteCount={favouriteCount} onChange={setFilters} />
+          <FilterPanel
+            filters={filters}
+            suburbs={suburbs}
+            resultCount={displayedListings.length}
+            favouriteCount={favouriteCount}
+            onChange={setFilters}
+            isOpen={filterOpen}
+            onClose={() => setFilterOpen(false)}
+          />
           <ListingDetailDrawer
             listing={selected}
             allListings={listings}
@@ -115,4 +147,3 @@ export function HomePage() {
     </>
   );
 }
-

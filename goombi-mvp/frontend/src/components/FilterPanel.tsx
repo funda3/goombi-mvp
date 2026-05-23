@@ -1,5 +1,6 @@
-import { Heart, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Heart, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 
+import { useIsMobile } from "../hooks/useIsMobile";
 import type { Filters } from "../types/listing";
 
 type Props = {
@@ -8,6 +9,8 @@ type Props = {
   resultCount: number;
   favouriteCount?: number;
   onChange: (filters: Filters) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 };
 
 const REGION_LABELS: Record<string, string> = {
@@ -17,17 +20,39 @@ const REGION_LABELS: Record<string, string> = {
   "KwaZulu-Natal": "KwaZulu-Natal",
 };
 
-export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, onChange }: Props) {
-  return (
-    <aside className="pointer-events-auto flex max-h-[calc(100vh-7rem)] w-full flex-col gap-5 overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-80">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase text-emerald-700">Goombi</p>
-          <h1 className="mt-1 text-xl font-semibold text-slate-950">{REGION_LABELS[filters.region] ?? "South Africa"}</h1>
-          <p className="mt-1 text-sm text-slate-600">{resultCount} results</p>
+export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, onChange, isOpen = false, onClose }: Props) {
+  const isMobile = useIsMobile();
+
+  if (isMobile && !isOpen) return null;
+
+  const panelContent = (
+    <>
+      {isMobile && (
+        <div className="flex shrink-0 items-center justify-between pb-2">
+          <h2 className="text-base font-semibold text-slate-950">Filters</h2>
+          <button
+            aria-label="Close filters"
+            className="secondary-button h-9 w-9 p-0"
+            type="button"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        <SlidersHorizontal className="mt-1 h-5 w-5 text-slate-500" />
-      </div>
+      )}
+      {!isMobile && (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase text-emerald-700">Goombi</p>
+            <h1 className="mt-1 text-xl font-semibold text-slate-950">{REGION_LABELS[filters.region] ?? "South Africa"}</h1>
+            <p className="mt-1 text-sm text-slate-600">{resultCount} results</p>
+          </div>
+          <SlidersHorizontal className="mt-1 h-5 w-5 text-slate-500" />
+        </div>
+      )}
+      {isMobile && (
+        <p className="text-sm text-slate-500">{resultCount} results</p>
+      )}
       <button
         type="button"
         className={`flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition ${
@@ -142,6 +167,27 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
       <p className="rounded-md bg-amber-50 p-3 text-xs leading-5 text-amber-950">
         Demo data only. Coordinates and owners are synthetic manual seeds for the MVP.
       </p>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          aria-hidden="true"
+          onClick={onClose}
+        />
+        <aside className="pointer-events-auto fixed inset-x-0 bottom-0 z-50 flex flex-col gap-5 overflow-y-auto rounded-t-2xl bg-white/95 p-5 shadow-panel h-[80vh]">
+          {panelContent}
+        </aside>
+      </>
+    );
+  }
+
+  return (
+    <aside className="pointer-events-auto flex max-h-[calc(100vh-7rem)] w-full flex-col gap-5 overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-80">
+      {panelContent}
     </aside>
   );
 }

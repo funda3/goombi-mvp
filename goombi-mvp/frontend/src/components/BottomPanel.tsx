@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { MapPin, X } from "lucide-react";
 
+import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchNearbyServices } from "../services/overpass";
 import type { Listing } from "../types/listing";
 import type { ServiceGroup } from "../types/services";
 import { ServiceCard } from "./ServiceCard";
-
-const JHB = { lat: -26.1076, lon: 28.0567 };
 
 type Props = {
   selected?: Listing;
@@ -13,6 +13,8 @@ type Props = {
 };
 
 export function BottomPanel({ selected, onShowOnMap }: Props) {
+  const isMobile = useIsMobile();
+  const [mobileExpanded, setMobileExpanded] = useState(false);
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
@@ -21,6 +23,10 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
   const coordKey = selected
     ? `${selected.latitude.toFixed(4)},${selected.longitude.toFixed(4)}`
     : null;
+
+  useEffect(() => {
+    setMobileExpanded(false);
+  }, [selected?.id]);
 
   useEffect(() => {
     if (!selected) return;
@@ -39,44 +45,83 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
 
   const hasServiceResults = serviceGroups.some((g) => g.nearest !== null);
 
-  return (
-    <section className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto rounded-lg border border-white/70 bg-white/95 shadow-panel md:bottom-4 md:left-[22rem] md:right-[27rem]">
-      {/* Header */}
-      <div className="px-3 pt-2.5 pb-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
-      </div>
+  const serviceContent = (
+    <div className="px-3 pb-3">
+      {!selected && (
+        <p className="py-2 text-sm text-slate-500">Select a listing on the map to see nearby services.</p>
+      )}
+      {selected && servicesLoading && (
+        <p className="py-2 text-sm text-slate-500">Fetching services from OpenStreetMap…</p>
+      )}
+      {selected && servicesError && (
+        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{servicesError}</p>
+      )}
+      {selected && !servicesLoading && !servicesError && hasServiceResults && (
+        <>
+          <p className="mb-2 text-xs text-slate-400">Near {selected.name} · within 5 km</p>
+          <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto">
+            {serviceGroups
+              .filter((g) => g.nearest !== null)
+              .map((g) => (
+                <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} />
+              ))}
+          </div>
+        </>
+      )}
+      {selected && !servicesLoading && !servicesError && serviceGroups.length > 0 && !hasServiceResults && (
+        <p className="py-2 text-sm text-slate-500">No services found within 5 km.</p>
+      )}
+    </div>
+  );
 
-      {/* Content */}
-      <div className="px-3 pb-3">
-        {!selected && (
-          <p className="py-2 text-sm text-slate-500">Select a listing on the map to see nearby services.</p>
-        )}
+  if (isMobile) {
+    if (!selected) return null;
 
-        {selected && servicesLoading && (
-          <p className="py-2 text-sm text-slate-500">Fetching services from OpenStreetMap…</p>
-        )}
-
-        {selected && servicesError && (
-          <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{servicesError}</p>
-        )}
-
-        {selected && !servicesLoading && !servicesError && hasServiceResults && (
+    return (
+      <>
+        {mobileExpanded && (
           <>
-            <p className="mb-2 text-xs text-slate-400">Near {selected.name} · within 5 km</p>
-            <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto">
-              {serviceGroups
-                .filter((g) => g.nearest !== null)
-                .map((g) => (
-                  <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} />
-                ))}
+            <div
+              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+              onClick={() => setMobileExpanded(false)}
+            />
+            <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-2xl bg-white/95 shadow-panel backdrop-blur h-[70vh]">
+              <div className="flex shrink-0 items-center justify-between px-3 pb-2 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
+                <button
+                  type="button"
+                  aria-label="Close nearby services"
+                  className="secondary-button h-8 w-8 p-0"
+                  onClick={() => setMobileExpanded(false)}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">{serviceContent}</div>
             </div>
           </>
         )}
-
-        {selected && !servicesLoading && !servicesError && serviceGroups.length > 0 && !hasServiceResults && (
-          <p className="py-2 text-sm text-slate-500">No services found within 5 km.</p>
+        {!mobileExpanded && (
+          <button
+            type="button"
+            className="pointer-events-auto fixed left-4 z-[25] flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-slate-700 shadow-panel backdrop-blur"
+            style={{ bottom: "calc(60vh + 1rem)" }}
+            onClick={() => setMobileExpanded(true)}
+          >
+            <MapPin className="h-3.5 w-3.5 text-emerald-700" />
+            Nearby
+          </button>
         )}
+      </>
+    );
+  }
+
+  return (
+    <section className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto rounded-lg border border-white/70 bg-white/95 shadow-panel md:left-[22rem]">
+      <div className="px-3 pt-2.5 pb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
       </div>
+      {serviceContent}
     </section>
   );
 }
