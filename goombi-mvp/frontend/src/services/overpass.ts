@@ -58,9 +58,10 @@ function classifyElement(tags: Record<string, string>): ServiceCategory | null {
 }
 
 function buildOverpassQuery(lat: number, lon: number, radiusM: number): string {
-  const around = `around:${radiusM},${lat},${lon}`;
   const lines: string[] = [];
-  for (const def of Object.values(SERVICE_DEFS)) {
+  for (const [cat, def] of Object.entries(SERVICE_DEFS)) {
+    const r = cat === "restaurant" ? 10000 : radiusM;
+    const around = `around:${r},${lat},${lon}`;
     for (const filter of def.filters) {
       const tags = Object.entries(filter).map(([k, v]) => `["${k}"="${v}"]`).join("");
       lines.push(`  node${tags}(${around});`);
