@@ -6,12 +6,15 @@ import type { Map as LeafletMapInstance } from "leaflet";
 import { isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
+export type FlyTo = { lat: number; lng: number; zoom: number };
+
 type Props = {
   listings: Listing[];
   selectedId?: string;
   onSelect: (listing: Listing) => void;
   serviceMarker?: ServiceMarker | null;
   centerRegion?: string;
+  flyTo?: FlyTo | null;
 };
 
 const JHB_CENTER: [number, number] = [-26.1076, 28.0567];
@@ -30,8 +33,13 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapIn
   return null;
 }
 
-export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, centerRegion }: Props) {
+export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, centerRegion, flyTo }: Props) {
   const mapRef = useRef<LeafletMapInstance | null>(null);
+
+  useEffect(() => {
+    if (!flyTo || !mapRef.current) return;
+    mapRef.current.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom, { animate: true, duration: 1.2 });
+  }, [flyTo]);
 
   useEffect(() => {
     if (!mapRef.current || !centerRegion || centerRegion === "all") return;

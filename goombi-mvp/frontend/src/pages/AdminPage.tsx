@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { FileUp, Pencil, Plus, Trash2 } from "lucide-react";
+import { Building2, FileUp, MapPinned, Pencil, Plus, Trash2 } from "lucide-react";
 import Papa from "papaparse";
 
 import { api } from "../services/api";
@@ -149,6 +149,15 @@ export function AdminPage() {
   }
 
   return (
+    <>
+      <nav className="fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-white/70 bg-white/95 p-1 shadow-panel backdrop-blur">
+        <a className="nav-link" href="/" title="Map discovery">
+          <MapPinned className="h-4 w-4" />Map
+        </a>
+        <a className="nav-link nav-link-active" href="/admin" title="Admin listings">
+          <Building2 className="h-4 w-4" />Admin
+        </a>
+      </nav>
     <main className="min-h-screen bg-[#e7f1ec] px-4 pb-10 pt-24 text-slate-950 lg:px-8">
       {/* Enquiry stats card */}
       <div className="mx-auto mb-6 max-w-7xl rounded-lg border border-emerald-100 bg-white p-5 shadow-panel">
@@ -265,5 +274,6 @@ export function AdminPage() {
         </section>
       </div>
     </main>
+    </>
   );
 }

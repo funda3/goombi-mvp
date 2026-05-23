@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
-import { LeafletMap } from "./LeafletMap";
+import { LeafletMap, type FlyTo } from "./LeafletMap";
 import { MockMap } from "./MockMap";
 
 type Props = {
@@ -11,6 +11,7 @@ type Props = {
   onSelect: (listing: Listing) => void;
   serviceMarker?: ServiceMarker | null;
   region?: string;
+  flyTo?: FlyTo | null;
 };
 
 type GoogleState = "idle" | "loading" | "ready" | "failed";
@@ -113,7 +114,7 @@ function GoogleCircleMap({ listings, selectedId, onSelect, serviceMarker }: Prop
   return <div className="h-full w-full" ref={targetRef} />;
 }
 
-export function MapCanvas(props: Props) {
+export function MapCanvas({ listings, selectedId, onSelect, serviceMarker, region, flyTo }: Props) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const [googleState, setGoogleState] = useState<GoogleState>(apiKey ? "loading" : "idle");
 
@@ -122,9 +123,13 @@ export function MapCanvas(props: Props) {
     loadGoogleMaps(apiKey).then(() => setGoogleState("ready")).catch(() => setGoogleState("failed"));
   }, [apiKey]);
 
-  if (googleState === "ready") return <GoogleCircleMap {...props} />;
+  if (googleState === "ready") {
+    return <GoogleCircleMap listings={listings} selectedId={selectedId} onSelect={onSelect} serviceMarker={serviceMarker} />;
+  }
   if (googleState === "loading") {
     return <div className="grid min-h-screen place-items-center bg-emerald-50 text-slate-700">Loading map…</div>;
   }
-  return import.meta.env.VITE_MAP_MODE === "mock" ? <MockMap {...props} /> : <LeafletMap {...props} centerRegion={props.region} />;
+  return import.meta.env.VITE_MAP_MODE === "mock"
+    ? <MockMap listings={listings} selectedId={selectedId} onSelect={onSelect} serviceMarker={serviceMarker} region={region} />
+    : <LeafletMap listings={listings} selectedId={selectedId} onSelect={onSelect} serviceMarker={serviceMarker} centerRegion={region} flyTo={flyTo} />;
 }
