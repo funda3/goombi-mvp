@@ -43,9 +43,19 @@ Goombi includes an Estates discovery layer for estate-living environments. These
 - Izinga Estate
 - Kindlewood Estate
 
-**Gauteng (existing seed)**
+**Gauteng**
 - Waterfall Estate
 - Steyn City
+- Dainfern Golf Estate
+- Woodhill Golf Estate
+- Silver Lakes Golf Estate
+- Mooikloof Residential Estate
+- Blair Atholl Golf & Equestrian Estate
+- Helderfontein Estate
+- Eagle Canyon Golf Estate
+- Kyalami Estate
+- Irene Farm Villages
+- Thatchfield Golf Estate
 
 ## Project layout
 
@@ -132,12 +142,12 @@ Old seed records without `listing_type` migrate silently — the backend model v
 ## Tests
 
 ```powershell
-# Backend (10 tests)
+# Backend (52 tests)
 cd backend; python -m pytest -v
 ```
 
 ```powershell
-# Frontend (21 tests)
+# Frontend (58 tests)
 cd frontend; npm test -- --run
 ```
 

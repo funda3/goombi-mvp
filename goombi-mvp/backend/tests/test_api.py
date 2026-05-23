@@ -266,6 +266,83 @@ def test_seed_has_no_relocation_zone(tmp_path):
     assert len(relocation) == 0
 
 
+# ── GMB-01H: Gauteng estate marker batch ─────────────────────────────────────
+
+def test_seed_has_at_least_25_estate_living_zones(tmp_path):
+    """After GMB-01H there must be at least 25 estate_living_zone records (WC+KZN+GP)."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
+    assert len(estates) >= 25, f"Expected >=25 estates, got {len(estates)}"
+
+
+def test_seed_has_gauteng_estates(tmp_path):
+    """Seed must include at least one Gauteng estate_living_zone."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    gp = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"]
+    assert len(gp) >= 1, "Expected Gauteng estates, found none"
+
+
+def test_seed_has_at_least_10_gauteng_estates(tmp_path):
+    """After GMB-01H there must be at least 10 Gauteng estate_living_zone records."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    gp = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"]
+    assert len(gp) >= 10, f"Expected >=10 Gauteng estates, got {len(gp)}"
+
+
+def test_waterfall_estate_has_no_demo_suffix(tmp_path):
+    """Waterfall Estate seed record must not have 'Demo' in its name after GMB-01H."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    found = [r for r in data if r.get("id") == "demo-estate-waterfall-01"]
+    assert len(found) == 1
+    assert "Demo" not in found[0]["name"], f"Waterfall record still has 'Demo' in name: {found[0]['name']}"
+
+
+def test_steyn_city_has_no_demo_suffix(tmp_path):
+    """Steyn City seed record must not have 'Demo' in its name after GMB-01H."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    found = [r for r in data if r.get("id") == "demo-estate-steyncity-01"]
+    assert len(found) == 1
+    assert "Demo" not in found[0]["name"], f"Steyn City record still has 'Demo' in name: {found[0]['name']}"
+
+
+def test_dainfern_golf_estate_exists_in_seed(tmp_path):
+    """Dainfern Golf Estate must be present in seed data after GMB-01H."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    found = [r for r in data if "Dainfern" in r.get("name", "")]
+    assert len(found) >= 1, "Dainfern Golf Estate not found in seed"
+
+
+def test_gauteng_estate_records_have_valid_coordinates(tmp_path):
+    """All Gauteng estate_living_zone records must have coordinates within Gauteng's bounding box."""
+    # Gauteng rough bounding box: lat -26.7 to -25.2, lng 27.5 to 29.2
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    gp_estates = [
+        r for r in data
+        if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"
+    ]
+    assert len(gp_estates) > 0
+    for estate in gp_estates:
+        lat = estate.get("latitude")
+        lng = estate.get("longitude")
+        assert lat is not None and lng is not None, f"{estate['name']} missing coordinates"
+        assert -26.8 <= lat <= -25.1, f"{estate['name']} latitude {lat} outside Gauteng bounds"
+        assert 27.4 <= lng <= 29.3, f"{estate['name']} longitude {lng} outside Gauteng bounds"
+
+
+def test_gauteng_estate_discovery_only_fields(tmp_path):
+    """All Gauteng estate records must have null rooms, null max_guests, and partner_status=seed."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    gp_estates = [
+        r for r in data
+        if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"
+    ]
+    assert len(gp_estates) > 0
+    for estate in gp_estates:
+        assert estate.get("rooms") is None, f"{estate['name']} has non-null rooms"
+        assert estate.get("max_guests") is None, f"{estate['name']} has non-null max_guests"
+        assert estate.get("partner_status") == "seed", f"{estate['name']} partner_status is not 'seed'"
+
+
 def test_non_accommodation_with_null_rooms_validates(tmp_path):
     """Non-accommodation records with rooms=null and max_guests=null validate successfully."""
     api = client(tmp_path)
