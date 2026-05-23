@@ -20,6 +20,33 @@ Goombi currently supports 7 discovery layers:
 
 > **Scope note:** Goombi does not provide generic relocation advisory, generic property discovery, property sales, rental listings, business-hub intelligence, estate tours, purchase-interest workflows, mortgage workflows, or investment advice. Estate Living is a discovery-only layer for estate-living environments shown on the map. Users seeking property listings, relocation advisory, or investment services should use dedicated platforms.
 
+Goombi includes an Estates discovery layer for estate-living environments. These are map markers for lifestyle discovery only. Goombi does not provide property sales, rentals, estate tours, viewing bookings, mortgage services, investment advice, or relocation advisory services.
+
+### Current estate marker batch
+
+**Western Cape**
+- Val de Vie Estate
+- Pearl Valley on Val de Vie Estate
+- Clara Anna Fontein Lifestyle Estate
+- Sitari Country Estate
+- Atlantic Beach Estate
+- De Zalze Winelands Golf Estate
+- Steenberg Estate
+- Arabella Country Estate
+
+**KwaZulu-Natal**
+- Zimbali Estate
+- Mount Edgecombe Country Club Estate
+- Simbithi Eco Estate
+- Brettenwood Coastal Estate
+- Cotswold Downs Golf & Country Estate
+- Izinga Estate
+- Kindlewood Estate
+
+**Gauteng (existing seed)**
+- Waterfall Estate
+- Steyn City
+
 ## Project layout
 
 ```

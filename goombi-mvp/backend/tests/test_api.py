@@ -198,6 +198,67 @@ def test_seed_contains_estate_living_zone(tmp_path):
     assert len(estates) >= 1
 
 
+# ── GMB-01G: estate marker batch ──────────────────────────────────────────────
+
+def test_seed_has_at_least_15_estate_living_zones(tmp_path):
+    """After GMB-01G there must be at least 15 estate_living_zone records."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
+    assert len(estates) >= 15, f"Expected >=15 estates, got {len(estates)}"
+
+
+def test_seed_has_western_cape_estates(tmp_path):
+    """Seed must include at least one Western Cape estate_living_zone."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    wc = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Western Cape"]
+    assert len(wc) >= 1, f"Expected Western Cape estates, found none"
+
+
+def test_seed_has_kzn_estates(tmp_path):
+    """Seed must include at least one KwaZulu-Natal estate_living_zone."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    kzn = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "KwaZulu-Natal"]
+    assert len(kzn) >= 1, f"Expected KwaZulu-Natal estates, found none"
+
+
+def test_val_de_vie_estate_exists_in_seed(tmp_path):
+    """Val de Vie Estate must be present in seed data."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    found = [r for r in data if "Val de Vie Estate" in r.get("name", "")]
+    assert len(found) >= 1, "Val de Vie Estate not found in seed"
+
+
+def test_zimbali_estate_exists_in_seed(tmp_path):
+    """Zimbali Estate must be present in seed data."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    found = [r for r in data if "Zimbali" in r.get("name", "")]
+    assert len(found) >= 1, "Zimbali Estate not found in seed"
+
+
+def test_estate_records_have_null_rooms(tmp_path):
+    """All estate_living_zone records must have null rooms and max_guests."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
+    assert len(estates) > 0
+    for estate in estates:
+        assert estate.get("rooms") is None, f"{estate['name']} has non-null rooms"
+        assert estate.get("max_guests") is None, f"{estate['name']} has non-null max_guests"
+
+
+def test_estate_records_have_valid_coordinates(tmp_path):
+    """Estate records must have coordinates within the South Africa bounding box."""
+    # SA rough bounding box: lat -35 to -22, lng 16 to 33
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
+    assert len(estates) > 0
+    for estate in estates:
+        lat = estate.get("latitude")
+        lng = estate.get("longitude")
+        assert lat is not None and lng is not None, f"{estate['name']} missing coordinates"
+        assert -35.0 <= lat <= -22.0, f"{estate['name']} latitude {lat} outside SA bounds"
+        assert 16.0 <= lng <= 33.0, f"{estate['name']} longitude {lng} outside SA bounds"
+
+
 def test_seed_has_no_relocation_zone(tmp_path):
     """Seed data must contain zero relocation_zone records after GMB-01F."""
     data = _seed_client(tmp_path).get("/api/listings").json()

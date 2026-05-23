@@ -152,6 +152,47 @@ test("estate_living_zone: does not show relocation-specific header", () => {
   expect(screen.queryByText(/relocation summary/i)).not.toBeInTheDocument();
 });
 
+test("estate_living_zone: shows category label as Estate Living", () => {
+  renderDrawer({
+    ...base,
+    listing_type: "estate_living_zone",
+    category: "accommodation",
+    max_guests: null,
+    rooms: null,
+  });
+  // "Estate Living" appears as both category label and layer badge — confirm at least one is present
+  expect(screen.getAllByText("Estate Living").length).toBeGreaterThan(0);
+});
+
+test("estate_living_zone: does not show buy/purchase/tour/viewing language", () => {
+  renderDrawer({
+    ...base,
+    listing_type: "estate_living_zone",
+    category: "accommodation",
+    max_guests: null,
+    rooms: null,
+  });
+  expect(screen.queryByText(/buy property/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/make offer/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/book viewing/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/estate tour/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/request tour/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/investment/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/mortgage/i)).not.toBeInTheDocument();
+});
+
+test("estate_living_zone: shows website button when website_url is set", () => {
+  renderDrawer({
+    ...base,
+    listing_type: "estate_living_zone",
+    category: "accommodation",
+    website_url: "https://www.valdevie.co.za",
+    max_guests: null,
+    rooms: null,
+  });
+  expect(screen.getByText("Open Website")).toBeInTheDocument();
+});
+
 // ── Event space ───────────────────────────────────────────────────────────────
 test("event_space: does not show rooms or guest count", () => {
   renderDrawer({
