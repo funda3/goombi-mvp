@@ -28,6 +28,7 @@ const SA_ZOOM = 5;
 function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapInstance | null> }) {
   const map = useMap();
   useEffect(() => {
+    if (!mapRef.current) map.setView(JHB_CENTER, JHB_ZOOM); // guarantee initial position on first mount
     mapRef.current = map;
   }, [map, mapRef]);
   return null;
