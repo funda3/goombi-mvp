@@ -38,9 +38,10 @@ export default defineConfig({
     }),
   ],
   server: {
+    host: "0.0.0.0",
     port: 5173,
     strictPort: true,
-    open: true,
+    open: false,
   },
   test: {
     environment: "jsdom",
