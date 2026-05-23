@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BadgeCheck, MapPin, Users, X } from "lucide-react";
+import { BadgeCheck, Heart, MapPin, Users, X } from "lucide-react";
 
 import { displayCategory, isWorkspace, type Listing } from "../types/listing";
 import { BookingEnquiryModal } from "./BookingEnquiryModal";
@@ -15,15 +15,27 @@ type Props = {
   onSelect?: (listing: Listing) => void;
   onShowOnMap?: (lat: number, lon: number, label: string) => void;
   onOpenPlanner?: () => void;
+  isFavourite?: boolean;
+  onToggleFavourite?: (id: string) => void;
 };
 
-export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onShowOnMap, onOpenPlanner }: Props) {
+export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onShowOnMap, onOpenPlanner, isFavourite, onToggleFavourite }: Props) {
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   if (!listing) return null;
 
   return (
     <aside className="pointer-events-auto flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-[25rem]">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {onToggleFavourite && (
+          <button
+            aria-label={isFavourite ? "Remove from favourites" : "Save to favourites"}
+            className="secondary-button h-9 w-9 p-0"
+            type="button"
+            onClick={() => onToggleFavourite(listing.id)}
+          >
+            <Heart className={`h-4 w-4 transition-colors ${isFavourite ? "fill-rose-500 text-rose-500" : ""}`} />
+          </button>
+        )}
         <button aria-label="Close detail" className="secondary-button h-9 w-9 p-0" type="button" onClick={onClose}><X className="h-4 w-4" /></button>
       </div>
       <div className="mt-3">

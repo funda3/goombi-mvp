@@ -1,4 +1,4 @@
-import { ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Heart, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 import type { Filters } from "../types/listing";
 
@@ -6,6 +6,7 @@ type Props = {
   filters: Filters;
   suburbs: string[];
   resultCount: number;
+  favouriteCount?: number;
   onChange: (filters: Filters) => void;
 };
 
@@ -16,7 +17,7 @@ const REGION_LABELS: Record<string, string> = {
   "KwaZulu-Natal": "KwaZulu-Natal",
 };
 
-export function FilterPanel({ filters, suburbs, resultCount, onChange }: Props) {
+export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, onChange }: Props) {
   return (
     <aside className="pointer-events-auto flex max-h-[calc(100vh-7rem)] w-full flex-col gap-5 overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-80">
       <div className="flex items-start justify-between gap-3">
@@ -27,6 +28,25 @@ export function FilterPanel({ filters, suburbs, resultCount, onChange }: Props) 
         </div>
         <SlidersHorizontal className="mt-1 h-5 w-5 text-slate-500" />
       </div>
+      <button
+        type="button"
+        className={`flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition ${
+          filters.favouritesOnly
+            ? "border-rose-200 bg-rose-50 text-rose-700"
+            : "border-slate-200 text-slate-600 hover:bg-slate-50"
+        }`}
+        onClick={() => onChange({ ...filters, favouritesOnly: !filters.favouritesOnly })}
+      >
+        <Heart className={`h-4 w-4 shrink-0 transition-colors ${filters.favouritesOnly ? "fill-rose-500 text-rose-500" : ""}`} />
+        <span className="flex-1 text-left">Saved listings</span>
+        {favouriteCount > 0 && (
+          <span className={`rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums ${
+            filters.favouritesOnly ? "bg-rose-200 text-rose-800" : "bg-slate-100 text-slate-600"
+          }`}>
+            {favouriteCount}
+          </span>
+        )}
+      </button>
       <label className="label">
         Region
         <select

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, MapPinned } from "lucide-react";
 
 import { BottomPanel } from "../components/BottomPanel";
@@ -8,6 +8,7 @@ import { ListingDetailDrawer } from "../components/ListingDetailDrawer";
 import { MapCanvas } from "../components/MapCanvas";
 import { SearchBar, type SearchAction } from "../components/SearchBar";
 import { useListingFilters } from "../hooks/useListingFilters";
+import { useFavourites } from "../hooks/useFavourites";
 import { api } from "../services/api";
 import type { Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
@@ -25,6 +26,12 @@ export function HomePage() {
   const [flyTo, setFlyTo] = useState<FlyTo | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(JHB);
   const { filters, setFilters, filteredListings, suburbs } = useListingFilters(listings);
+  const { ids: favouriteIds, isFavourite, toggle: toggleFavourite, count: favouriteCount } = useFavourites();
+
+  const displayedListings = useMemo(
+    () => filters.favouritesOnly ? filteredListings.filter((l) => favouriteIds.has(l.id)) : filteredListings,
+    [filteredListings, filters.favouritesOnly, favouriteIds],
+  );
 
   useEffect(() => {
     api.listings()
@@ -68,10 +75,10 @@ export function HomePage() {
       </nav>
       <main className="relative h-screen w-full overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <MapCanvas listings={filteredListings} selectedId={selected?.id} onSelect={selectListing} serviceMarker={serviceMarker} region={filters.region} flyTo={flyTo} />
+          <MapCanvas listings={displayedListings} selectedId={selected?.id} onSelect={selectListing} serviceMarker={serviceMarker} region={filters.region} flyTo={flyTo} />
         </div>
         <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between gap-4 p-4 pt-16 md:flex-row md:items-start">
-          <FilterPanel filters={filters} suburbs={suburbs} resultCount={filteredListings.length} onChange={setFilters} />
+          <FilterPanel filters={filters} suburbs={suburbs} resultCount={displayedListings.length} favouriteCount={favouriteCount} onChange={setFilters} />
           <ListingDetailDrawer
             listing={selected}
             allListings={listings}
@@ -79,6 +86,8 @@ export function HomePage() {
             onSelect={selectListing}
             onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
             onOpenPlanner={() => setPlannerOpen(true)}
+            isFavourite={selected ? isFavourite(selected.id) : false}
+            onToggleFavourite={toggleFavourite}
           />
         </div>
         <BottomPanel

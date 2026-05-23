@@ -9,6 +9,7 @@ export const defaultFilters: Filters = {
   maxPrice: 2500,
   minGuests: 1,
   verifiedOnly: false,
+  favouritesOnly: false,
 };
 
 export function filterListings(listings: Listing[], filters: Filters): Listing[] {

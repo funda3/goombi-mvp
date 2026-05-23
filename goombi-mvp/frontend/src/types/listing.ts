@@ -78,6 +78,7 @@ export type Filters = {
   maxPrice: number;
   minGuests: number;
   verifiedOnly: boolean;
+  favouritesOnly: boolean;
 };
 
 export function isWorkspace(listing: Listing) {
