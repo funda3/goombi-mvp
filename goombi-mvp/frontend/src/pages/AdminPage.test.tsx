@@ -129,7 +129,7 @@ test("empty state message renders when selected region has no listings", async (
   render(<AdminPage />);
   await waitFor(() => expect(screen.getByText("Gauteng Stay")).toBeInTheDocument());
   fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Western Cape" } });
-  expect(screen.getByText("No listings in Western Cape.")).toBeInTheDocument();
+  expect(screen.getByText("No listings match the selected filters.")).toBeInTheDocument();
 });
 
 test("count label shows total when all regions selected", async () => {
@@ -143,4 +143,97 @@ test("count label shows filtered / total when a region is selected", async () =>
   await waitForTable();
   fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Gauteng" } });
   expect(screen.getByText("1 / 3 listings")).toBeInTheDocument();
+});
+
+// ── GMB-01K: layer filter ─────────────────────────────────────────────────────
+
+test("renders the layer filter dropdown", async () => {
+  setup();
+  await waitForTable();
+  expect(screen.getByRole("combobox", { name: "Layer" })).toBeInTheDocument();
+});
+
+test("layer dropdown has All layers and all 7 layer options", async () => {
+  setup();
+  await waitForTable();
+  const select = screen.getByRole("combobox", { name: "Layer" }) as HTMLSelectElement;
+  expect(select).toHaveDisplayValue("All layers");
+  const values = Array.from(select.options).map((o) => o.value);
+  expect(values).toContain("all");
+  expect(values).toContain("accommodation");
+  expect(values).toContain("workspace");
+  expect(values).toContain("tourism_experience");
+  expect(values).toContain("restaurant");
+  expect(values).toContain("transport_node");
+  expect(values).toContain("estate_living_zone");
+  expect(values).toContain("event_space");
+  expect(select.options).toHaveLength(8); // "all" + 7 types
+});
+
+test("Layer column header renders", async () => {
+  setup();
+  await waitForTable();
+  expect(screen.getByRole("columnheader", { name: "Layer" })).toBeInTheDocument();
+});
+
+test("selecting accommodation layer shows only accommodation listings", async () => {
+  const accomListing = { ...GP_LISTING, id: "accom-1", name: "Accom Stay", listing_type: "accommodation" as const };
+  const estateListing = { ...GP_LISTING, id: "estate-1", name: "Estate Zone", listing_type: "estate_living_zone" as const, max_guests: null, rooms: null };
+  mockListings.mockResolvedValue([accomListing, estateListing]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("Accom Stay")).toBeInTheDocument());
+
+  fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "accommodation" } });
+  expect(screen.getByText("Accom Stay")).toBeInTheDocument();
+  expect(screen.queryByText("Estate Zone")).not.toBeInTheDocument();
+});
+
+test("selecting estate_living_zone layer shows only estate listings", async () => {
+  const accomListing = { ...GP_LISTING, id: "accom-1", name: "Accom Stay", listing_type: "accommodation" as const };
+  const estateListing = { ...GP_LISTING, id: "estate-1", name: "Estate Zone", listing_type: "estate_living_zone" as const, max_guests: null, rooms: null };
+  mockListings.mockResolvedValue([accomListing, estateListing]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("Accom Stay")).toBeInTheDocument());
+
+  fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "estate_living_zone" } });
+  expect(screen.getByText("Estate Zone")).toBeInTheDocument();
+  expect(screen.queryByText("Accom Stay")).not.toBeInTheDocument();
+});
+
+test("layer and region filters combine: only matching listings shown", async () => {
+  const gpEstate = { ...GP_LISTING, id: "gp-estate", name: "GP Estate", province: "Gauteng", listing_type: "estate_living_zone" as const, max_guests: null, rooms: null };
+  const wcEstate = { ...WC_LISTING, id: "wc-estate", name: "WC Estate", province: "Western Cape", listing_type: "estate_living_zone" as const, max_guests: null, rooms: null };
+  const gpStay = { ...GP_LISTING, id: "gp-stay", name: "GP Stay", province: "Gauteng", listing_type: "accommodation" as const };
+  mockListings.mockResolvedValue([gpEstate, wcEstate, gpStay]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("GP Estate")).toBeInTheDocument());
+
+  fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Gauteng" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "estate_living_zone" } });
+
+  expect(screen.getByText("GP Estate")).toBeInTheDocument();
+  expect(screen.queryByText("WC Estate")).not.toBeInTheDocument();
+  expect(screen.queryByText("GP Stay")).not.toBeInTheDocument();
+});
+
+test("empty state renders when layer filter matches no listings", async () => {
+  setup(); // GP, WC, KZN — all accommodation (no listing_type set, defaults to accommodation)
+  await waitForTable();
+  fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "event_space" } });
+  expect(screen.getByText("No listings match the selected filters.")).toBeInTheDocument();
+});
+
+test("count shows filtered / total when layer filter is active", async () => {
+  const accomListing = { ...GP_LISTING, id: "accom-1", name: "Accom Stay", listing_type: "accommodation" as const };
+  const estateListing = { ...GP_LISTING, id: "estate-1", name: "Estate Zone", listing_type: "estate_living_zone" as const, max_guests: null, rooms: null };
+  mockListings.mockResolvedValue([accomListing, estateListing]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("Accom Stay")).toBeInTheDocument());
+
+  fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "accommodation" } });
+  expect(screen.getByText("1 / 2 listings")).toBeInTheDocument();
 });

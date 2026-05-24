@@ -6,11 +6,24 @@ import { api } from "../services/api";
 import {
   ALL_LISTING_TYPES,
   ALL_PARTNER_STATUSES,
+  displayCategory,
+  getListingType,
   isWorkspace,
   type Enquiry,
   type Listing,
   type ListingDraft,
+  type ListingType,
 } from "../types/listing";
+
+const LAYER_LABELS: Record<ListingType, string> = {
+  accommodation: "Stays",
+  workspace: "Workspace",
+  tourism_experience: "Experiences",
+  restaurant: "Eats",
+  transport_node: "Transport",
+  estate_living_zone: "Estates",
+  event_space: "Events",
+};
 
 const emptyDraft: ListingDraft = {
   name: "",
@@ -119,6 +132,7 @@ export function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [regionFilter, setRegionFilter] = useState<RegionOption>("all");
+  const [layerFilter, setLayerFilter] = useState<ListingType | "all">("all");
 
   const refresh = () => api.listings().then(setListings);
 
@@ -133,10 +147,13 @@ export function AdminPage() {
 
   const suburbs = useMemo(() => Array.from(new Set(listings.map((listing) => listing.suburb))).sort(), [listings]);
 
-  const filteredListings = useMemo(
-    () => regionFilter === "all" ? listings : listings.filter((l) => l.province === regionFilter),
-    [listings, regionFilter],
-  );
+  const filteredListings = useMemo(() => {
+    return listings.filter((l) => {
+      const matchesRegion = regionFilter === "all" || l.province === regionFilter;
+      const matchesLayer = layerFilter === "all" || getListingType(l) === layerFilter;
+      return matchesRegion && matchesLayer;
+    });
+  }, [listings, regionFilter, layerFilter]);
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -333,7 +350,7 @@ export function AdminPage() {
                 <h2 className="text-2xl font-semibold">Listings</h2>
                 <p className="mt-1 text-sm text-slate-600">Seed imports accept JSON arrays or CSV rows. Use `|` between CSV amenities or photo URLs.</p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <label className="text-xs font-bold uppercase text-slate-500 sr-only" htmlFor="admin-region-filter">Region</label>
                 <select
                   id="admin-region-filter"
@@ -346,8 +363,20 @@ export function AdminPage() {
                   <option value="Western Cape">Western Cape</option>
                   <option value="KwaZulu-Natal">KwaZulu-Natal</option>
                 </select>
+                <label className="text-xs font-bold uppercase text-slate-500 sr-only" htmlFor="admin-layer-filter">Layer</label>
+                <select
+                  id="admin-layer-filter"
+                  className="field w-40"
+                  value={layerFilter}
+                  onChange={(event) => setLayerFilter(event.target.value as ListingType | "all")}
+                >
+                  <option value="all">All layers</option>
+                  {ALL_LISTING_TYPES.map((t) => (
+                    <option key={t} value={t}>{LAYER_LABELS[t]}</option>
+                  ))}
+                </select>
                 <span className="text-sm text-slate-500 tabular-nums whitespace-nowrap">
-                  {filteredListings.length}{regionFilter !== "all" ? ` / ${listings.length}` : ""} listings
+                  {filteredListings.length}{(regionFilter !== "all" || layerFilter !== "all") ? ` / ${listings.length}` : ""} listings
                 </span>
               </div>
             </div>
@@ -356,18 +385,19 @@ export function AdminPage() {
           {loading && <p className="p-5 text-sm text-slate-600">Loading listings...</p>}
           {!loading && listings.length === 0 && <p className="p-5 text-sm text-slate-600">No listings yet.</p>}
           {!loading && listings.length > 0 && filteredListings.length === 0 && (
-            <p className="p-5 text-sm text-slate-600">No listings in {regionFilter}.</p>
+            <p className="p-5 text-sm text-slate-600">No listings match the selected filters.</p>
           )}
           {!loading && filteredListings.length > 0 && (
             <div className="overflow-auto">
               <table className="min-w-full border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-600">
-                  <tr><th className="p-3">Listing</th><th className="p-3">Province</th><th className="p-3">Suburb</th><th className="p-3">Price</th><th className="p-3">Capacity</th><th className="p-3">Verified</th><th className="p-3">Actions</th></tr>
+                  <tr><th className="p-3">Listing</th><th className="p-3">Layer</th><th className="p-3">Province</th><th className="p-3">Suburb</th><th className="p-3">Price</th><th className="p-3">Capacity</th><th className="p-3">Verified</th><th className="p-3">Actions</th></tr>
                 </thead>
                 <tbody>
                   {filteredListings.map((listing) => (
                     <tr className="border-t border-slate-100" key={listing.id}>
                       <td className="p-3 font-semibold">{listing.name}</td>
+                      <td className="p-3 text-slate-600">{displayCategory(listing)}</td>
                       <td className="p-3 text-slate-600">{listing.province}</td>
                       <td className="p-3">{listing.suburb}</td>
                       <td className="p-3">{isWorkspace(listing) ? listing.pricing_status === "public_price" ? `${listing.price_amount}/${listing.price_unit}` : "Not public" : `R${listing.price_per_night}`}</td>
