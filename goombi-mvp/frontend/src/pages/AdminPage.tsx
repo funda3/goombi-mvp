@@ -134,6 +134,8 @@ export function AdminPage() {
   const [regionFilter, setRegionFilter] = useState<RegionOption>("all");
   const [layerFilter, setLayerFilter] = useState<ListingType | "all">("all");
   const [nameQuery, setNameQuery] = useState("");
+  const [sortKey, setSortKey] = useState<"name" | "layer" | "province" | "price" | "verified">("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const refresh = () => api.listings().then(setListings);
 
@@ -157,6 +159,34 @@ export function AdminPage() {
       return matchesRegion && matchesLayer && matchesName;
     });
   }, [listings, regionFilter, layerFilter, nameQuery]);
+
+  const sortedListings = useMemo(() => {
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...filteredListings].sort((a, b) => {
+      switch (sortKey) {
+        case "name":     return dir * a.name.localeCompare(b.name);
+        case "layer":    return dir * displayCategory(a).localeCompare(displayCategory(b));
+        case "province": return dir * a.province.localeCompare(b.province);
+        case "price":    return dir * (a.price_per_night - b.price_per_night);
+        case "verified": return dir * (Number(b.verified_status) - Number(a.verified_status));
+        default:         return 0;
+      }
+    });
+  }, [filteredListings, sortKey, sortDir]);
+
+  function handleSort(key: typeof sortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  function SortIndicator({ col }: { col: typeof sortKey }) {
+    if (col !== sortKey) return <span className="ml-1 text-slate-300">↕</span>;
+    return <span className="ml-1">{sortDir === "asc" ? "▲" : "▼"}</span>;
+  }
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -403,10 +433,19 @@ export function AdminPage() {
             <div className="overflow-auto">
               <table className="min-w-full border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-600">
-                  <tr><th className="p-3">Listing</th><th className="p-3">Layer</th><th className="p-3">Province</th><th className="p-3">Suburb</th><th className="p-3">Price</th><th className="p-3">Capacity</th><th className="p-3">Verified</th><th className="p-3">Actions</th></tr>
+                  <tr>
+                    <th className="p-3"><button className="flex items-center hover:text-slate-900" type="button" onClick={() => handleSort("name")}>Listing<SortIndicator col="name" /></button></th>
+                    <th className="p-3"><button className="flex items-center hover:text-slate-900" type="button" onClick={() => handleSort("layer")}>Layer<SortIndicator col="layer" /></button></th>
+                    <th className="p-3"><button className="flex items-center hover:text-slate-900" type="button" onClick={() => handleSort("province")}>Province<SortIndicator col="province" /></button></th>
+                    <th className="p-3">Suburb</th>
+                    <th className="p-3"><button className="flex items-center hover:text-slate-900" type="button" onClick={() => handleSort("price")}>Price<SortIndicator col="price" /></button></th>
+                    <th className="p-3">Capacity</th>
+                    <th className="p-3"><button className="flex items-center hover:text-slate-900" type="button" onClick={() => handleSort("verified")}>Verified<SortIndicator col="verified" /></button></th>
+                    <th className="p-3">Actions</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  {filteredListings.map((listing) => (
+                  {sortedListings.map((listing) => (
                     <tr className="border-t border-slate-100" key={listing.id}>
                       <td className="p-3 font-semibold">{listing.name}</td>
                       <td className="p-3 text-slate-600">{displayCategory(listing)}</td>

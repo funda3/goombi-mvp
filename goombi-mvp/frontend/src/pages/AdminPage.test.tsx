@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { AdminPage } from "./AdminPage";
@@ -115,7 +115,7 @@ test("selecting KwaZulu-Natal shows KZN listings and hides others", async () => 
 test("Province column renders for each listing row", async () => {
   setup();
   await waitForTable();
-  expect(screen.getByRole("columnheader", { name: "Province" })).toBeInTheDocument();
+  expect(sortBtn(/Province/i)).toBeInTheDocument();
   // Province values appear in both the dropdown options and the table cells;
   // getAllByText confirms at least one of each is present.
   expect(screen.getAllByText("Gauteng").length).toBeGreaterThan(0);
@@ -170,10 +170,10 @@ test("layer dropdown has All layers and all 7 layer options", async () => {
   expect(select.options).toHaveLength(8); // "all" + 7 types
 });
 
-test("Layer column header renders", async () => {
+test("Layer column sort button renders in table header", async () => {
   setup();
   await waitForTable();
-  expect(screen.getByRole("columnheader", { name: "Layer" })).toBeInTheDocument();
+  expect(sortBtn(/Layer/i)).toBeInTheDocument();
 });
 
 test("selecting accommodation layer shows only accommodation listings", async () => {
@@ -300,4 +300,77 @@ test("count shows filtered / total when name query is active", async () => {
   await waitForTable();
   fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "gauteng" } });
   expect(screen.getByText("1 / 3 listings")).toBeInTheDocument();
+});
+
+// ── GMB-01M: sort controls ────────────────────────────────────────────────────
+
+function rowOrder() {
+  return screen.getAllByRole("row").slice(1).map((row) => (row as HTMLTableRowElement).cells[0].textContent ?? "");
+}
+
+function sortBtn(name: RegExp) {
+  return within(screen.getByRole("table")).getByRole("button", { name });
+}
+
+test("Listing column header is a sort button defaulting to name asc", async () => {
+  setup();
+  await waitForTable();
+  expect(sortBtn(/Listing/i)).toBeInTheDocument();
+  // default sort is name asc — "Cape Town Stay" < "Durban Stay" < "Gauteng Stay"
+  const order = rowOrder();
+  expect(order).toEqual(["Cape Town Stay", "Durban Stay", "Gauteng Stay"]);
+});
+
+test("clicking Listing button a second time reverses to name desc", async () => {
+  setup();
+  await waitForTable();
+  fireEvent.click(sortBtn(/Listing/i)); // already asc → goes desc
+  const order = rowOrder();
+  expect(order).toEqual(["Gauteng Stay", "Durban Stay", "Cape Town Stay"]);
+});
+
+test("clicking Province button sorts rows by province asc", async () => {
+  setup();
+  await waitForTable();
+  // provinces: Gauteng, KwaZulu-Natal, Western Cape → asc alphabetical
+  fireEvent.click(sortBtn(/Province/i));
+  const order = rowOrder();
+  expect(order[0]).toBe("Gauteng Stay");    // Gauteng first
+  expect(order[2]).toBe("Cape Town Stay");  // Western Cape last
+});
+
+test("clicking Province button twice reverses province sort to desc", async () => {
+  setup();
+  await waitForTable();
+  const btn = sortBtn(/Province/i);
+  fireEvent.click(btn); // asc
+  fireEvent.click(btn); // desc
+  const order = rowOrder();
+  expect(order[0]).toBe("Cape Town Stay");  // Western Cape first (desc)
+  expect(order[2]).toBe("Gauteng Stay");    // Gauteng last
+});
+
+test("clicking Layer button sorts rows by layer label", async () => {
+  const stays  = { ...GP_LISTING, id: "s1", name: "Alpha Stay", listing_type: "accommodation" as const };
+  const eats   = { ...GP_LISTING, id: "e1", name: "Beta Eats", listing_type: "restaurant" as const, max_guests: null, rooms: null };
+  const events = { ...GP_LISTING, id: "ev1", name: "Gamma Events", listing_type: "event_space" as const, max_guests: null, rooms: null };
+  mockListings.mockResolvedValue([events, eats, stays]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("Alpha Stay")).toBeInTheDocument());
+
+  fireEvent.click(sortBtn(/Layer/i));
+  const order = rowOrder();
+  // displayCategory values: Accommodation, Event Space, Restaurant → asc alphabetical
+  expect(order[0]).toBe("Alpha Stay");    // Accommodation
+  expect(order[1]).toBe("Gamma Events"); // Event Space
+  expect(order[2]).toBe("Beta Eats");    // Restaurant
+});
+
+test("sort persists after filter changes", async () => {
+  setup();
+  await waitForTable();
+  fireEvent.click(sortBtn(/Listing/i)); // name desc
+  fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Gauteng" } });
+  expect(rowOrder()).toEqual(["Gauteng Stay"]);
 });
