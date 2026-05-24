@@ -142,12 +142,12 @@ Old seed records without `listing_type` migrate silently — the backend model v
 ## Tests
 
 ```powershell
-# Backend (52 tests)
+# Backend (59 tests)
 cd backend; python -m pytest -v
 ```
 
 ```powershell
-# Frontend (58 tests)
+# Frontend (66 tests)
 cd frontend; npm test -- --run
 ```
 

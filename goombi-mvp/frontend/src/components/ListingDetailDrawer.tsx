@@ -134,7 +134,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
               {listing.estate_type}
             </span>
           )}
-          <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4" />{listing.suburb}{listing.suburb && listing.city ? ", " : ""}{listing.city}</span>
+          <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4" />{listing.suburb}{listing.suburb && listing.city ? ", " : ""}{listing.city}{listing.city && listing.province ? ", " : ""}{listing.province}</span>
           <div className="flex flex-wrap gap-1.5">
             {listing.long_stay_relevant && <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">Long Stay Friendly</span>}
             {listing.relocation_relevant && <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">Relocation Friendly</span>}

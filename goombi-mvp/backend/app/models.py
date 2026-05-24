@@ -43,6 +43,7 @@ class ListingBase(BaseModel):
         "coworking", "meeting_room", "boardroom", "serviced_office", "virtual_office"
     ] | None = None
     province: str = "Gauteng"
+    region: str | None = None
     city: str = "Johannesburg"
     suburb: str
     address: str
@@ -94,6 +95,14 @@ class ListingBase(BaseModel):
         # Default listing_type from category when not explicitly provided
         if self.listing_type is None:
             self.listing_type = "workspace" if self.category == "workspace" else "accommodation"
+
+        # Normalise province ↔ region: keep them in sync; reject records missing both
+        if self.province and not self.region:
+            self.region = self.province
+        elif self.region and not self.province:
+            self.province = self.region
+        elif not self.province and not self.region:
+            raise ValueError("At least one of 'province' or 'region' must be provided")
 
         _stay_types = {"accommodation", "workspace"}
 

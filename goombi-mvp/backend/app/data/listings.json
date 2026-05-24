@@ -24,7 +24,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:00:00+00:00",
-    "updated_at": "2026-05-22T08:00:00+00:00"
+    "updated_at": "2026-05-22T08:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-bryanston-02",
@@ -51,7 +52,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:05:00+00:00",
-    "updated_at": "2026-05-22T08:05:00+00:00"
+    "updated_at": "2026-05-22T08:05:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-fourways-01",
@@ -78,7 +80,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:10:00+00:00",
-    "updated_at": "2026-05-22T08:10:00+00:00"
+    "updated_at": "2026-05-22T08:10:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-fourways-02",
@@ -105,7 +108,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:15:00+00:00",
-    "updated_at": "2026-05-22T08:15:00+00:00"
+    "updated_at": "2026-05-22T08:15:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-sandton-01",
@@ -132,7 +136,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:20:00+00:00",
-    "updated_at": "2026-05-22T08:20:00+00:00"
+    "updated_at": "2026-05-22T08:20:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-sandton-02",
@@ -159,7 +164,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:25:00+00:00",
-    "updated_at": "2026-05-22T08:25:00+00:00"
+    "updated_at": "2026-05-22T08:25:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-rivonia-01",
@@ -186,7 +192,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:30:00+00:00",
-    "updated_at": "2026-05-22T08:30:00+00:00"
+    "updated_at": "2026-05-22T08:30:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-rivonia-02",
@@ -213,7 +220,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:35:00+00:00",
-    "updated_at": "2026-05-22T08:35:00+00:00"
+    "updated_at": "2026-05-22T08:35:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-rosebank-01",
@@ -240,7 +248,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:40:00+00:00",
-    "updated_at": "2026-05-22T08:40:00+00:00"
+    "updated_at": "2026-05-22T08:40:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-rosebank-02",
@@ -267,7 +276,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:45:00+00:00",
-    "updated_at": "2026-05-22T08:45:00+00:00"
+    "updated_at": "2026-05-22T08:45:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-randburg-01",
@@ -294,7 +304,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:50:00+00:00",
-    "updated_at": "2026-05-22T08:50:00+00:00"
+    "updated_at": "2026-05-22T08:50:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-randburg-02",
@@ -321,7 +332,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T08:55:00+00:00",
-    "updated_at": "2026-05-22T08:55:00+00:00"
+    "updated_at": "2026-05-22T08:55:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-northcliff-01",
@@ -348,7 +360,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:00:00+00:00",
-    "updated_at": "2026-05-22T09:00:00+00:00"
+    "updated_at": "2026-05-22T09:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-northcliff-02",
@@ -375,7 +388,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:05:00+00:00",
-    "updated_at": "2026-05-22T09:05:00+00:00"
+    "updated_at": "2026-05-22T09:05:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-parkhurst-01",
@@ -402,7 +416,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:10:00+00:00",
-    "updated_at": "2026-05-22T09:10:00+00:00"
+    "updated_at": "2026-05-22T09:10:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-parkhurst-02",
@@ -429,7 +444,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:15:00+00:00",
-    "updated_at": "2026-05-22T09:15:00+00:00"
+    "updated_at": "2026-05-22T09:15:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-melrose-01",
@@ -456,7 +472,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:20:00+00:00",
-    "updated_at": "2026-05-22T09:20:00+00:00"
+    "updated_at": "2026-05-22T09:20:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-melrose-02",
@@ -483,7 +500,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:25:00+00:00",
-    "updated_at": "2026-05-22T09:25:00+00:00"
+    "updated_at": "2026-05-22T09:25:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-douglasdale-01",
@@ -510,7 +528,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:30:00+00:00",
-    "updated_at": "2026-05-22T09:30:00+00:00"
+    "updated_at": "2026-05-22T09:30:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-douglasdale-02",
@@ -537,7 +556,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T09:35:00+00:00",
-    "updated_at": "2026-05-22T09:35:00+00:00"
+    "updated_at": "2026-05-22T09:35:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-workshop17-west-street-coworking",
@@ -571,7 +591,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:00:00+00:00",
-    "updated_at": "2026-05-22T10:00:00+00:00"
+    "updated_at": "2026-05-22T10:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-workshop17-firestation-boardroom",
@@ -603,7 +624,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:01:00+00:00",
-    "updated_at": "2026-05-22T10:01:00+00:00"
+    "updated_at": "2026-05-22T10:01:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-workshop17-the-bank-meeting",
@@ -635,7 +657,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:02:00+00:00",
-    "updated_at": "2026-05-22T10:02:00+00:00"
+    "updated_at": "2026-05-22T10:02:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-workshop17-hyde-park-office",
@@ -667,7 +690,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:03:00+00:00",
-    "updated_at": "2026-05-22T10:03:00+00:00"
+    "updated_at": "2026-05-22T10:03:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-the-workspace-kelvin-drive",
@@ -699,7 +723,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:04:00+00:00",
-    "updated_at": "2026-05-22T10:04:00+00:00"
+    "updated_at": "2026-05-22T10:04:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-the-workspace-melrose-arch",
@@ -731,7 +756,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:05:00+00:00",
-    "updated_at": "2026-05-22T10:05:00+00:00"
+    "updated_at": "2026-05-22T10:05:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-the-workspace-bram-fischer",
@@ -763,7 +789,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:06:00+00:00",
-    "updated_at": "2026-05-22T10:06:00+00:00"
+    "updated_at": "2026-05-22T10:06:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-tally-tbe-hot-desk",
@@ -795,7 +822,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:07:00+00:00",
-    "updated_at": "2026-05-22T10:07:00+00:00"
+    "updated_at": "2026-05-22T10:07:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-tbe-boardroom-one",
@@ -827,7 +855,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:08:00+00:00",
-    "updated_at": "2026-05-22T10:08:00+00:00"
+    "updated_at": "2026-05-22T10:08:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-cube-bryanston-virtual",
@@ -859,7 +888,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:09:00+00:00",
-    "updated_at": "2026-05-22T10:09:00+00:00"
+    "updated_at": "2026-05-22T10:09:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-cube-fourways-boardroom",
@@ -892,7 +922,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:10:00+00:00",
-    "updated_at": "2026-05-22T10:10:00+00:00"
+    "updated_at": "2026-05-22T10:10:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-cube-morningside-office",
@@ -924,7 +955,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T10:11:00+00:00",
-    "updated_at": "2026-05-22T10:11:00+00:00"
+    "updated_at": "2026-05-22T10:11:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-sea-point-01",
@@ -952,7 +984,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:00:00+00:00",
-    "updated_at": "2026-05-22T11:00:00+00:00"
+    "updated_at": "2026-05-22T11:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-sea-point-02",
@@ -979,7 +1012,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:05:00+00:00",
-    "updated_at": "2026-05-22T11:05:00+00:00"
+    "updated_at": "2026-05-22T11:05:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-sea-point-03",
@@ -1006,7 +1040,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:10:00+00:00",
-    "updated_at": "2026-05-22T11:10:00+00:00"
+    "updated_at": "2026-05-22T11:10:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-green-point-01",
@@ -1033,7 +1068,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:15:00+00:00",
-    "updated_at": "2026-05-22T11:15:00+00:00"
+    "updated_at": "2026-05-22T11:15:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-green-point-02",
@@ -1060,7 +1096,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:20:00+00:00",
-    "updated_at": "2026-05-22T11:20:00+00:00"
+    "updated_at": "2026-05-22T11:20:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-de-waterkant-01",
@@ -1087,7 +1124,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:25:00+00:00",
-    "updated_at": "2026-05-22T11:25:00+00:00"
+    "updated_at": "2026-05-22T11:25:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-de-waterkant-02",
@@ -1114,7 +1152,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:30:00+00:00",
-    "updated_at": "2026-05-22T11:30:00+00:00"
+    "updated_at": "2026-05-22T11:30:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-camps-bay-01",
@@ -1142,7 +1181,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:35:00+00:00",
-    "updated_at": "2026-05-22T11:35:00+00:00"
+    "updated_at": "2026-05-22T11:35:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-camps-bay-02",
@@ -1169,7 +1209,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:40:00+00:00",
-    "updated_at": "2026-05-22T11:40:00+00:00"
+    "updated_at": "2026-05-22T11:40:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-camps-bay-03",
@@ -1197,7 +1238,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:45:00+00:00",
-    "updated_at": "2026-05-22T11:45:00+00:00"
+    "updated_at": "2026-05-22T11:45:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-constantia-01",
@@ -1224,7 +1266,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:50:00+00:00",
-    "updated_at": "2026-05-22T11:50:00+00:00"
+    "updated_at": "2026-05-22T11:50:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-constantia-02",
@@ -1251,7 +1294,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T11:55:00+00:00",
-    "updated_at": "2026-05-22T11:55:00+00:00"
+    "updated_at": "2026-05-22T11:55:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-stellenbosch-01",
@@ -1279,7 +1323,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-stellenbosch-02",
@@ -1306,7 +1351,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:05:00+00:00",
-    "updated_at": "2026-05-22T12:05:00+00:00"
+    "updated_at": "2026-05-22T12:05:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-franschhoek-01",
@@ -1334,7 +1380,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:10:00+00:00",
-    "updated_at": "2026-05-22T12:10:00+00:00"
+    "updated_at": "2026-05-22T12:10:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-franschhoek-02",
@@ -1361,7 +1408,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:15:00+00:00",
-    "updated_at": "2026-05-22T12:15:00+00:00"
+    "updated_at": "2026-05-22T12:15:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-paarl-01",
@@ -1388,7 +1436,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:20:00+00:00",
-    "updated_at": "2026-05-22T12:20:00+00:00"
+    "updated_at": "2026-05-22T12:20:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-paarl-02",
@@ -1415,7 +1464,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:25:00+00:00",
-    "updated_at": "2026-05-22T12:25:00+00:00"
+    "updated_at": "2026-05-22T12:25:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-somerset-west-01",
@@ -1443,7 +1493,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:30:00+00:00",
-    "updated_at": "2026-05-22T12:30:00+00:00"
+    "updated_at": "2026-05-22T12:30:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-somerset-west-02",
@@ -1470,7 +1521,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:35:00+00:00",
-    "updated_at": "2026-05-22T12:35:00+00:00"
+    "updated_at": "2026-05-22T12:35:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-workshop17-cape-town-kloof",
@@ -1504,7 +1556,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:40:00+00:00",
-    "updated_at": "2026-05-22T12:40:00+00:00"
+    "updated_at": "2026-05-22T12:40:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-workshop17-va-waterfront",
@@ -1538,7 +1591,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:45:00+00:00",
-    "updated_at": "2026-05-22T12:45:00+00:00"
+    "updated_at": "2026-05-22T12:45:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-the-workspace-cape-town-cbd",
@@ -1570,7 +1624,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:50:00+00:00",
-    "updated_at": "2026-05-22T12:50:00+00:00"
+    "updated_at": "2026-05-22T12:50:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-regus-cape-town-cbd",
@@ -1603,7 +1658,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:55:00+00:00",
-    "updated_at": "2026-05-22T12:55:00+00:00"
+    "updated_at": "2026-05-22T12:55:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-regus-century-city",
@@ -1636,7 +1692,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:00:00+00:00",
-    "updated_at": "2026-05-22T13:00:00+00:00"
+    "updated_at": "2026-05-22T13:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-spaces-cape-town-bree",
@@ -1669,7 +1726,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:05:00+00:00",
-    "updated_at": "2026-05-22T13:05:00+00:00"
+    "updated_at": "2026-05-22T13:05:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-bandwidth-barn-woodstock",
@@ -1702,7 +1760,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:10:00+00:00",
-    "updated_at": "2026-05-22T13:10:00+00:00"
+    "updated_at": "2026-05-22T13:10:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-inner-city-ideas-cartel",
@@ -1735,7 +1794,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:15:00+00:00",
-    "updated_at": "2026-05-22T13:15:00+00:00"
+    "updated_at": "2026-05-22T13:15:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-the-bureaux-de-waterkant",
@@ -1768,7 +1828,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:20:00+00:00",
-    "updated_at": "2026-05-22T13:20:00+00:00"
+    "updated_at": "2026-05-22T13:20:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-rndwork-cape-town",
@@ -1801,7 +1862,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:25:00+00:00",
-    "updated_at": "2026-05-22T13:25:00+00:00"
+    "updated_at": "2026-05-22T13:25:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-the-hive-cape-town",
@@ -1834,7 +1896,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:30:00+00:00",
-    "updated_at": "2026-05-22T13:30:00+00:00"
+    "updated_at": "2026-05-22T13:30:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "workspace-growthpoint-workspace-ct",
@@ -1867,7 +1930,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:35:00+00:00",
-    "updated_at": "2026-05-22T13:35:00+00:00"
+    "updated_at": "2026-05-22T13:35:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-clifton-01",
@@ -1896,7 +1960,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:00:00+00:00",
-    "updated_at": "2026-05-22T14:00:00+00:00"
+    "updated_at": "2026-05-22T14:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-clifton-02",
@@ -1924,7 +1989,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:05:00+00:00",
-    "updated_at": "2026-05-22T14:05:00+00:00"
+    "updated_at": "2026-05-22T14:05:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-hout-bay-01",
@@ -1952,7 +2018,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:10:00+00:00",
-    "updated_at": "2026-05-22T14:10:00+00:00"
+    "updated_at": "2026-05-22T14:10:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-hout-bay-02",
@@ -1980,7 +2047,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:15:00+00:00",
-    "updated_at": "2026-05-22T14:15:00+00:00"
+    "updated_at": "2026-05-22T14:15:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-muizenberg-01",
@@ -2008,7 +2076,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:20:00+00:00",
-    "updated_at": "2026-05-22T14:20:00+00:00"
+    "updated_at": "2026-05-22T14:20:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-muizenberg-02",
@@ -2036,7 +2105,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:25:00+00:00",
-    "updated_at": "2026-05-22T14:25:00+00:00"
+    "updated_at": "2026-05-22T14:25:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-simons-town-01",
@@ -2064,7 +2134,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:30:00+00:00",
-    "updated_at": "2026-05-22T14:30:00+00:00"
+    "updated_at": "2026-05-22T14:30:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-simons-town-02",
@@ -2092,7 +2163,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:35:00+00:00",
-    "updated_at": "2026-05-22T14:35:00+00:00"
+    "updated_at": "2026-05-22T14:35:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-bloubergstrand-01",
@@ -2120,7 +2192,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:40:00+00:00",
-    "updated_at": "2026-05-22T14:40:00+00:00"
+    "updated_at": "2026-05-22T14:40:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-bloubergstrand-02",
@@ -2148,7 +2221,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:45:00+00:00",
-    "updated_at": "2026-05-22T14:45:00+00:00"
+    "updated_at": "2026-05-22T14:45:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-hermanus-01",
@@ -2177,7 +2251,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:50:00+00:00",
-    "updated_at": "2026-05-22T14:50:00+00:00"
+    "updated_at": "2026-05-22T14:50:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-hermanus-02",
@@ -2205,7 +2280,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:55:00+00:00",
-    "updated_at": "2026-05-22T14:55:00+00:00"
+    "updated_at": "2026-05-22T14:55:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-knysna-01",
@@ -2233,7 +2309,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:00:00+00:00",
-    "updated_at": "2026-05-22T15:00:00+00:00"
+    "updated_at": "2026-05-22T15:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-knysna-02",
@@ -2261,7 +2338,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:05:00+00:00",
-    "updated_at": "2026-05-22T15:05:00+00:00"
+    "updated_at": "2026-05-22T15:05:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-george-01",
@@ -2289,7 +2367,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:10:00+00:00",
-    "updated_at": "2026-05-22T15:10:00+00:00"
+    "updated_at": "2026-05-22T15:10:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-george-02",
@@ -2317,7 +2396,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:15:00+00:00",
-    "updated_at": "2026-05-22T15:15:00+00:00"
+    "updated_at": "2026-05-22T15:15:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-plettenberg-bay-01",
@@ -2346,7 +2426,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:20:00+00:00",
-    "updated_at": "2026-05-22T15:20:00+00:00"
+    "updated_at": "2026-05-22T15:20:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-plettenberg-bay-02",
@@ -2374,7 +2455,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:25:00+00:00",
-    "updated_at": "2026-05-22T15:25:00+00:00"
+    "updated_at": "2026-05-22T15:25:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-wilderness-01",
@@ -2403,7 +2485,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:30:00+00:00",
-    "updated_at": "2026-05-22T15:30:00+00:00"
+    "updated_at": "2026-05-22T15:30:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-wilderness-02",
@@ -2431,7 +2514,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T15:35:00+00:00",
-    "updated_at": "2026-05-22T15:35:00+00:00"
+    "updated_at": "2026-05-22T15:35:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "demo-umhlanga-01",
@@ -2459,7 +2543,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:00:00+00:00",
-    "updated_at": "2026-05-22T16:00:00+00:00"
+    "updated_at": "2026-05-22T16:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-umhlanga-02",
@@ -2488,7 +2573,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:05:00+00:00",
-    "updated_at": "2026-05-22T16:05:00+00:00"
+    "updated_at": "2026-05-22T16:05:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-umhlanga-03",
@@ -2515,7 +2601,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:10:00+00:00",
-    "updated_at": "2026-05-22T16:10:00+00:00"
+    "updated_at": "2026-05-22T16:10:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-ballito-01",
@@ -2543,7 +2630,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:15:00+00:00",
-    "updated_at": "2026-05-22T16:15:00+00:00"
+    "updated_at": "2026-05-22T16:15:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-ballito-02",
@@ -2570,7 +2658,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:20:00+00:00",
-    "updated_at": "2026-05-22T16:20:00+00:00"
+    "updated_at": "2026-05-22T16:20:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-durban-north-01",
@@ -2598,7 +2687,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:25:00+00:00",
-    "updated_at": "2026-05-22T16:25:00+00:00"
+    "updated_at": "2026-05-22T16:25:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-durban-north-02",
@@ -2625,7 +2715,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:30:00+00:00",
-    "updated_at": "2026-05-22T16:30:00+00:00"
+    "updated_at": "2026-05-22T16:30:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-berea-01",
@@ -2653,7 +2744,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:35:00+00:00",
-    "updated_at": "2026-05-22T16:35:00+00:00"
+    "updated_at": "2026-05-22T16:35:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-morningside-01",
@@ -2680,7 +2772,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:40:00+00:00",
-    "updated_at": "2026-05-22T16:40:00+00:00"
+    "updated_at": "2026-05-22T16:40:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-westville-01",
@@ -2708,7 +2801,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:45:00+00:00",
-    "updated_at": "2026-05-22T16:45:00+00:00"
+    "updated_at": "2026-05-22T16:45:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-westville-02",
@@ -2736,7 +2830,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:50:00+00:00",
-    "updated_at": "2026-05-22T16:50:00+00:00"
+    "updated_at": "2026-05-22T16:50:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-kloof-01",
@@ -2765,7 +2860,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T16:55:00+00:00",
-    "updated_at": "2026-05-22T16:55:00+00:00"
+    "updated_at": "2026-05-22T16:55:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-kloof-02",
@@ -2793,7 +2889,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:00:00+00:00",
-    "updated_at": "2026-05-22T17:00:00+00:00"
+    "updated_at": "2026-05-22T17:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-hillcrest-01",
@@ -2821,7 +2918,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:05:00+00:00",
-    "updated_at": "2026-05-22T17:05:00+00:00"
+    "updated_at": "2026-05-22T17:05:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-hillcrest-02",
@@ -2849,7 +2947,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:10:00+00:00",
-    "updated_at": "2026-05-22T17:10:00+00:00"
+    "updated_at": "2026-05-22T17:10:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-margate-01",
@@ -2877,7 +2976,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:15:00+00:00",
-    "updated_at": "2026-05-22T17:15:00+00:00"
+    "updated_at": "2026-05-22T17:15:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-margate-02",
@@ -2905,7 +3005,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:20:00+00:00",
-    "updated_at": "2026-05-22T17:20:00+00:00"
+    "updated_at": "2026-05-22T17:20:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-st-lucia-01",
@@ -2933,7 +3034,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:25:00+00:00",
-    "updated_at": "2026-05-22T17:25:00+00:00"
+    "updated_at": "2026-05-22T17:25:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-drakensberg-01",
@@ -2962,7 +3064,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:30:00+00:00",
-    "updated_at": "2026-05-22T17:30:00+00:00"
+    "updated_at": "2026-05-22T17:30:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-drakensberg-02",
@@ -2990,7 +3093,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:35:00+00:00",
-    "updated_at": "2026-05-22T17:35:00+00:00"
+    "updated_at": "2026-05-22T17:35:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-workshop17-umhlanga-ridge",
@@ -3024,7 +3128,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:40:00+00:00",
-    "updated_at": "2026-05-22T17:40:00+00:00"
+    "updated_at": "2026-05-22T17:40:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-regus-umhlanga",
@@ -3058,7 +3163,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:45:00+00:00",
-    "updated_at": "2026-05-22T17:45:00+00:00"
+    "updated_at": "2026-05-22T17:45:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-regus-durban-cbd",
@@ -3091,7 +3197,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:50:00+00:00",
-    "updated_at": "2026-05-22T17:50:00+00:00"
+    "updated_at": "2026-05-22T17:50:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-the-workspace-durban-cbd",
@@ -3124,7 +3231,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T17:55:00+00:00",
-    "updated_at": "2026-05-22T17:55:00+00:00"
+    "updated_at": "2026-05-22T17:55:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-spaces-umhlanga",
@@ -3158,7 +3266,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T18:00:00+00:00",
-    "updated_at": "2026-05-22T18:00:00+00:00"
+    "updated_at": "2026-05-22T18:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-the-hub-durban",
@@ -3192,7 +3301,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T18:05:00+00:00",
-    "updated_at": "2026-05-22T18:05:00+00:00"
+    "updated_at": "2026-05-22T18:05:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-launchlab-ukzn-howard",
@@ -3226,7 +3336,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T18:10:00+00:00",
-    "updated_at": "2026-05-22T18:10:00+00:00"
+    "updated_at": "2026-05-22T18:10:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-the-greenhouse-morningside",
@@ -3260,7 +3371,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T18:15:00+00:00",
-    "updated_at": "2026-05-22T18:15:00+00:00"
+    "updated_at": "2026-05-22T18:15:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-sandbox-cowork-durban",
@@ -3294,7 +3406,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T18:20:00+00:00",
-    "updated_at": "2026-05-22T18:20:00+00:00"
+    "updated_at": "2026-05-22T18:20:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-ignite-westville",
@@ -3328,7 +3441,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T18:25:00+00:00",
-    "updated_at": "2026-05-22T18:25:00+00:00"
+    "updated_at": "2026-05-22T18:25:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-sandton-morningside-01",
@@ -3356,7 +3470,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-sandton-morningside-02",
@@ -3383,7 +3498,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-sandton-morningside-03",
@@ -3412,7 +3528,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-rosebank-03",
@@ -3440,7 +3557,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-rosebank-04",
@@ -3468,7 +3586,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-melrose-03",
@@ -3496,7 +3615,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-melrose-04",
@@ -3523,7 +3643,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-hyde-park-01",
@@ -3553,7 +3674,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-hyde-park-02",
@@ -3582,7 +3704,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-fourways-03",
@@ -3610,7 +3733,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-fourways-04",
@@ -3638,7 +3762,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-midrand-01",
@@ -3667,7 +3792,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-midrand-02",
@@ -3695,7 +3821,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-centurion-01",
@@ -3723,7 +3850,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-centurion-02",
@@ -3751,7 +3879,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-pretoria-east-01",
@@ -3779,7 +3908,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-pretoria-east-02",
@@ -3807,7 +3937,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-brooklyn-pta-01",
@@ -3835,7 +3966,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-waterkloof-01",
@@ -3863,7 +3995,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-soweto-01",
@@ -3891,7 +4024,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-soweto-02",
@@ -3919,7 +4053,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-maboneng-01",
@@ -3947,7 +4082,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-maboneng-02",
@@ -3974,7 +4110,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-krugersdorp-01",
@@ -4002,7 +4139,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-west-rand-01",
@@ -4029,7 +4167,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-workshop17-rosebank-new",
@@ -4064,7 +4203,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-workshop17-menlyn-maine",
@@ -4099,7 +4239,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-regus-centurion",
@@ -4134,7 +4275,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-regus-midrand",
@@ -4168,7 +4310,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-the-workspace-fourways",
@@ -4203,7 +4346,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-the-workspace-menlyn",
@@ -4238,7 +4382,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-spaces-rosebank",
@@ -4273,7 +4418,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-spaces-melrose-arch-jhb",
@@ -4308,7 +4454,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-tbe-sandton-city",
@@ -4343,7 +4490,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-tbe-hyde-park",
@@ -4377,7 +4525,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-tshimologong-braamfontein",
@@ -4412,7 +4561,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-the-pivot-montecasino",
@@ -4447,7 +4597,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-open-maboneng",
@@ -4482,7 +4633,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-wework-sandton",
@@ -4518,7 +4670,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "workspace-lemon-tree-lynnwood",
@@ -4553,7 +4706,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-umhlanga-04",
@@ -4582,7 +4736,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-umhlanga-05",
@@ -4610,7 +4765,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-umhlanga-06",
@@ -4639,7 +4795,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-ballito-03",
@@ -4668,7 +4825,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-ballito-04",
@@ -4695,7 +4853,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-ballito-05",
@@ -4724,7 +4883,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-la-mercy-01",
@@ -4752,7 +4912,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-la-mercy-02",
@@ -4780,7 +4941,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-amanzimtoti-01",
@@ -4808,7 +4970,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-amanzimtoti-02",
@@ -4836,7 +4999,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-scottburgh-01",
@@ -4864,7 +5028,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-scottburgh-02",
@@ -4891,7 +5056,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-port-shepstone-01",
@@ -4919,7 +5085,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-port-shepstone-02",
@@ -4947,7 +5114,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-eshowe-01",
@@ -4976,7 +5144,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-richards-bay-01",
@@ -5005,7 +5174,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-richards-bay-02",
@@ -5033,7 +5203,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-empangeni-01",
@@ -5060,7 +5231,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-newcastle-kzn-01",
@@ -5089,7 +5261,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-newcastle-kzn-02",
@@ -5116,7 +5289,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-regus-umhlanga-ridge-2",
@@ -5151,7 +5325,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-tbe-la-lucia-ridge",
@@ -5186,7 +5361,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-durban-innovation-hub",
@@ -5221,7 +5397,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-the-workspace-westville",
@@ -5256,7 +5433,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-workshop17-durban-cbd",
@@ -5291,7 +5469,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-spaces-gateway",
@@ -5326,7 +5505,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-richards-bay-biz-hub",
@@ -5361,7 +5541,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-newcastle-business-centre",
@@ -5396,7 +5577,8 @@
     "verified_status": true,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-the-hive-hillcrest",
@@ -5431,7 +5613,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "workspace-empangeni-cowork",
@@ -5465,7 +5648,8 @@
     "verified_status": false,
     "source_type": "manual_seed",
     "created_at": "2026-05-22T12:00:00+00:00",
-    "updated_at": "2026-05-22T12:00:00+00:00"
+    "updated_at": "2026-05-22T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "gmb01-soweto-tour-01",
@@ -5507,7 +5691,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:00:00+00:00",
-    "updated_at": "2026-05-22T13:00:00+00:00"
+    "updated_at": "2026-05-22T13:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "gmb01-va-waterfront-exp-01",
@@ -5547,7 +5732,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:05:00+00:00",
-    "updated_at": "2026-05-22T13:05:00+00:00"
+    "updated_at": "2026-05-22T13:05:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "gmb01-cpt-waterfront-restaurant-01",
@@ -5590,7 +5776,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:20:00+00:00",
-    "updated_at": "2026-05-22T13:20:00+00:00"
+    "updated_at": "2026-05-22T13:20:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "gmb01-sandton-convention-01",
@@ -5634,7 +5821,8 @@
     "partner_status": "identified",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:25:00+00:00",
-    "updated_at": "2026-05-22T13:25:00+00:00"
+    "updated_at": "2026-05-22T13:25:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "gmb01-durban-beachfront-bnb-01",
@@ -5672,7 +5860,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:30:00+00:00",
-    "updated_at": "2026-05-22T13:30:00+00:00"
+    "updated_at": "2026-05-22T13:30:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "gmb01-cpt-greenpoint-guesthouse-01",
@@ -5710,7 +5899,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:35:00+00:00",
-    "updated_at": "2026-05-22T13:35:00+00:00"
+    "updated_at": "2026-05-22T13:35:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "gmb01-rosebank-workspace-01",
@@ -5755,7 +5945,8 @@
     "partner_status": "identified",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T13:40:00+00:00",
-    "updated_at": "2026-05-22T13:40:00+00:00"
+    "updated_at": "2026-05-22T13:40:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-estate-waterfall-01",
@@ -5803,7 +5994,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-estate-steyncity-01",
@@ -5852,7 +6044,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-22T14:01:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "demo-estate-steenberg-01",
@@ -5902,7 +6095,8 @@
     "created_at": "2026-05-23T10:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.steenbergfarm.com",
-    "source_url": "https://www.steenbergfarm.com"
+    "source_url": "https://www.steenbergfarm.com",
+    "region": "Western Cape"
   },
   {
     "id": "demo-estate-valdevie-01",
@@ -5953,7 +6147,8 @@
     "created_at": "2026-05-23T10:01:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.valdevie.co.za",
-    "source_url": "https://www.valdevie.co.za"
+    "source_url": "https://www.valdevie.co.za",
+    "region": "Western Cape"
   },
   {
     "id": "demo-estate-zimbali-01",
@@ -6003,7 +6198,8 @@
     "created_at": "2026-05-23T10:02:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.zimbali.co.za",
-    "source_url": "https://www.zimbali.co.za"
+    "source_url": "https://www.zimbali.co.za",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "demo-estate-mountedgecombe-01",
@@ -6052,7 +6248,8 @@
     "created_at": "2026-05-23T10:03:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.meccestates.co.za",
-    "source_url": "https://www.meccestates.co.za"
+    "source_url": "https://www.meccestates.co.za",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "estate-pearl-valley-wc-01",
@@ -6100,7 +6297,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "estate-clara-anna-fontein-wc-01",
@@ -6147,7 +6345,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "estate-sitari-wc-01",
@@ -6194,7 +6393,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "estate-atlantic-beach-wc-01",
@@ -6242,7 +6442,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "estate-de-zalze-wc-01",
@@ -6290,7 +6491,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "estate-arabella-wc-01",
@@ -6340,7 +6542,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Western Cape"
   },
   {
     "id": "estate-simbithi-kzn-01",
@@ -6388,7 +6591,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "estate-brettenwood-kzn-01",
@@ -6435,7 +6639,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "estate-cotswold-downs-kzn-01",
@@ -6483,7 +6688,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "estate-izinga-kzn-01",
@@ -6530,7 +6736,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "estate-kindlewood-kzn-01",
@@ -6577,7 +6784,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "KwaZulu-Natal"
   },
   {
     "id": "estate-gp-dainfern-01",
@@ -6626,7 +6834,8 @@
     "created_at": "2026-05-23T12:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.dainfern.co.za",
-    "source_url": "https://www.dainfern.co.za"
+    "source_url": "https://www.dainfern.co.za",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-woodhill-01",
@@ -6675,7 +6884,8 @@
     "created_at": "2026-05-23T12:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.woodhillgolfestate.co.za",
-    "source_url": "https://www.woodhillgolfestate.co.za"
+    "source_url": "https://www.woodhillgolfestate.co.za",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-silverlakes-01",
@@ -6724,7 +6934,8 @@
     "created_at": "2026-05-23T12:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.silverlakes.co.za",
-    "source_url": "https://www.silverlakes.co.za"
+    "source_url": "https://www.silverlakes.co.za",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-mooikloof-01",
@@ -6770,7 +6981,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-blairatholl-01",
@@ -6820,7 +7032,8 @@
     "created_at": "2026-05-23T12:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.blairatholl.co.za",
-    "source_url": "https://www.blairatholl.co.za"
+    "source_url": "https://www.blairatholl.co.za",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-helderfontein-01",
@@ -6867,7 +7080,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-eaglecanyon-01",
@@ -6915,7 +7129,8 @@
     "created_at": "2026-05-23T12:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.eaglecanyon.co.za",
-    "source_url": "https://www.eaglecanyon.co.za"
+    "source_url": "https://www.eaglecanyon.co.za",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-kyalami-01",
@@ -6962,7 +7177,8 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-irenefarm-01",
@@ -7011,7 +7227,8 @@
     "created_at": "2026-05-23T12:00:00+00:00",
     "updated_at": "2026-05-23T12:00:00+00:00",
     "website_url": "https://www.irenefarmvillages.co.za",
-    "source_url": "https://www.irenefarmvillages.co.za"
+    "source_url": "https://www.irenefarmvillages.co.za",
+    "region": "Gauteng"
   },
   {
     "id": "estate-gp-thatchfield-01",
@@ -7058,6 +7275,7 @@
     "partner_status": "seed",
     "source_type": "manual_seed",
     "created_at": "2026-05-23T12:00:00+00:00",
-    "updated_at": "2026-05-23T12:00:00+00:00"
+    "updated_at": "2026-05-23T12:00:00+00:00",
+    "region": "Gauteng"
   }
 ]

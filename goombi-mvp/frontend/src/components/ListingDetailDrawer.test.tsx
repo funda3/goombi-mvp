@@ -164,6 +164,35 @@ test("estate_living_zone: shows category label as Estate Living", () => {
   expect(screen.getAllByText("Estate Living").length).toBeGreaterThan(0);
 });
 
+test("estate_living_zone: shows province in location line", () => {
+  renderDrawer({
+    ...base,
+    listing_type: "estate_living_zone",
+    category: "accommodation",
+    province: "Western Cape",
+    city: "Paarl",
+    suburb: "Val de Vie",
+    max_guests: null,
+    rooms: null,
+  });
+  expect(screen.getByText(/Western Cape/)).toBeInTheDocument();
+});
+
+test("estate_living_zone: does not show blank region/province", () => {
+  renderDrawer({
+    ...base,
+    listing_type: "estate_living_zone",
+    category: "accommodation",
+    province: "Gauteng",
+    city: "Midrand",
+    suburb: "Waterfall",
+    max_guests: null,
+    rooms: null,
+  });
+  // Province should be present, not blank
+  expect(screen.getByText(/Gauteng/)).toBeInTheDocument();
+});
+
 test("estate_living_zone: does not show buy/purchase/tour/viewing language", () => {
   renderDrawer({
     ...base,

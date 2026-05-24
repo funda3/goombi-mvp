@@ -46,6 +46,7 @@ export type Listing = {
   provider_type?: string | null;
   workspace_type?: WorkspaceType | null;
   province: string;
+  region?: string | null;
   city: string;
   suburb: string;
   address: string;

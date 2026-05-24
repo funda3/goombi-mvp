@@ -343,6 +343,86 @@ def test_gauteng_estate_discovery_only_fields(tmp_path):
         assert estate.get("partner_status") == "seed", f"{estate['name']} partner_status is not 'seed'"
 
 
+# ── GMB-01I: province / region normalization and seed integrity ───────────────
+
+def test_all_seed_listings_have_region(tmp_path):
+    """Every listing in seed data must have a non-empty region after GMB-01I."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    missing = [r["id"] for r in data if not r.get("region")]
+    assert missing == [], f"Listings missing region: {missing}"
+
+
+def test_all_seed_listings_have_province(tmp_path):
+    """Every listing in seed data must have a non-empty province."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    missing = [r["id"] for r in data if not r.get("province")]
+    assert missing == [], f"Listings missing province: {missing}"
+
+
+def test_seed_region_equals_province(tmp_path):
+    """For every seed listing region must equal province."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    mismatches = [
+        r["id"] for r in data
+        if r.get("region") and r.get("province") and r["region"] != r["province"]
+    ]
+    assert mismatches == [], f"region != province for: {mismatches}"
+
+
+def test_all_estate_records_have_region_and_province(tmp_path):
+    """All estate_living_zone records must have non-empty region and province."""
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
+    assert len(estates) > 0
+    for estate in estates:
+        assert estate.get("region"), f"{estate['name']} is missing region"
+        assert estate.get("province"), f"{estate['name']} is missing province"
+
+
+def test_province_without_region_is_normalised(tmp_path):
+    """POST with province but no region normalises region = province."""
+    api = client(tmp_path)
+    payload = listing_payload()
+    payload.pop("region", None)
+    payload["province"] = "Western Cape"
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["region"] == "Western Cape"
+    assert data["province"] == "Western Cape"
+
+
+def test_region_without_province_is_normalised(tmp_path):
+    """POST with region but province='' normalises province = region.
+
+    province has a model default of 'Gauteng', so the only way to trigger the
+    region->province normalization path is to send province="" explicitly.
+    """
+    api = client(tmp_path)
+    payload = listing_payload()
+    payload["province"] = ""
+    payload["region"] = "KwaZulu-Natal"
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["province"] == "KwaZulu-Natal"
+    assert data["region"] == "KwaZulu-Natal"
+
+
+def test_missing_both_province_and_region_is_rejected(tmp_path):
+    """POST with neither province nor region must be rejected with 422."""
+    api = client(tmp_path)
+    payload = listing_payload()
+    payload.pop("province", None)
+    payload.pop("region", None)
+    # province has a model default of "Gauteng", so we must explicitly clear it
+    # by passing province="" and region="" to trigger the validator
+    payload["province"] = ""
+    payload["region"] = ""
+    response = api.post("/api/listings", json=payload)
+    assert response.status_code == 422
+
+
 def test_non_accommodation_with_null_rooms_validates(tmp_path):
     """Non-accommodation records with rooms=null and max_guests=null validate successfully."""
     api = client(tmp_path)
