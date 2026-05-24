@@ -107,6 +107,9 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
   } as ListingDraft;
 }
 
+const REGION_OPTIONS = ["all", "Gauteng", "Western Cape", "KwaZulu-Natal"] as const;
+type RegionOption = typeof REGION_OPTIONS[number];
+
 export function AdminPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -115,6 +118,7 @@ export function AdminPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [regionFilter, setRegionFilter] = useState<RegionOption>("all");
 
   const refresh = () => api.listings().then(setListings);
 
@@ -128,6 +132,11 @@ export function AdminPage() {
   }, []);
 
   const suburbs = useMemo(() => Array.from(new Set(listings.map((listing) => listing.suburb))).sort(), [listings]);
+
+  const filteredListings = useMemo(
+    () => regionFilter === "all" ? listings : listings.filter((l) => l.province === regionFilter),
+    [listings, regionFilter],
+  );
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -319,22 +328,47 @@ export function AdminPage() {
         </form>
         <section className="overflow-hidden rounded-lg border border-emerald-100 bg-white shadow-panel">
           <div className="border-b border-slate-200 p-5">
-            <h2 className="text-2xl font-semibold">Listings</h2>
-            <p className="mt-1 text-sm text-slate-600">Seed imports accept JSON arrays or CSV rows. Use `|` between CSV amenities or photo URLs.</p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-semibold">Listings</h2>
+                <p className="mt-1 text-sm text-slate-600">Seed imports accept JSON arrays or CSV rows. Use `|` between CSV amenities or photo URLs.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <label className="text-xs font-bold uppercase text-slate-500 sr-only" htmlFor="admin-region-filter">Region</label>
+                <select
+                  id="admin-region-filter"
+                  className="field w-44"
+                  value={regionFilter}
+                  onChange={(event) => setRegionFilter(event.target.value as RegionOption)}
+                >
+                  <option value="all">All regions</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="Western Cape">Western Cape</option>
+                  <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                </select>
+                <span className="text-sm text-slate-500 tabular-nums whitespace-nowrap">
+                  {filteredListings.length}{regionFilter !== "all" ? ` / ${listings.length}` : ""} listings
+                </span>
+              </div>
+            </div>
             {status && <p className="mt-3 rounded-md bg-emerald-50 p-3 text-sm text-emerald-950">{status}</p>}
           </div>
           {loading && <p className="p-5 text-sm text-slate-600">Loading listings...</p>}
           {!loading && listings.length === 0 && <p className="p-5 text-sm text-slate-600">No listings yet.</p>}
-          {!loading && listings.length > 0 && (
+          {!loading && listings.length > 0 && filteredListings.length === 0 && (
+            <p className="p-5 text-sm text-slate-600">No listings in {regionFilter}.</p>
+          )}
+          {!loading && filteredListings.length > 0 && (
             <div className="overflow-auto">
               <table className="min-w-full border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-600">
-                  <tr><th className="p-3">Listing</th><th className="p-3">Suburb</th><th className="p-3">Price</th><th className="p-3">Capacity</th><th className="p-3">Verified</th><th className="p-3">Actions</th></tr>
+                  <tr><th className="p-3">Listing</th><th className="p-3">Province</th><th className="p-3">Suburb</th><th className="p-3">Price</th><th className="p-3">Capacity</th><th className="p-3">Verified</th><th className="p-3">Actions</th></tr>
                 </thead>
                 <tbody>
-                  {listings.map((listing) => (
+                  {filteredListings.map((listing) => (
                     <tr className="border-t border-slate-100" key={listing.id}>
                       <td className="p-3 font-semibold">{listing.name}</td>
+                      <td className="p-3 text-slate-600">{listing.province}</td>
                       <td className="p-3">{listing.suburb}</td>
                       <td className="p-3">{isWorkspace(listing) ? listing.pricing_status === "public_price" ? `${listing.price_amount}/${listing.price_unit}` : "Not public" : `R${listing.price_per_night}`}</td>
                       <td className="p-3">{isWorkspace(listing) ? `${listing.capacity ?? "-"} capacity` : `${listing.max_guests} guests`}</td>
