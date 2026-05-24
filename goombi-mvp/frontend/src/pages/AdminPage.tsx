@@ -133,6 +133,7 @@ export function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [regionFilter, setRegionFilter] = useState<RegionOption>("all");
   const [layerFilter, setLayerFilter] = useState<ListingType | "all">("all");
+  const [nameQuery, setNameQuery] = useState("");
 
   const refresh = () => api.listings().then(setListings);
 
@@ -148,12 +149,14 @@ export function AdminPage() {
   const suburbs = useMemo(() => Array.from(new Set(listings.map((listing) => listing.suburb))).sort(), [listings]);
 
   const filteredListings = useMemo(() => {
+    const query = nameQuery.trim().toLowerCase();
     return listings.filter((l) => {
       const matchesRegion = regionFilter === "all" || l.province === regionFilter;
       const matchesLayer = layerFilter === "all" || getListingType(l) === layerFilter;
-      return matchesRegion && matchesLayer;
+      const matchesName = query === "" || l.name.toLowerCase().includes(query);
+      return matchesRegion && matchesLayer && matchesName;
     });
-  }, [listings, regionFilter, layerFilter]);
+  }, [listings, regionFilter, layerFilter, nameQuery]);
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -351,6 +354,15 @@ export function AdminPage() {
                 <p className="mt-1 text-sm text-slate-600">Seed imports accept JSON arrays or CSV rows. Use `|` between CSV amenities or photo URLs.</p>
               </div>
               <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <label className="text-xs font-bold uppercase text-slate-500 sr-only" htmlFor="admin-name-search">Search</label>
+                <input
+                  id="admin-name-search"
+                  className="field w-48"
+                  type="search"
+                  placeholder="Search by name…"
+                  value={nameQuery}
+                  onChange={(event) => setNameQuery(event.target.value)}
+                />
                 <label className="text-xs font-bold uppercase text-slate-500 sr-only" htmlFor="admin-region-filter">Region</label>
                 <select
                   id="admin-region-filter"
@@ -376,7 +388,7 @@ export function AdminPage() {
                   ))}
                 </select>
                 <span className="text-sm text-slate-500 tabular-nums whitespace-nowrap">
-                  {filteredListings.length}{(regionFilter !== "all" || layerFilter !== "all") ? ` / ${listings.length}` : ""} listings
+                  {filteredListings.length}{(regionFilter !== "all" || layerFilter !== "all" || nameQuery.trim() !== "") ? ` / ${listings.length}` : ""} listings
                 </span>
               </div>
             </div>

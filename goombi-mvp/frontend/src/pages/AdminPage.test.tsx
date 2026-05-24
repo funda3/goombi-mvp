@@ -237,3 +237,67 @@ test("count shows filtered / total when layer filter is active", async () => {
   fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "accommodation" } });
   expect(screen.getByText("1 / 2 listings")).toBeInTheDocument();
 });
+
+// ── GMB-01L: name search ──────────────────────────────────────────────────────
+
+test("renders the name search input", async () => {
+  setup();
+  await waitForTable();
+  expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+});
+
+test("typing a query shows only listings whose name contains the query (case-insensitive)", async () => {
+  setup();
+  await waitForTable();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "gauteng" } });
+  expect(screen.getByText("Gauteng Stay")).toBeInTheDocument();
+  expect(screen.queryByText("Cape Town Stay")).not.toBeInTheDocument();
+  expect(screen.queryByText("Durban Stay")).not.toBeInTheDocument();
+});
+
+test("clearing the search restores all listings", async () => {
+  setup();
+  await waitForTable();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "gauteng" } });
+  expect(screen.queryByText("Cape Town Stay")).not.toBeInTheDocument();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "" } });
+  expect(screen.getByText("Cape Town Stay")).toBeInTheDocument();
+  expect(screen.getByText("Durban Stay")).toBeInTheDocument();
+});
+
+test("search with no matches shows empty state", async () => {
+  setup();
+  await waitForTable();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "xyznotfound" } });
+  expect(screen.getByText("No listings match the selected filters.")).toBeInTheDocument();
+});
+
+test("name search and region filter combine", async () => {
+  setup(); // GP_LISTING="Gauteng Stay", WC_LISTING="Cape Town Stay", KZN_LISTING="Durban Stay"
+  await waitForTable();
+  fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Gauteng" } });
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "cape" } });
+  // "Cape Town Stay" is Western Cape, "Gauteng Stay" doesn't contain "cape" — nothing matches
+  expect(screen.getByText("No listings match the selected filters.")).toBeInTheDocument();
+});
+
+test("name search and layer filter combine", async () => {
+  const accomListing = { ...GP_LISTING, id: "accom-1", name: "Bryanston Stay", listing_type: "accommodation" as const };
+  const estateListing = { ...GP_LISTING, id: "estate-1", name: "Bryanston Estate", listing_type: "estate_living_zone" as const, max_guests: null, rooms: null };
+  mockListings.mockResolvedValue([accomListing, estateListing]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("Bryanston Stay")).toBeInTheDocument());
+
+  fireEvent.change(screen.getByRole("combobox", { name: "Layer" }), { target: { value: "estate_living_zone" } });
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "bryanston" } });
+  expect(screen.getByText("Bryanston Estate")).toBeInTheDocument();
+  expect(screen.queryByText("Bryanston Stay")).not.toBeInTheDocument();
+});
+
+test("count shows filtered / total when name query is active", async () => {
+  setup();
+  await waitForTable();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "gauteng" } });
+  expect(screen.getByText("1 / 3 listings")).toBeInTheDocument();
+});
