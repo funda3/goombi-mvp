@@ -136,6 +136,7 @@ export function AdminPage() {
   const [nameQuery, setNameQuery] = useState("");
   const [sortKey, setSortKey] = useState<"name" | "layer" | "province" | "price" | "verified">("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [verifiedFilter, setVerifiedFilter] = useState<"all" | "verified" | "unverified">("all");
 
   const refresh = () => api.listings().then(setListings);
 
@@ -156,9 +157,13 @@ export function AdminPage() {
       const matchesRegion = regionFilter === "all" || l.province === regionFilter;
       const matchesLayer = layerFilter === "all" || getListingType(l) === layerFilter;
       const matchesName = query === "" || l.name.toLowerCase().includes(query);
-      return matchesRegion && matchesLayer && matchesName;
+      const matchesVerified =
+        verifiedFilter === "all" ||
+        (verifiedFilter === "verified" && l.verified_status) ||
+        (verifiedFilter === "unverified" && !l.verified_status);
+      return matchesRegion && matchesLayer && matchesName && matchesVerified;
     });
-  }, [listings, regionFilter, layerFilter, nameQuery]);
+  }, [listings, regionFilter, layerFilter, nameQuery, verifiedFilter]);
 
   const sortedListings = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -417,8 +422,19 @@ export function AdminPage() {
                     <option key={t} value={t}>{LAYER_LABELS[t]}</option>
                   ))}
                 </select>
+                <label className="text-xs font-bold uppercase text-slate-500 sr-only" htmlFor="admin-verified-filter">Verified</label>
+                <select
+                  id="admin-verified-filter"
+                  className="field w-36"
+                  value={verifiedFilter}
+                  onChange={(event) => setVerifiedFilter(event.target.value as "all" | "verified" | "unverified")}
+                >
+                  <option value="all">All listings</option>
+                  <option value="verified">Verified only</option>
+                  <option value="unverified">Unverified only</option>
+                </select>
                 <span className="text-sm text-slate-500 tabular-nums whitespace-nowrap">
-                  {filteredListings.length}{(regionFilter !== "all" || layerFilter !== "all" || nameQuery.trim() !== "") ? ` / ${listings.length}` : ""} listings
+                  {filteredListings.length}{(regionFilter !== "all" || layerFilter !== "all" || nameQuery.trim() !== "" || verifiedFilter !== "all") ? ` / ${listings.length}` : ""} listings
                 </span>
               </div>
             </div>

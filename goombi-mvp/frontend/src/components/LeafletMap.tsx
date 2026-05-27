@@ -3,6 +3,7 @@ import { divIcon } from "leaflet";
 import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { Map as LeafletMapInstance } from "leaflet";
 
+import type { EventRecord } from "../types/event";
 import { getListingType, type Listing, type ListingType } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
@@ -10,11 +11,15 @@ export type FlyTo = { lat: number; lng: number; zoom: number };
 
 type Props = {
   listings: Listing[];
+  events?: EventRecord[];
   selectedId?: string;
+  selectedEventId?: string;
   onSelect: (listing: Listing) => void;
+  onSelectEvent?: (event: EventRecord) => void;
   serviceMarker?: ServiceMarker | null;
   centerRegion?: string;
   flyTo?: FlyTo | null;
+  highlightedListingIds?: string[];
 };
 
 const JHB_CENTER: [number, number] = [-26.1076, 28.0567];
@@ -45,8 +50,20 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapIn
   return null;
 }
 
-export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, centerRegion, flyTo }: Props) {
+export function LeafletMap({
+  listings,
+  events = [],
+  selectedId,
+  selectedEventId,
+  onSelect,
+  onSelectEvent,
+  serviceMarker,
+  centerRegion,
+  flyTo,
+  highlightedListingIds = [],
+}: Props) {
   const mapRef = useRef<LeafletMapInstance | null>(null);
+  const highlighted = new Set(highlightedListingIds);
 
   useEffect(() => {
     if (!flyTo || !mapRef.current) return;
@@ -65,8 +82,10 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
   }, [centerRegion]);
 
   function fitResults() {
-    if (!mapRef.current || listings.length === 0) return;
-    const coords = listings.map((l) => [l.latitude, l.longitude] as [number, number]);
+    if (!mapRef.current || (listings.length === 0 && events.length === 0)) return;
+    const listingCoords = listings.map((l) => [l.latitude, l.longitude] as [number, number]);
+    const eventCoords = events.map((e) => [e.latitude, e.longitude] as [number, number]);
+    const coords = [...listingCoords, ...eventCoords];
     mapRef.current.fitBounds(coords, { padding: [40, 40] });
   }
 
@@ -81,20 +100,32 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
   function workspaceIcon(isDiamond: boolean, isSelected: boolean) {
     const sz = isSelected ? 18 : 14;
     const bw = isSelected ? 3 : 2;
+    const border = isSelected ? "#f59e0b" : "#ffffff";
     if (isDiamond) {
       const outer = Math.round(sz * 1.42);
       const pad = Math.round((outer - sz) / 2);
       return divIcon({
-        html: `<div style="width:${sz}px;height:${sz}px;margin:${pad}px;background:#a21caf;border:${bw}px solid #fff;border-radius:3px;box-sizing:border-box;transform:rotate(45deg);"></div>`,
+        html: `<div style="width:${sz}px;height:${sz}px;margin:${pad}px;background:#a21caf;border:${bw}px solid ${border};border-radius:3px;box-sizing:border-box;transform:rotate(45deg);"></div>`,
         iconSize: [outer, outer],
         iconAnchor: [outer / 2, outer / 2],
         className: "",
       });
     }
     return divIcon({
-      html: `<div style="width:${sz}px;height:${sz}px;background:#a21caf;border:${bw}px solid #fff;border-radius:3px;box-sizing:border-box;"></div>`,
+      html: `<div style="width:${sz}px;height:${sz}px;background:#a21caf;border:${bw}px solid ${border};border-radius:3px;box-sizing:border-box;"></div>`,
       iconSize: [sz, sz],
       iconAnchor: [sz / 2, sz / 2],
+      className: "",
+    });
+  }
+
+  function eventIcon(isSelected: boolean) {
+    const size = isSelected ? 26 : 22;
+    const ring = isSelected ? "goombi-event-pulse goombi-event-selected" : "goombi-event-pulse";
+    return divIcon({
+      html: `<div class="goombi-event-marker-wrap"><span class="${ring}"></span><span class="goombi-event-star" style="font-size:${size}px;">★</span></div>`,
+      iconSize: [size + 8, size + 8],
+      iconAnchor: [(size + 8) / 2, (size + 8) / 2],
       className: "",
     });
   }
@@ -130,6 +161,7 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
         )}
         {listings.map((listing) => {
           const lt = getListingType(listing);
+          const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
           if (lt === "workspace") {
             return (
               <Marker
@@ -137,7 +169,7 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
                 position={[listing.latitude, listing.longitude]}
                 icon={workspaceIcon(
                   listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom",
-                  selectedId === listing.id,
+                  isHighlighted,
                 )}
                 eventHandlers={{ click: () => onSelect(listing) }}
               >
@@ -153,12 +185,12 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
             <CircleMarker
               key={listing.id}
               center={[listing.latitude, listing.longitude]}
-              radius={selectedId === listing.id ? 16 : 12}
+              radius={isHighlighted ? 16 : 12}
               pathOptions={{
                 fillColor,
                 fillOpacity: 0.88,
-                color: "#ffffff",
-                weight: selectedId === listing.id ? 3 : 2,
+                color: isHighlighted ? "#f59e0b" : "#ffffff",
+                weight: isHighlighted ? 3 : 2,
               }}
               eventHandlers={{ click: () => onSelect(listing) }}
             >
@@ -166,6 +198,16 @@ export function LeafletMap({ listings, selectedId, onSelect, serviceMarker, cent
             </CircleMarker>
           );
         })}
+        {events.map((event) => (
+          <Marker
+            key={event.id}
+            position={[event.latitude, event.longitude]}
+            icon={eventIcon(selectedEventId === event.id)}
+            eventHandlers={{ click: () => onSelectEvent?.(event) }}
+          >
+            <Tooltip>{event.name}</Tooltip>
+          </Marker>
+        ))}
       </MapContainer>
 
       {/* Map control buttons rendered outside Leaflet's canvas for full React event handling */}

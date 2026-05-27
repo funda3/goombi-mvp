@@ -3,6 +3,7 @@ import { getListingType, type Filters, type Listing } from "../types/listing";
 export const defaultFilters: Filters = {
   region: "all",
   category: "all",
+  eventCategory: "all",
   workspaceType: "all",
   suburb: "all",
   minPrice: 0,
@@ -19,7 +20,9 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
     const isWorkspace = listing.category === "workspace";
     const recordCategory = isWorkspace ? "workspace" : "accommodation";
-    const matchesCategory = filters.category === "all" || filters.category === recordCategory;
+    const matchesCategory =
+      filters.category === "all" ||
+      (filters.category !== "events" && filters.category === recordCategory);
     const matchesWorkspaceType =
       filters.workspaceType === "all" || (isWorkspace && listing.workspace_type === filters.workspaceType);
     const matchesPrice =

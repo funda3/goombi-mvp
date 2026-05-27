@@ -24,6 +24,63 @@ textarea {
   font: inherit;
 }
 
+.goombi-event-marker-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+}
+
+.goombi-event-star {
+  position: relative;
+  z-index: 2;
+  color: #e11d48;
+  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+}
+
+.goombi-event-pulse {
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: rgba(225, 29, 72, 0.24);
+  animation: goombi-event-pulse 1.8s ease-out infinite;
+}
+
+.goombi-event-selected {
+  background: rgba(245, 158, 11, 0.3);
+}
+
+.goombi-event-star-marker {
+  position: relative;
+}
+
+.goombi-event-star-marker::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(225, 29, 72, 0.2);
+  transform: scale(0.8);
+  animation: goombi-event-pulse 1.8s ease-out infinite;
+  z-index: -1;
+}
+
+@keyframes goombi-event-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
 @layer components {
   .field {
     @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100;

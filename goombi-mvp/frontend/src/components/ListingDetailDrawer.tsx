@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { BadgeCheck, ExternalLink, Heart, Mail, MapPin, MessageCircle, Phone, Users, X } from "lucide-react";
 
-import { useIsMobile } from "../hooks/useIsMobile";
 import { displayCategory, getListingType, isWorkspace, type Listing } from "../types/listing";
 import { BookingEnquiryModal } from "./BookingEnquiryModal";
 import { EnquiryFlow } from "./EnquiryFlow";
@@ -40,7 +39,6 @@ type Props = {
 };
 
 export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onShowOnMap, onOpenPlanner, isFavourite, onToggleFavourite }: Props) {
-  const isMobile = useIsMobile();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
@@ -304,27 +302,17 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
     </>
   ) : null;
 
-  if (isMobile) {
-    return (
-      <aside
-        aria-label="Listing detail"
-        className={`fixed inset-x-0 bottom-0 z-40 flex flex-col h-[60vh] rounded-t-2xl bg-white/95 shadow-[0_-4px_32px_rgba(0,0,0,0.15)] backdrop-blur transition-transform duration-300 ease-out ${listing ? "translate-y-0 pointer-events-auto" : "translate-y-full pointer-events-none"}`}
-      >
-        <div className="flex shrink-0 justify-center pt-3 pb-1">
-          <div className="h-1 w-10 rounded-full bg-slate-200" />
-        </div>
-        <div className="shrink-0 px-4 pb-1">{actionButtons}</div>
-        <div className="flex-1 overflow-y-auto px-4 pb-6">{body}</div>
-      </aside>
-    );
-  }
-
-  if (!listing) return null;
-
   return (
-    <aside className="pointer-events-auto flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-auto rounded-lg border border-white/70 bg-white/95 p-5 shadow-panel backdrop-blur md:w-[25rem]">
-      {actionButtons}
-      {body}
+    <aside
+      aria-label="Listing detail"
+      data-testid="listing-bottom-sheet"
+      className={`fixed bottom-0 z-40 flex h-[62vh] min-h-[55vh] max-h-[70vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out md:h-[50vh] md:min-h-[40vh] md:max-h-[60vh] ${listing ? "translate-y-0 pointer-events-auto" : "translate-y-[110%] pointer-events-none"} inset-x-2 sm:inset-x-4 md:inset-x-auto md:left-1/2 md:w-[min(92vw,520px)] md:-translate-x-1/2`}
+    >
+      <div className="flex shrink-0 justify-center pt-3 pb-1">
+        <div className="h-1 w-12 rounded-full bg-slate-200" />
+      </div>
+      <div className="shrink-0 px-4 pb-1">{actionButtons}</div>
+      <div className="flex-1 overflow-y-auto px-4 pb-6">{body}</div>
     </aside>
   );
 }

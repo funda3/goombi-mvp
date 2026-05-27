@@ -34,9 +34,12 @@ def listing_payload(name: str = "Demo Stay") -> dict:
 def client(tmp_path) -> TestClient:
     listings_path = tmp_path / "listings.json"
     enquiries_path = tmp_path / "enquiries.json"
+    events_path = tmp_path / "events.json"
     listings_path.write_text("[]", encoding="utf-8")
     enquiries_path.write_text("[]", encoding="utf-8")
-    return TestClient(create_app(JsonStore(listings_path, enquiries_path)))
+    seed_events = pathlib.Path(__file__).parent.parent / "app" / "data" / "events.json"
+    events_path.write_text(seed_events.read_text(encoding="utf-8"), encoding="utf-8")
+    return TestClient(create_app(JsonStore(listings_path, enquiries_path, events_path)))
 
 
 def test_healthz(tmp_path):
@@ -86,6 +89,36 @@ def test_otp_placeholder(tmp_path):
     )
     assert requested.json()["status"] == "placeholder"
     assert verified.json()["otp_verified"] is True
+
+
+def test_get_events_returns_seed_records(tmp_path):
+    api = client(tmp_path)
+    response = api.get("/api/events")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert any(event["name"] == "Durban July" for event in data)
+
+
+def test_get_event_by_id(tmp_path):
+    api = client(tmp_path)
+    event_id = "event-kzn-durban-july"
+    response = api.get(f"/api/events/{event_id}")
+    assert response.status_code == 200
+    event = response.json()
+    assert event["id"] == event_id
+    assert event["province"] == "KwaZulu-Natal"
+
+
+def test_get_events_filters_by_province_and_category(tmp_path):
+    api = client(tmp_path)
+    response = api.get("/api/events", params={"province": "Western Cape", "category": "market"})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) > 0
+    assert all(item["province"] == "Western Cape" for item in data)
+    assert all(item["category"] == "market" for item in data)
 
 
 # ── GMB-01: listing_type and partner_status tests ──────────────────────────────

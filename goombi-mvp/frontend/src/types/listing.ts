@@ -1,3 +1,5 @@
+import type { EventCategory } from "./event";
+
 export type AccommodationType = "bnb" | "guesthouse";
 export type WorkspaceType = "coworking" | "meeting_room" | "boardroom" | "serviced_office" | "virtual_office";
 export type ListingCategory = AccommodationType | "accommodation" | "workspace";
@@ -129,7 +131,8 @@ export type Enquiry = {
 
 export type Filters = {
   region: "all" | "Gauteng" | "Western Cape" | "KwaZulu-Natal";
-  category: "all" | "accommodation" | "workspace";
+  category: "all" | "accommodation" | "workspace" | "events";
+  eventCategory: "all" | EventCategory;
   workspaceType: "all" | WorkspaceType;
   suburb: string;
   minPrice: number;

@@ -3,21 +3,29 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from .models import Enquiry, EnquiryCreate, Listing, ListingCreate, ListingUpdate, utc_now
+from .models import Enquiry, EnquiryCreate, Event, Listing, ListingCreate, ListingUpdate, utc_now
 
 
 DATA_DIR = Path(__file__).parent / "data"
 LISTINGS_FILE = DATA_DIR / "listings.json"
 ENQUIRIES_FILE = DATA_DIR / "enquiries.json"
+EVENTS_FILE = DATA_DIR / "events.json"
 _LOCK = Lock()
 
 
 class JsonStore:
-    def __init__(self, listings_path: Path = LISTINGS_FILE, enquiries_path: Path = ENQUIRIES_FILE):
+    def __init__(
+        self,
+        listings_path: Path = LISTINGS_FILE,
+        enquiries_path: Path = ENQUIRIES_FILE,
+        events_path: Path = EVENTS_FILE,
+    ):
         self.listings_path = listings_path
         self.enquiries_path = enquiries_path
+        self.events_path = events_path
         self._ensure_file(self.listings_path)
         self._ensure_file(self.enquiries_path)
+        self._ensure_file(self.events_path)
 
     @staticmethod
     def _ensure_file(path: Path) -> None:
@@ -80,3 +88,9 @@ class JsonStore:
         records.append(enquiry.model_dump())
         self._write(self.enquiries_path, records)
         return enquiry
+
+    def list_events(self) -> list[Event]:
+        return [Event.model_validate(item) for item in self._read(self.events_path)]
+
+    def get_event(self, event_id: str) -> Event | None:
+        return next((item for item in self.list_events() if item.id == event_id), None)

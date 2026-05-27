@@ -1,15 +1,20 @@
 import { MouseEvent, PointerEvent, WheelEvent, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 
+import type { EventRecord } from "../types/event";
 import { isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
 type Props = {
   listings: Listing[];
+  events?: EventRecord[];
   selectedId?: string;
+  selectedEventId?: string;
   onSelect: (listing: Listing) => void;
+  onSelectEvent?: (event: EventRecord) => void;
   serviceMarker?: ServiceMarker | null;
   region?: string;
+  highlightedListingIds?: string[];
 };
 
 type Point = {
@@ -39,7 +44,18 @@ function listingPosition(listing: Listing) {
   };
 }
 
-export function MockMap({ listings, selectedId, onSelect, serviceMarker }: Props) {
+export function MockMap({
+  listings,
+  events = [],
+  selectedId,
+  selectedEventId,
+  onSelect,
+  onSelectEvent,
+  serviceMarker,
+  highlightedListingIds = [],
+}: Props) {
+  const highlighted = new Set(highlightedListingIds);
+
   const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
@@ -74,15 +90,20 @@ export function MockMap({ listings, selectedId, onSelect, serviceMarker }: Props
   }
 
   function fitToResults() {
-    if (!viewportRef.current || listings.length === 0) {
+    if (!viewportRef.current || (listings.length === 0 && events.length === 0)) {
       resetView();
       return;
     }
     const bounds = viewportRef.current.getBoundingClientRect();
-    const positions = listings.map((listing) => {
+    const listingPositions = listings.map((listing) => {
       const position = listingPosition(listing);
       return { x: Number.parseFloat(position.left), y: Number.parseFloat(position.top) };
     });
+    const eventPositions = events.map((event) => {
+      const position = listingPosition({ latitude: event.latitude, longitude: event.longitude } as Listing);
+      return { x: Number.parseFloat(position.left), y: Number.parseFloat(position.top) };
+    });
+    const positions = [...listingPositions, ...eventPositions];
     const minX = Math.min(...positions.map((position) => position.x));
     const maxX = Math.max(...positions.map((position) => position.x));
     const minY = Math.min(...positions.map((position) => position.y));
@@ -164,7 +185,7 @@ export function MockMap({ listings, selectedId, onSelect, serviceMarker }: Props
               isWorkspace(listing)
                 ? `${listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom" ? "rotate-45" : "rounded-sm"} bg-fuchsia-700`
                 : `${listing.verified_status ? "bg-teal-700" : "bg-orange-500"} rounded-full`
-            } ${selectedId === listing.id ? "ring-4 ring-white/80" : ""}`}
+            } ${(selectedId === listing.id || highlighted.has(listing.id)) ? "ring-4 ring-amber-300" : ""}`}
             key={listing.id}
             style={listingPosition(listing)}
             title={`${listing.name}, ${listing.suburb}`}
@@ -173,6 +194,21 @@ export function MockMap({ listings, selectedId, onSelect, serviceMarker }: Props
             onMouseDown={keepMarkerClickable}
             onPointerDown={keepMarkerClickable}
           />
+        ))}
+        {events.map((event) => (
+          <button
+            key={event.id}
+            aria-label={`Open ${event.name}`}
+            className={`goombi-event-star-marker absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full text-lg leading-none text-rose-600 transition hover:scale-110 ${selectedEventId === event.id ? "ring-2 ring-amber-300" : ""}`}
+            style={listingPosition({ latitude: event.latitude, longitude: event.longitude } as Listing)}
+            title={`${event.name}, ${event.city}`}
+            type="button"
+            onClick={() => onSelectEvent?.(event)}
+            onMouseDown={keepMarkerClickable}
+            onPointerDown={keepMarkerClickable}
+          >
+            ★
+          </button>
         ))}
         {serviceMarker && (
           <div

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import type { EventRecord } from "../types/event";
 import { getListingType, isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 import { LeafletMap, type FlyTo } from "./LeafletMap";
@@ -7,11 +8,15 @@ import { MockMap } from "./MockMap";
 
 type Props = {
   listings: Listing[];
+  events?: EventRecord[];
   selectedId?: string;
+  selectedEventId?: string;
   onSelect: (listing: Listing) => void;
+  onSelectEvent?: (event: EventRecord) => void;
   serviceMarker?: ServiceMarker | null;
   region?: string;
   flyTo?: FlyTo | null;
+  highlightedListingIds?: string[];
 };
 
 type GoogleState = "idle" | "loading" | "ready" | "failed";
@@ -49,7 +54,16 @@ function loadGoogleMaps(apiKey: string): Promise<void> {
   });
 }
 
-function GoogleCircleMap({ listings, selectedId, onSelect, serviceMarker }: Props) {
+function GoogleCircleMap({
+  listings,
+  events = [],
+  selectedId,
+  selectedEventId,
+  onSelect,
+  onSelectEvent,
+  serviceMarker,
+  highlightedListingIds = [],
+}: Props) {
   const targetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,7 +94,10 @@ function GoogleCircleMap({ listings, selectedId, onSelect, serviceMarker }: Prop
         })
       : null;
 
+    const highlighted = new Set(highlightedListingIds);
+
     const shapes = listings.map((listing) => {
+      const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
       if (isWorkspace(listing)) {
         const marker = new googleApi.maps.Marker({
           map,
@@ -92,8 +109,8 @@ function GoogleCircleMap({ listings, selectedId, onSelect, serviceMarker }: Prop
                 : "M -9,-9 9,-9 9,9 -9,9 z",
             fillColor: "#a21caf",
             fillOpacity: 0.92,
-            strokeColor: "#ffffff",
-            strokeWeight: selectedId === listing.id ? 3 : 2,
+            strokeColor: isHighlighted ? "#f59e0b" : "#ffffff",
+            strokeWeight: isHighlighted ? 3 : 2,
             scale: 1,
           },
         });
@@ -108,27 +125,60 @@ function GoogleCircleMap({ listings, selectedId, onSelect, serviceMarker }: Prop
       const circle = new googleApi.maps.Circle({
         map,
         center: { lat: listing.latitude, lng: listing.longitude },
-        radius: selectedId === listing.id ? 850 : 620,
+        radius: isHighlighted ? 850 : 620,
         fillColor,
         fillOpacity: 0.88,
-        strokeColor: "#ffffff",
-        strokeWeight: selectedId === listing.id ? 3 : 2,
+        strokeColor: isHighlighted ? "#f59e0b" : "#ffffff",
+        strokeWeight: isHighlighted ? 3 : 2,
       });
       circle.addListener("click", () => onSelect(listing));
       bounds.extend(circle.getCenter());
       return circle;
     });
-    if (listings.length > 1) map.fitBounds(bounds, 54);
+
+    const eventMarkers = events.map((event) => {
+      const marker = new googleApi.maps.Marker({
+        map,
+        position: { lat: event.latitude, lng: event.longitude },
+        title: event.name,
+        icon: {
+          path: "M0,-12 L2.8,-3.8 L11.4,-3.8 L4.5,1.5 L7.3,10 L0,5.1 L-7.3,10 L-4.5,1.5 L-11.4,-3.8 L-2.8,-3.8 z",
+          fillColor: "#e11d48",
+          fillOpacity: 0.95,
+          strokeColor: selectedEventId === event.id ? "#fbbf24" : "#ffffff",
+          strokeWeight: selectedEventId === event.id ? 2.5 : 1.8,
+          scale: selectedEventId === event.id ? 1.25 : 1,
+          anchor: new googleApi.maps.Point(0, 0),
+        },
+      });
+      marker.addListener("click", () => onSelectEvent?.(event));
+      bounds.extend(marker.getPosition());
+      return marker;
+    });
+
+    if (listings.length + events.length > 1) map.fitBounds(bounds, 54);
     return () => {
       shapes.forEach((shape) => shape.setMap(null));
+      eventMarkers.forEach((marker) => marker.setMap(null));
       servicePin?.setMap(null);
     };
-  }, [listings, onSelect, selectedId, serviceMarker]);
+  }, [events, highlightedListingIds, listings, onSelect, onSelectEvent, selectedEventId, selectedId, serviceMarker]);
 
   return <div className="h-full w-full" ref={targetRef} />;
 }
 
-export function MapCanvas({ listings, selectedId, onSelect, serviceMarker, region, flyTo }: Props) {
+export function MapCanvas({
+  listings,
+  events = [],
+  selectedId,
+  selectedEventId,
+  onSelect,
+  onSelectEvent,
+  serviceMarker,
+  region,
+  flyTo,
+  highlightedListingIds = [],
+}: Props) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const [googleState, setGoogleState] = useState<GoogleState>(apiKey ? "loading" : "idle");
 
@@ -138,12 +188,48 @@ export function MapCanvas({ listings, selectedId, onSelect, serviceMarker, regio
   }, [apiKey]);
 
   if (googleState === "ready") {
-    return <GoogleCircleMap listings={listings} selectedId={selectedId} onSelect={onSelect} serviceMarker={serviceMarker} />;
+    return (
+      <GoogleCircleMap
+        listings={listings}
+        events={events}
+        selectedId={selectedId}
+        selectedEventId={selectedEventId}
+        onSelect={onSelect}
+        onSelectEvent={onSelectEvent}
+        serviceMarker={serviceMarker}
+        highlightedListingIds={highlightedListingIds}
+      />
+    );
   }
   if (googleState === "loading") {
     return <div className="grid min-h-screen place-items-center bg-emerald-50 text-slate-700">Loading map…</div>;
   }
   return import.meta.env.VITE_MAP_MODE === "mock"
-    ? <MockMap listings={listings} selectedId={selectedId} onSelect={onSelect} serviceMarker={serviceMarker} region={region} />
-    : <LeafletMap listings={listings} selectedId={selectedId} onSelect={onSelect} serviceMarker={serviceMarker} centerRegion={region} flyTo={flyTo} />;
+    ? (
+      <MockMap
+        listings={listings}
+        events={events}
+        selectedId={selectedId}
+        selectedEventId={selectedEventId}
+        onSelect={onSelect}
+        onSelectEvent={onSelectEvent}
+        serviceMarker={serviceMarker}
+        region={region}
+        highlightedListingIds={highlightedListingIds}
+      />
+    )
+    : (
+      <LeafletMap
+        listings={listings}
+        events={events}
+        selectedId={selectedId}
+        selectedEventId={selectedEventId}
+        onSelect={onSelect}
+        onSelectEvent={onSelectEvent}
+        serviceMarker={serviceMarker}
+        centerRegion={region}
+        flyTo={flyTo}
+        highlightedListingIds={highlightedListingIds}
+      />
+    );
 }

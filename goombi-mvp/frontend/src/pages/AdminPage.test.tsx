@@ -374,3 +374,77 @@ test("sort persists after filter changes", async () => {
   fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Gauteng" } });
   expect(rowOrder()).toEqual(["Gauteng Stay"]);
 });
+
+// ── GMB-01N: verified filter ──────────────────────────────────────────────────
+
+const VERIFIED_LISTING   = { ...GP_LISTING, id: "v1", name: "Verified Stay",   verified_status: true  };
+const UNVERIFIED_LISTING = { ...GP_LISTING, id: "u1", name: "Unverified Stay", verified_status: false };
+
+async function setupVerified() {
+  mockListings.mockResolvedValue([VERIFIED_LISTING, UNVERIFIED_LISTING]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("Verified Stay")).toBeInTheDocument());
+}
+
+test("renders the verified filter dropdown", async () => {
+  setup();
+  await waitForTable();
+  expect(screen.getByRole("combobox", { name: "Verified" })).toBeInTheDocument();
+});
+
+test("verified dropdown has three options", async () => {
+  setup();
+  await waitForTable();
+  const select = screen.getByRole("combobox", { name: "Verified" }) as HTMLSelectElement;
+  expect(select).toHaveDisplayValue("All listings");
+  const values = Array.from(select.options).map((o) => o.value);
+  expect(values).toEqual(["all", "verified", "unverified"]);
+});
+
+test("default state shows both verified and unverified listings", async () => {
+  await setupVerified();
+  expect(screen.getByText("Verified Stay")).toBeInTheDocument();
+  expect(screen.getByText("Unverified Stay")).toBeInTheDocument();
+});
+
+test("selecting verified shows only verified listings", async () => {
+  await setupVerified();
+  fireEvent.change(screen.getByRole("combobox", { name: "Verified" }), { target: { value: "verified" } });
+  expect(screen.getByText("Verified Stay")).toBeInTheDocument();
+  expect(screen.queryByText("Unverified Stay")).not.toBeInTheDocument();
+});
+
+test("selecting unverified shows only unverified listings", async () => {
+  await setupVerified();
+  fireEvent.change(screen.getByRole("combobox", { name: "Verified" }), { target: { value: "unverified" } });
+  expect(screen.getByText("Unverified Stay")).toBeInTheDocument();
+  expect(screen.queryByText("Verified Stay")).not.toBeInTheDocument();
+});
+
+test("verified filter composes with region filter", async () => {
+  const gpVerified   = { ...GP_LISTING, id: "gp-v", name: "GP Verified",   province: "Gauteng",      verified_status: true  };
+  const wcUnverified = { ...WC_LISTING, id: "wc-u", name: "WC Unverified", province: "Western Cape", verified_status: false };
+  mockListings.mockResolvedValue([gpVerified, wcUnverified]);
+  mockEnquiries.mockResolvedValue([]);
+  render(<AdminPage />);
+  await waitFor(() => expect(screen.getByText("GP Verified")).toBeInTheDocument());
+
+  fireEvent.change(screen.getByRole("combobox", { name: "Region" }), { target: { value: "Gauteng" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Verified" }), { target: { value: "unverified" } });
+  expect(screen.getByText("No listings match the selected filters.")).toBeInTheDocument();
+});
+
+test("verified filter composes with name search", async () => {
+  await setupVerified();
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "verified" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Verified" }), { target: { value: "unverified" } });
+  expect(screen.getByText("Unverified Stay")).toBeInTheDocument();
+  expect(screen.queryByText("Verified Stay")).not.toBeInTheDocument();
+});
+
+test("count shows filtered / total when verified filter is active", async () => {
+  await setupVerified();
+  fireEvent.change(screen.getByRole("combobox", { name: "Verified" }), { target: { value: "verified" } });
+  expect(screen.getByText("1 / 2 listings")).toBeInTheDocument();
+});

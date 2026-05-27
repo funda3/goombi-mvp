@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
+import type { EventRecord } from "../types/event";
 import type { Listing } from "../types/listing";
 import { ALL_LISTING_TYPES } from "../types/listing";
 
@@ -91,6 +92,29 @@ const makeListing = (overrides: Partial<Listing> = {}): Listing => ({
   source_type: "manual_seed",
   created_at: "2026-05-22T00:00:00Z",
   updated_at: "2026-05-22T00:00:00Z",
+  ...overrides,
+});
+
+const makeEvent = (overrides: Partial<EventRecord> = {}): EventRecord => ({
+  id: "evt-1",
+  name: "Durban July",
+  category: "lifestyle",
+  province: "KwaZulu-Natal",
+  city: "Durban",
+  suburb: "Greyville",
+  venue: "Greyville Racecourse",
+  latitude: -29.8437,
+  longitude: 31.0124,
+  coordinate_accuracy: "venue",
+  start_month: "July",
+  end_month: "July",
+  recurring_type: "annual",
+  description: "Horse racing and lifestyle event.",
+  website_url: null,
+  nearby_focus: "mixed",
+  source_type: "events_guide_manual_seed",
+  source_document: "Goombi_SA_Events_and_Markets_Guide(2).docx",
+  verified_status: "guide_seed_phase_1",
   ...overrides,
 });
 
@@ -299,4 +323,16 @@ test("all 7 layer types render the correct marker type", () => {
   expect(screen.getAllByTestId("circle-marker")).toHaveLength(6);
   // 1 workspace renders as workspace-marker
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(1);
+});
+
+test("renders event markers and handles event click", () => {
+  const onSelectEvent = vi.fn();
+  const event = makeEvent();
+  render(<LeafletMap listings={[makeListing({ id: "acc-1" })]} events={[event]} onSelect={() => undefined} onSelectEvent={onSelectEvent} />);
+
+  expect(screen.getByText("Durban July")).toBeInTheDocument();
+  const markers = screen.getAllByRole("button", { name: /Marker at/i });
+  fireEvent.click(markers[1]);
+
+  expect(onSelectEvent).toHaveBeenCalledWith(event);
 });

@@ -19,6 +19,25 @@ ListingTypeLiteral = Literal[
     "event_space",
 ]
 
+EventCategoryLiteral = Literal[
+    "music",
+    "arts",
+    "food",
+    "market",
+    "sport",
+    "cultural",
+    "business",
+    "tourism",
+    "lifestyle",
+    "nature",
+]
+
+EventRecurringTypeLiteral = Literal["annual", "monthly", "weekly", "seasonal", "unknown"]
+
+EventNearbyFocusLiteral = Literal["accommodation", "workspace", "restaurant", "mixed"]
+
+EventCoordinateAccuracyLiteral = Literal["venue", "approximate"]
+
 PartnerStatusLiteral = Literal[
     "seed",
     "identified",
@@ -196,3 +215,25 @@ class OtpResponse(BaseModel):
     status: Literal["placeholder"]
     message: str
     otp_verified: bool | None = None
+
+
+class Event(BaseModel):
+    id: str
+    name: str = Field(min_length=2)
+    category: EventCategoryLiteral
+    province: Literal["Gauteng", "Western Cape", "KwaZulu-Natal"]
+    city: str = Field(min_length=2)
+    suburb: str
+    venue: str
+    latitude: float
+    longitude: float
+    coordinate_accuracy: EventCoordinateAccuracyLiteral
+    start_month: str
+    end_month: str
+    recurring_type: EventRecurringTypeLiteral
+    description: str
+    website_url: str | None = None
+    nearby_focus: EventNearbyFocusLiteral
+    source_type: Literal["events_guide_manual_seed"] = "events_guide_manual_seed"
+    source_document: str
+    verified_status: str

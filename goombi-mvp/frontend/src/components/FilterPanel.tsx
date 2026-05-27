@@ -1,6 +1,7 @@
 import { Heart, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 
 import { useIsMobile } from "../hooks/useIsMobile";
+import { EVENT_CATEGORY_LABELS } from "../types/event";
 import { type Filters, type ListingType } from "../types/listing";
 
 type Props = {
@@ -138,6 +139,20 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="all">All</option>
           <option value="accommodation">Accommodation</option>
           <option value="workspace">Workspace</option>
+          <option value="events">Events</option>
+        </select>
+      </label>
+      <label className="label">
+        Event type
+        <select
+          className="field"
+          value={filters.eventCategory}
+          onChange={(event) => onChange({ ...filters, eventCategory: event.target.value as Filters["eventCategory"] })}
+        >
+          <option value="all">All event types</option>
+          {Object.entries(EVENT_CATEGORY_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
         </select>
       </label>
       <label className="label">

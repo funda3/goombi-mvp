@@ -60,3 +60,15 @@ test("result count is displayed", () => {
   renderPanel();
   expect(screen.getByText("42 results")).toBeInTheDocument();
 });
+
+test("category filter includes Events option", () => {
+  renderPanel();
+  expect(screen.getByRole("option", { name: "Events" })).toBeInTheDocument();
+});
+
+test("event type filter renders all event categories", () => {
+  renderPanel();
+  expect(screen.getByRole("option", { name: "All event types" })).toBeInTheDocument();
+  expect(screen.getByRole("option", { name: "Music" })).toBeInTheDocument();
+  expect(screen.getByRole("option", { name: "Nature" })).toBeInTheDocument();
+});
