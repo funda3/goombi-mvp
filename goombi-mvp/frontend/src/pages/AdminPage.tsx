@@ -531,7 +531,7 @@ export function AdminPage() {
             </div>}
             <label className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm font-medium">
               Verified
-              <input checked={draft.verified_status} className="h-4 w-4 accent-emerald-700" type="checkbox" onChange={(event) => setDraft({ ...draft, verified_status: event.target.checked })} />
+              <input checked={Boolean(draft.verified_status)} className="h-4 w-4 accent-emerald-700" type="checkbox" onChange={(event) => setDraft({ ...draft, verified_status: event.target.checked })} />
             </label>
             <div className="flex flex-wrap gap-2">
               <button className="primary-button" disabled={busy} type="submit"><Plus className="h-4 w-4" />{editingId ? "Save edit" : "Add listing"}</button>
