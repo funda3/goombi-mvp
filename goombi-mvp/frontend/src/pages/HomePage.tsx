@@ -3,7 +3,6 @@ import { Building2, MapPinned, SlidersHorizontal } from "lucide-react";
 
 import { BottomPanel } from "../components/BottomPanel";
 import { EventDetailSheet } from "../components/EventDetailSheet";
-import { EventsNearbyPanel } from "../components/EventsNearbyPanel";
 import { FilterPanel } from "../components/FilterPanel";
 import { JourneyPlannerModal } from "../components/JourneyPlannerModal";
 import { ListingDetailDrawer } from "../components/ListingDetailDrawer";
@@ -323,14 +322,6 @@ export function HomePage() {
             onClose={() => setFilterOpen(false)}
           />
         </div>
-        {filters.category !== "nightlife" && (
-          <EventsNearbyPanel
-            events={filteredEvents}
-            selectedProvince={filters.region}
-            selectedEventId={selectedEvent?.id}
-            onSelectEvent={selectEvent}
-          />
-        )}
         <MapLegend />
         <ListingDetailDrawer
           listing={selected}

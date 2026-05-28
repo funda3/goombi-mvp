@@ -314,6 +314,17 @@ test("nightlife near me floating overlay is not rendered while nightlife markers
   expect(screen.queryByText("South Africa")).not.toBeInTheDocument();
 });
 
+test("events nearby floating overlay is not rendered while event markers remain", async () => {
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
+  mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument());
+  expect(screen.queryByText(/what'?s happening nearby/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/happening nearby/i)).not.toBeInTheDocument();
+});
+
 test("demo mode renders all restaurant prospects as map markers", async () => {
   vi.stubEnv("VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP", "true");
   mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
