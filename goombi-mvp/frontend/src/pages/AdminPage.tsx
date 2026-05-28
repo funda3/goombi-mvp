@@ -15,6 +15,7 @@ import {
   type ListingType,
 } from "../types/listing";
 import type { RestaurantProspect } from "../types/restaurantProspect";
+import { appHref } from "../utils/routes";
 
 const LAYER_LABELS: Record<ListingType, string> = {
   accommodation: "Stays",
@@ -318,13 +319,13 @@ export function AdminPage() {
   return (
     <>
       <nav className="fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-white/70 bg-white/95 p-1 shadow-panel backdrop-blur">
-        <a className="nav-link" href="/" title="Map discovery">
+        <a className="nav-link" href={appHref("/")} title="Map discovery">
           <MapPinned className="h-4 w-4" />Map
         </a>
-        <a className="nav-link nav-link-active" href="/admin" title="Admin listings">
+        <a className="nav-link nav-link-active" href={appHref("/admin")} title="Admin listings">
           <Building2 className="h-4 w-4" />Admin
         </a>
-        <a className="nav-link" href="/admin/crm" title="Provider CRM">
+        <a className="nav-link" href={appHref("/admin/crm")} title="Provider CRM">
           <Utensils className="h-4 w-4" />CRM
         </a>
       </nav>

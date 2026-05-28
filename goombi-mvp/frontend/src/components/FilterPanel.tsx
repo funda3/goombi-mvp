@@ -4,12 +4,14 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { EVENT_CATEGORY_LABELS } from "../types/event";
 import { type Filters } from "../types/listing";
 import { NIGHTLIFE_MUSIC_LABELS, NIGHTLIFE_TIER_LABELS, NIGHTLIFE_VENUE_TYPE_LABELS } from "../types/nightlife";
+import type { RestaurantProspectPublicCounts } from "../types/restaurantProspect";
 
 type Props = {
   filters: Filters;
   suburbs: string[];
   resultCount: number;
   favouriteCount?: number;
+  restaurantCounts?: RestaurantProspectPublicCounts | null;
   onChange: (filters: Filters) => void;
   isOpen?: boolean;
   onClose?: () => void;
@@ -36,7 +38,7 @@ function toggleLayer(filters: Filters, type: PublicLayer): Filters {
   return { ...filters, category: filters.category === type ? "all" : type };
 }
 
-export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, onChange, isOpen = false, onClose }: Props) {
+export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, restaurantCounts = null, onChange, isOpen = false, onClose }: Props) {
   const isMobile = useIsMobile();
 
   if (isMobile && !isOpen) return null;
@@ -112,6 +114,14 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           })}
         </div>
       </div>
+      {restaurantCounts && (
+        <div className="rounded-md border border-orange-100 bg-orange-50/70 p-3 text-xs text-slate-700">
+          <p className="font-bold uppercase tracking-wide text-orange-800">Restaurants (Demo Mode)</p>
+          <p className="mt-1">Visible demo prospects: {restaurantCounts.visible_restaurant_demo_prospects}</p>
+          <p>Approved restaurants: {restaurantCounts.approved_restaurants}</p>
+          <p>Pending approval: {restaurantCounts.pending_approval}</p>
+        </div>
+      )}
       <label className="label">
         Region
         <select

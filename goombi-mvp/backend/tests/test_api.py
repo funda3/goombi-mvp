@@ -480,72 +480,18 @@ def test_seed_contains_workspace(tmp_path):
     assert len(workspaces) > 0
 
 
-def test_seed_contains_estate_living_zone(tmp_path):
-    """Seed data must include at least one estate_living_zone record."""
+def test_seed_excludes_estate_living_zone_from_public_listings(tmp_path):
+    """Estate records may exist in seed data but must never appear in public /api/listings."""
     data = _seed_client(tmp_path).get("/api/listings").json()
     estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
-    assert len(estates) >= 1
+    assert estates == []
 
 
-# ── GMB-01G: estate marker batch ──────────────────────────────────────────────
-
-def test_seed_has_at_least_15_estate_living_zones(tmp_path):
-    """After GMB-01G there must be at least 15 estate_living_zone records."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
-    assert len(estates) >= 15, f"Expected >=15 estates, got {len(estates)}"
-
-
-def test_seed_has_western_cape_estates(tmp_path):
-    """Seed must include at least one Western Cape estate_living_zone."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    wc = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Western Cape"]
-    assert len(wc) >= 1, f"Expected Western Cape estates, found none"
-
-
-def test_seed_has_kzn_estates(tmp_path):
-    """Seed must include at least one KwaZulu-Natal estate_living_zone."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    kzn = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "KwaZulu-Natal"]
-    assert len(kzn) >= 1, f"Expected KwaZulu-Natal estates, found none"
-
-
-def test_val_de_vie_estate_exists_in_seed(tmp_path):
-    """Val de Vie Estate must be present in seed data."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    found = [r for r in data if "Val de Vie Estate" in r.get("name", "")]
-    assert len(found) >= 1, "Val de Vie Estate not found in seed"
-
-
-def test_zimbali_estate_exists_in_seed(tmp_path):
-    """Zimbali Estate must be present in seed data."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    found = [r for r in data if "Zimbali" in r.get("name", "")]
-    assert len(found) >= 1, "Zimbali Estate not found in seed"
-
-
-def test_estate_records_have_null_rooms(tmp_path):
-    """All estate_living_zone records must have null rooms and max_guests."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
-    assert len(estates) > 0
-    for estate in estates:
-        assert estate.get("rooms") is None, f"{estate['name']} has non-null rooms"
-        assert estate.get("max_guests") is None, f"{estate['name']} has non-null max_guests"
-
-
-def test_estate_records_have_valid_coordinates(tmp_path):
-    """Estate records must have coordinates within the South Africa bounding box."""
-    # SA rough bounding box: lat -35 to -22, lng 16 to 33
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
-    assert len(estates) > 0
-    for estate in estates:
-        lat = estate.get("latitude")
-        lng = estate.get("longitude")
-        assert lat is not None and lng is not None, f"{estate['name']} missing coordinates"
-        assert -35.0 <= lat <= -22.0, f"{estate['name']} latitude {lat} outside SA bounds"
-        assert 16.0 <= lng <= 33.0, f"{estate['name']} longitude {lng} outside SA bounds"
+def test_get_listing_returns_404_for_estate_record(tmp_path):
+    """Estate listing IDs must resolve to 404 on public detail endpoint."""
+    api = _seed_client(tmp_path)
+    response = api.get("/api/listings/demo-estate-waterfall-01")
+    assert response.status_code == 404
 
 
 def test_seed_has_no_relocation_zone(tmp_path):
@@ -553,83 +499,6 @@ def test_seed_has_no_relocation_zone(tmp_path):
     data = _seed_client(tmp_path).get("/api/listings").json()
     relocation = [r for r in data if r.get("listing_type") == "relocation_zone"]
     assert len(relocation) == 0
-
-
-# ── GMB-01H: Gauteng estate marker batch ─────────────────────────────────────
-
-def test_seed_has_at_least_25_estate_living_zones(tmp_path):
-    """After GMB-01H there must be at least 25 estate_living_zone records (WC+KZN+GP)."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
-    assert len(estates) >= 25, f"Expected >=25 estates, got {len(estates)}"
-
-
-def test_seed_has_gauteng_estates(tmp_path):
-    """Seed must include at least one Gauteng estate_living_zone."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    gp = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"]
-    assert len(gp) >= 1, "Expected Gauteng estates, found none"
-
-
-def test_seed_has_at_least_10_gauteng_estates(tmp_path):
-    """After GMB-01H there must be at least 10 Gauteng estate_living_zone records."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    gp = [r for r in data if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"]
-    assert len(gp) >= 10, f"Expected >=10 Gauteng estates, got {len(gp)}"
-
-
-def test_waterfall_estate_has_no_demo_suffix(tmp_path):
-    """Waterfall Estate seed record must not have 'Demo' in its name after GMB-01H."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    found = [r for r in data if r.get("id") == "demo-estate-waterfall-01"]
-    assert len(found) == 1
-    assert "Demo" not in found[0]["name"], f"Waterfall record still has 'Demo' in name: {found[0]['name']}"
-
-
-def test_steyn_city_has_no_demo_suffix(tmp_path):
-    """Steyn City seed record must not have 'Demo' in its name after GMB-01H."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    found = [r for r in data if r.get("id") == "demo-estate-steyncity-01"]
-    assert len(found) == 1
-    assert "Demo" not in found[0]["name"], f"Steyn City record still has 'Demo' in name: {found[0]['name']}"
-
-
-def test_dainfern_golf_estate_exists_in_seed(tmp_path):
-    """Dainfern Golf Estate must be present in seed data after GMB-01H."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    found = [r for r in data if "Dainfern" in r.get("name", "")]
-    assert len(found) >= 1, "Dainfern Golf Estate not found in seed"
-
-
-def test_gauteng_estate_records_have_valid_coordinates(tmp_path):
-    """All Gauteng estate_living_zone records must have coordinates within Gauteng's bounding box."""
-    # Gauteng rough bounding box: lat -26.7 to -25.2, lng 27.5 to 29.2
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    gp_estates = [
-        r for r in data
-        if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"
-    ]
-    assert len(gp_estates) > 0
-    for estate in gp_estates:
-        lat = estate.get("latitude")
-        lng = estate.get("longitude")
-        assert lat is not None and lng is not None, f"{estate['name']} missing coordinates"
-        assert -26.8 <= lat <= -25.1, f"{estate['name']} latitude {lat} outside Gauteng bounds"
-        assert 27.4 <= lng <= 29.3, f"{estate['name']} longitude {lng} outside Gauteng bounds"
-
-
-def test_gauteng_estate_discovery_only_fields(tmp_path):
-    """All Gauteng estate records must have null rooms, null max_guests, and partner_status=seed."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    gp_estates = [
-        r for r in data
-        if r.get("listing_type") == "estate_living_zone" and r.get("province") == "Gauteng"
-    ]
-    assert len(gp_estates) > 0
-    for estate in gp_estates:
-        assert estate.get("rooms") is None, f"{estate['name']} has non-null rooms"
-        assert estate.get("max_guests") is None, f"{estate['name']} has non-null max_guests"
-        assert estate.get("partner_status") == "seed", f"{estate['name']} partner_status is not 'seed'"
 
 
 # ── GMB-01I: province / region normalization and seed integrity ───────────────
@@ -658,14 +527,69 @@ def test_seed_region_equals_province(tmp_path):
     assert mismatches == [], f"region != province for: {mismatches}"
 
 
-def test_all_estate_records_have_region_and_province(tmp_path):
-    """All estate_living_zone records must have non-empty region and province."""
-    data = _seed_client(tmp_path).get("/api/listings").json()
-    estates = [r for r in data if r.get("listing_type") == "estate_living_zone"]
-    assert len(estates) > 0
-    for estate in estates:
-        assert estate.get("region"), f"{estate['name']} is missing region"
-        assert estate.get("province"), f"{estate['name']} is missing province"
+def test_public_restaurant_prospect_payload_excludes_internal_fields(tmp_path, monkeypatch):
+    """Public demo payload must only expose safe restaurant prospect fields."""
+    monkeypatch.setenv("SHOW_RESTAURANT_PROSPECTS_ON_MAP", "true")
+    api = _seed_client(tmp_path)
+    response = api.get("/api/restaurant-prospects/public")
+    assert response.status_code == 200
+
+    payload = response.json()
+    assert "restaurants" in payload
+    assert "counts" in payload
+    assert len(payload["restaurants"]) > 0
+
+    sample = payload["restaurants"][0]
+    expected_keys = {
+        "id",
+        "name",
+        "province",
+        "city",
+        "suburb",
+        "cuisine_tags",
+        "price_band",
+        "latitude",
+        "longitude",
+        "approval_status",
+        "demo_visibility",
+    }
+    assert set(sample.keys()) == expected_keys
+    assert sample["demo_visibility"] is True
+    assert "notes_internal" not in sample
+    assert "source_document" not in sample
+    assert "public_contact_url" not in sample
+    assert "public_website_url" not in sample
+
+
+def test_public_restaurant_prospect_payload_respects_flag(tmp_path, monkeypatch):
+    """Without demo flag, public prospects endpoint should only expose approved prospects."""
+    monkeypatch.delenv("SHOW_RESTAURANT_PROSPECTS_ON_MAP", raising=False)
+    api = client(tmp_path)
+
+    pending = restaurant_prospect_payload("Pending Kitchen")
+    approved = restaurant_prospect_payload("Approved Kitchen")
+    approved["approval_status"] = "provider_approved"
+
+    api.post("/api/restaurant-prospects", json=pending)
+    api.post("/api/restaurant-prospects", json=approved)
+
+    payload = api.get("/api/restaurant-prospects/public").json()
+    assert len(payload["restaurants"]) == 1
+    assert all(item["approval_status"] == "provider_approved" for item in payload["restaurants"])
+
+
+def test_nearby_services_fallback_works(tmp_path, monkeypatch):
+    """If the nearby services upstream call fails, API must return a fallback response."""
+    import httpx
+
+    def _boom(*args, **kwargs):
+        raise httpx.HTTPError("upstream unavailable")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    api = _seed_client(tmp_path)
+    response = api.get("/api/nearby-services", params={"lat": -26.1, "lon": 28.0})
+    assert response.status_code == 200
+    assert response.json() == {"services": [], "status": "fallback"}
 
 
 def test_province_without_region_is_normalised(tmp_path):
@@ -782,7 +706,23 @@ def test_estate_with_null_rooms_validates(tmp_path):
     assert response.json()["listing_type"] == "estate_living_zone"
 
 
-# ── GMB-01E / GMB-01F: all 7 valid listing_type values can be posted and retrieved
+def test_estate_listing_is_not_returned_in_public_get_all(tmp_path):
+    """Estate records can be created internally but must be hidden from public GET listings."""
+    api = client(tmp_path)
+    payload = {
+        **listing_payload(),
+        "listing_type": "estate_living_zone",
+        "rooms": None,
+        "max_guests": None,
+        "estate_type": "Parkland Residence",
+        "lifestyle_summary": "Luxury estate living in Johannesburg North.",
+    }
+    created = api.post("/api/listings", json=payload).json()
+    all_listings = api.get("/api/listings").json()
+    assert all(item["id"] != created["id"] for item in all_listings)
+
+
+# ── Public layers: all non-estate listing types can be posted and retrieved
 
 _ALL_LAYER_PAYLOADS = [
     ("accommodation", {
@@ -816,11 +756,6 @@ _ALL_LAYER_PAYLOADS = [
     }),
     ("transport_node", {
         "listing_type": "transport_node",
-        "rooms": None,
-        "max_guests": None,
-    }),
-    ("estate_living_zone", {
-        "listing_type": "estate_living_zone",
         "rooms": None,
         "max_guests": None,
     }),

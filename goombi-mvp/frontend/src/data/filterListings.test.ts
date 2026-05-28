@@ -200,7 +200,7 @@ test("minGuests filter does not remove transport_node with null max_guests", () 
   expect(result).toHaveLength(1);
 });
 
-test("minGuests filter does not remove estate_living_zone with null max_guests", () => {
+test("estate_living_zone records are excluded from public filters", () => {
   const estate: Listing = {
     ...baseListing,
     id: "estate-null",
@@ -211,7 +211,7 @@ test("minGuests filter does not remove estate_living_zone with null max_guests",
     rooms: null,
   };
   const result = filterListings([estate], { ...defaultFilters, minGuests: 3 });
-  expect(result).toHaveLength(1);
+  expect(result).toHaveLength(0);
 });
 
 test("minGuests still filters out accommodation listings below threshold", () => {
@@ -235,43 +235,40 @@ const makeEstate = (id: string, province: string): Listing => ({
   rooms: null,
 });
 
-test("region filter includes Gauteng estate records", () => {
+test("region filter excludes Gauteng estate records", () => {
   const gp = makeEstate("estate-gp", "Gauteng");
   const wc = makeEstate("estate-wc", "Western Cape");
   const kzn = makeEstate("estate-kzn", "KwaZulu-Natal");
   const result = filterListings([gp, wc, kzn], { ...defaultFilters, region: "Gauteng" });
-  expect(result).toHaveLength(1);
-  expect(result[0].id).toBe("estate-gp");
+  expect(result).toHaveLength(0);
 });
 
-test("region filter includes Western Cape estate records", () => {
+test("region filter excludes Western Cape estate records", () => {
   const gp = makeEstate("estate-gp", "Gauteng");
   const wc = makeEstate("estate-wc", "Western Cape");
   const result = filterListings([gp, wc], { ...defaultFilters, region: "Western Cape" });
-  expect(result).toHaveLength(1);
-  expect(result[0].id).toBe("estate-wc");
+  expect(result).toHaveLength(0);
 });
 
-test("region filter includes KwaZulu-Natal estate records", () => {
+test("region filter excludes KwaZulu-Natal estate records", () => {
   const kzn = makeEstate("estate-kzn", "KwaZulu-Natal");
   const gp = makeEstate("estate-gp", "Gauteng");
   const result = filterListings([kzn, gp], { ...defaultFilters, region: "KwaZulu-Natal" });
-  expect(result).toHaveLength(1);
-  expect(result[0].id).toBe("estate-kzn");
+  expect(result).toHaveLength(0);
 });
 
-test("region=all shows all estate records regardless of province", () => {
+test("region=all still excludes all estate records", () => {
   const gp = makeEstate("estate-gp", "Gauteng");
   const wc = makeEstate("estate-wc", "Western Cape");
   const kzn = makeEstate("estate-kzn", "KwaZulu-Natal");
   const result = filterListings([gp, wc, kzn], { ...defaultFilters, region: "all" });
-  expect(result).toHaveLength(3);
+  expect(result).toHaveLength(0);
 });
 
-test("estate records are not excluded by the hidden-layers filter when layer is visible", () => {
+test("estate records are excluded even when hidden-layers is empty", () => {
   const estate = makeEstate("estate-gp", "Gauteng");
   const result = filterListings([estate], { ...defaultFilters, hiddenLayers: [] });
-  expect(result).toHaveLength(1);
+  expect(result).toHaveLength(0);
 });
 
 test("estate records are excluded when estate_living_zone is in hiddenLayers", () => {

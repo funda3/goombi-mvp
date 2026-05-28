@@ -93,7 +93,9 @@ export function LeafletMap({
 
   function fitResults() {
     if (!mapRef.current || (listings.length === 0 && events.length === 0 && nightlife.length === 0)) return;
-    const listingCoords = listings.map((l) => [l.latitude, l.longitude] as [number, number]);
+    const listingCoords = listings
+      .filter((l) => getListingType(l) !== "estate_living_zone")
+      .map((l) => [l.latitude, l.longitude] as [number, number]);
     const eventCoords = events.map((e) => [e.latitude, e.longitude] as [number, number]);
     const nightlifeCoords = nightlife.map((n) => [n.latitude, n.longitude] as [number, number]);
     const coords = [...listingCoords, ...eventCoords, ...nightlifeCoords];
@@ -194,6 +196,9 @@ export function LeafletMap({
         )}
         {listings.map((listing) => {
           const lt = getListingType(listing);
+          if (lt === "estate_living_zone") {
+            return null;
+          }
           const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
           if (lt === "workspace") {
             return (

@@ -16,18 +16,68 @@ import { useListingFilters } from "../hooks/useListingFilters";
 import { useFavourites } from "../hooks/useFavourites";
 import { api } from "../services/api";
 import type { EventRecord } from "../types/event";
-import type { Listing } from "../types/listing";
+import { getListingType, type Listing } from "../types/listing";
 import type { NightlifeVenue } from "../types/nightlife";
+import type {
+  RestaurantProspectPublicCounts,
+  RestaurantProspectPublicMarker,
+} from "../types/restaurantProspect";
 import type { ServiceMarker } from "../types/services";
 import type { FlyTo } from "../components/LeafletMap";
 import { haversineKm } from "../utils/haversine";
+import { appHref } from "../utils/routes";
 
 const JHB: [number, number] = [-26.1076, 28.0567];
+
+function showRestaurantProspectsOnMap(): boolean {
+  return ["1", "true", "yes", "on"].includes(
+    String(import.meta.env.VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP ?? "").trim().toLowerCase(),
+  );
+}
+
+function toDemoRestaurantListing(marker: RestaurantProspectPublicMarker): Listing {
+  const timestamp = new Date().toISOString();
+  return {
+    id: `demo-prospect-${marker.id}`,
+    name: marker.name,
+    category: "restaurant",
+    listing_type: "restaurant",
+    approval_status: marker.approval_status,
+    demo_visibility: marker.demo_visibility,
+    province: marker.province,
+    city: marker.city,
+    suburb: marker.suburb,
+    address: `${marker.suburb}, ${marker.city}`,
+    latitude: marker.latitude,
+    longitude: marker.longitude,
+    price_per_night: 0,
+    max_guests: null,
+    rooms: null,
+    description: "Demo prospect marker for provider approval workflow.",
+    short_description: "Demo prospect marker for provider approval workflow.",
+    long_description: "Provider approval pending.",
+    amenities: [],
+    photos: [],
+    images: [],
+    tags: [],
+    owner_name: "",
+    owner_phone: "",
+    cuisine_tags: marker.cuisine_tags,
+    price_band_goombi: marker.price_band ?? null,
+    provider_type: marker.cuisine_tags.join(", "),
+    verified_status: false,
+    source_type: "manual_seed",
+    source_note: "Internal demo prospect marker.",
+    created_at: timestamp,
+    updated_at: timestamp,
+  };
+}
 
 export function HomePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [nightlife, setNightlife] = useState<NightlifeVenue[]>([]);
+  const [restaurantCounts, setRestaurantCounts] = useState<RestaurantProspectPublicCounts | null>(null);
   const [selected, setSelected] = useState<Listing>();
   const [selectedEvent, setSelectedEvent] = useState<EventRecord>();
   const [selectedNightlife, setSelectedNightlife] = useState<NightlifeVenue>();
@@ -145,11 +195,23 @@ export function HomePage() {
   }, [filteredNightlife, filters.category]);
 
   useEffect(() => {
-    Promise.all([api.listings(), api.events(), api.nightlife()])
-      .then(([listingData, eventData, nightlifeData]) => {
-        setListings(listingData);
+    const demoModeEnabled = showRestaurantProspectsOnMap();
+    Promise.all([
+      api.listings(),
+      api.events(),
+      api.nightlife(),
+      demoModeEnabled ? api.restaurantProspectsPublic() : Promise.resolve(null),
+    ])
+      .then(([listingData, eventData, nightlifeData, restaurantProspects]) => {
+        const publicListings = listingData.filter((item) => getListingType(item) !== "estate_living_zone");
+        const demoRestaurantListings = restaurantProspects
+          ? restaurantProspects.restaurants.map(toDemoRestaurantListing)
+          : [];
+
+        setListings([...publicListings, ...demoRestaurantListings]);
         setEvents(eventData);
         setNightlife(nightlifeData);
+        setRestaurantCounts(restaurantProspects?.counts ?? null);
       })
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Listings failed to load."))
       .finally(() => setLoading(false));
@@ -199,10 +261,10 @@ export function HomePage() {
         {/* Mobile: two-row layout */}
         <div className="flex flex-col gap-1.5 p-1.5 md:hidden">
           <div className="flex items-center gap-1">
-            <a className="nav-link nav-link-active" href="/" title="Map discovery">
+            <a className="nav-link nav-link-active" href={appHref("/")} title="Map discovery">
               <MapPinned className="h-4 w-4" />Map
             </a>
-            <a className="nav-link" href="/admin" title="Admin listings">
+            <a className="nav-link" href={appHref("/admin")} title="Admin listings">
               <Building2 className="h-4 w-4" />Admin
             </a>
             <button
@@ -219,10 +281,10 @@ export function HomePage() {
         {/* Desktop: single-row layout */}
         <div className="hidden md:flex md:items-center md:gap-3 md:px-2 md:py-1">
           <div className="flex shrink-0 gap-1">
-            <a className="nav-link nav-link-active" href="/" title="Map discovery">
+            <a className="nav-link nav-link-active" href={appHref("/")} title="Map discovery">
               <MapPinned className="h-4 w-4" />Map
             </a>
-            <a className="nav-link" href="/admin" title="Admin listings">
+            <a className="nav-link" href={appHref("/admin")} title="Admin listings">
               <Building2 className="h-4 w-4" />Admin
             </a>
           </div>
@@ -256,6 +318,7 @@ export function HomePage() {
             suburbs={suburbs}
             resultCount={displayedListings.length + mapEvents.length + mapNightlife.length}
             favouriteCount={favouriteCount}
+            restaurantCounts={restaurantCounts}
             onChange={setFilters}
             isOpen={filterOpen}
             onClose={() => setFilterOpen(false)}

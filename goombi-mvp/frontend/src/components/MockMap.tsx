@@ -3,7 +3,7 @@ import { Minus, Plus, RotateCcw } from "lucide-react";
 
 import type { EventRecord } from "../types/event";
 import type { NightlifeVenue } from "../types/nightlife";
-import { isWorkspace, type Listing } from "../types/listing";
+import { getListingType, isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
 type Props = {
@@ -105,10 +105,12 @@ export function MockMap({
       return;
     }
     const bounds = viewportRef.current.getBoundingClientRect();
-    const listingPositions = listings.map((listing) => {
+    const listingPositions = listings
+      .filter((listing) => getListingType(listing) !== "estate_living_zone")
+      .map((listing) => {
       const position = listingPosition(listing);
       return { x: Number.parseFloat(position.left), y: Number.parseFloat(position.top) };
-    });
+      });
     const eventPositions = events.map((event) => {
       const position = listingPosition({ latitude: event.latitude, longitude: event.longitude } as Listing);
       return { x: Number.parseFloat(position.left), y: Number.parseFloat(position.top) };
@@ -192,23 +194,34 @@ export function MockMap({
         <div className="absolute inset-0 opacity-60 [background-image:linear-gradient(rgba(16,42,51,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(16,42,51,.12)_1px,transparent_1px)] [background-size:72px_72px]" />
         <div className="absolute left-[18%] top-0 h-full w-16 rotate-12 bg-white/35" />
         <div className="absolute left-0 top-[53%] h-12 w-full -rotate-3 bg-white/35" />
-        {listings.map((listing) => (
-          <button
-            aria-label={`Open ${listing.name}`}
-            className={`absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-lg transition hover:scale-110 ${
-              isWorkspace(listing)
-                ? `${listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom" ? "rotate-45" : "rounded-sm"} bg-fuchsia-700`
-                : `${listing.verified_status ? "bg-teal-700" : "bg-orange-500"} rounded-full`
-            } ${(selectedId === listing.id || highlighted.has(listing.id)) ? "ring-4 ring-amber-300" : ""}`}
-            key={listing.id}
-            style={listingPosition(listing)}
-            title={`${listing.name}, ${listing.suburb}`}
-            type="button"
-            onClick={() => onSelect(listing)}
-            onMouseDown={keepMarkerClickable}
-            onPointerDown={keepMarkerClickable}
-          />
-        ))}
+        {listings.map((listing) => {
+          const listingType = getListingType(listing);
+          if (listingType === "estate_living_zone") {
+            return null;
+          }
+          const isRestaurant = listingType === "restaurant";
+          return (
+            <button
+              aria-label={`Open ${listing.name}`}
+              className={`absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center border-2 border-white text-[10px] shadow-lg transition hover:scale-110 ${
+                isWorkspace(listing)
+                  ? `${listing.workspace_type === "meeting_room" || listing.workspace_type === "boardroom" ? "rotate-45" : "rounded-sm"} bg-fuchsia-700`
+                  : isRestaurant
+                    ? "rounded-full bg-red-600 text-white"
+                    : `${listing.verified_status ? "bg-teal-700" : "bg-orange-500"} rounded-full`
+              } ${(selectedId === listing.id || highlighted.has(listing.id)) ? "ring-4 ring-amber-300" : ""}`}
+              key={listing.id}
+              style={listingPosition(listing)}
+              title={`${listing.name}, ${listing.suburb}`}
+              type="button"
+              onClick={() => onSelect(listing)}
+              onMouseDown={keepMarkerClickable}
+              onPointerDown={keepMarkerClickable}
+            >
+              {isRestaurant ? "F" : ""}
+            </button>
+          );
+        })}
         {events.map((event) => (
           <button
             key={event.id}

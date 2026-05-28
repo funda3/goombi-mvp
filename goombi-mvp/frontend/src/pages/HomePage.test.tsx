@@ -90,6 +90,7 @@ vi.mock("../services/api", () => ({
     listings: vi.fn(),
     events: vi.fn(),
     nightlife: vi.fn(),
+    restaurantProspectsPublic: vi.fn(),
   },
 }));
 
@@ -98,6 +99,7 @@ import { api } from "../services/api";
 const mockListings = api.listings as ReturnType<typeof vi.fn>;
 const mockEvents = api.events as ReturnType<typeof vi.fn>;
 const mockNightlife = api.nightlife as ReturnType<typeof vi.fn>;
+const mockRestaurantProspectsPublic = api.restaurantProspectsPublic as ReturnType<typeof vi.fn>;
 
 const makeListing = (id: string, name: string): Listing => ({
   id,
@@ -168,11 +170,25 @@ const makeNightlife = (id: string, name: string): NightlifeVenue => ({
 });
 
 beforeEach(() => {
+  vi.stubEnv("VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP", "false");
   mockListings.mockReset();
   mockEvents.mockReset();
   mockNightlife.mockReset();
+  mockRestaurantProspectsPublic.mockReset();
   mockEvents.mockResolvedValue([]);
   mockNightlife.mockResolvedValue([]);
+  mockRestaurantProspectsPublic.mockResolvedValue({
+    restaurants: [],
+    counts: {
+      visible_restaurant_demo_prospects: 0,
+      approved_restaurants: 0,
+      pending_approval: 0,
+    },
+  });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 test("marker click opens a single bottom sheet and selecting another marker updates it", async () => {
@@ -285,6 +301,51 @@ test("all mode shows accommodation workspace events nightlife and restaurants", 
   expect(screen.getByTestId("marker-restaurant-approved")).toBeInTheDocument();
   expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument();
   expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
+});
+
+test("demo mode renders all restaurant prospects as map markers", async () => {
+  vi.stubEnv("VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP", "true");
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
+  mockRestaurantProspectsPublic.mockResolvedValue({
+    restaurants: [
+      {
+        id: "prospect-1",
+        name: "Prospect One",
+        province: "Gauteng",
+        city: "Johannesburg",
+        suburb: "Sandton",
+        cuisine_tags: ["Steakhouse"],
+        price_band: "$$",
+        latitude: -26.1,
+        longitude: 28.05,
+        approval_status: "prospect_only",
+        demo_visibility: true,
+      },
+      {
+        id: "prospect-2",
+        name: "Prospect Two",
+        province: "Gauteng",
+        city: "Johannesburg",
+        suburb: "Rosebank",
+        cuisine_tags: ["Sushi"],
+        price_band: "$$$",
+        latitude: -26.12,
+        longitude: 28.04,
+        approval_status: "contacted",
+        demo_visibility: true,
+      },
+    ],
+    counts: {
+      visible_restaurant_demo_prospects: 2,
+      approved_restaurants: 0,
+      pending_approval: 2,
+    },
+  });
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-demo-prospect-prospect-1")).toBeInTheDocument());
+  expect(screen.getByTestId("marker-demo-prospect-prospect-2")).toBeInTheDocument();
 });
 
 test("close button hides the bottom sheet and clears marker selection", async () => {

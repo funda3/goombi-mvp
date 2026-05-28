@@ -107,6 +107,10 @@ function GoogleCircleMap({
     const highlightedEvents = new Set(highlightedEventIds);
 
     const shapes = listings.map((listing) => {
+      const lt = getListingType(listing);
+      if (lt === "estate_living_zone") {
+        return null;
+      }
       const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
       if (isWorkspace(listing)) {
         const marker = new googleApi.maps.Marker({
@@ -128,7 +132,30 @@ function GoogleCircleMap({
         bounds.extend(marker.getPosition());
         return marker;
       }
-      const lt = getListingType(listing);
+      if (lt === "restaurant") {
+        const marker = new googleApi.maps.Marker({
+          map,
+          position: { lat: listing.latitude, lng: listing.longitude },
+          title: listing.name,
+          icon: {
+            path: googleApi.maps.SymbolPath.CIRCLE,
+            fillColor: "#dc2626",
+            fillOpacity: 0.95,
+            strokeColor: isHighlighted ? "#f59e0b" : "#ffffff",
+            strokeWeight: isHighlighted ? 3 : 2,
+            scale: isHighlighted ? 11 : 9,
+          },
+          label: {
+            text: "F",
+            color: "#ffffff",
+            fontSize: "11px",
+            fontWeight: "700",
+          },
+        });
+        marker.addListener("click", () => onSelect(listing));
+        bounds.extend(marker.getPosition());
+        return marker;
+      }
       const fillColor = lt === "accommodation"
         ? (listing.verified_status ? "#0f766e" : "#e8790a")
         : (GOOGLE_LAYER_COLORS[lt] ?? "#475569");
@@ -187,9 +214,10 @@ function GoogleCircleMap({
       return marker;
     });
 
-    if (listings.length + events.length + nightlife.length > 1) map.fitBounds(bounds, 54);
+    const publicListingCount = listings.filter((item) => getListingType(item) !== "estate_living_zone").length;
+    if (publicListingCount + events.length + nightlife.length > 1) map.fitBounds(bounds, 54);
     return () => {
-      shapes.forEach((shape) => shape.setMap(null));
+      shapes.filter(Boolean).forEach((shape) => shape!.setMap(null));
       eventMarkers.forEach((marker) => marker.setMap(null));
       nightlifeMarkers.forEach((marker) => marker.setMap(null));
       servicePin?.setMap(null);

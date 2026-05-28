@@ -3,10 +3,23 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import enquiries, events, listings, nightlife, otp, provider_crm, restaurant_prospects
+from .routes import (
+    enquiries,
+    events,
+    listings,
+    nearby_services,
+    nightlife,
+    otp,
+    provider_crm,
+    restaurant_prospects,
+)
 from .storage import JsonStore
 
-_DEFAULT_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
+_DEFAULT_ORIGINS = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "https://funda3.github.io",
+]
 # Matches any HTTP origin on private LAN ranges (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
 _LAN_ORIGIN_RE = r"http://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?"
 
@@ -38,6 +51,7 @@ def create_app(store: JsonStore | None = None) -> FastAPI:
     app.include_router(nightlife.router)
     app.include_router(provider_crm.router)
     app.include_router(restaurant_prospects.router)
+    app.include_router(nearby_services.router)
     app.include_router(enquiries.router)
     app.include_router(otp.router)
     return app

@@ -3,6 +3,7 @@ import { Building2, CalendarClock, Download, MapPinned, Search, Star, X } from "
 
 import { api } from "../services/api";
 import type { ProviderCrmRecord, ProviderCrmStatus } from "../types/providerCrm";
+import { appHref } from "../utils/routes";
 
 const STATUSES: ProviderCrmStatus[] = [
   "prospect_only",
@@ -138,9 +139,9 @@ export function AdminCRMPage() {
   return (
     <>
       <nav className="fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-white/70 bg-white/95 p-1 shadow-panel backdrop-blur">
-        <a className="nav-link" href="/" title="Map discovery"><MapPinned className="h-4 w-4" />Map</a>
-        <a className="nav-link" href="/admin" title="Admin listings"><Building2 className="h-4 w-4" />Admin</a>
-        <a className="nav-link nav-link-active" href="/admin/crm" title="Provider CRM">CRM</a>
+        <a className="nav-link" href={appHref("/")} title="Map discovery"><MapPinned className="h-4 w-4" />Map</a>
+        <a className="nav-link" href={appHref("/admin")} title="Admin listings"><Building2 className="h-4 w-4" />Admin</a>
+        <a className="nav-link nav-link-active" href={appHref("/admin/crm")} title="Provider CRM">CRM</a>
       </nav>
       <main className="min-h-screen bg-[#e7f1ec] px-4 pb-10 pt-24 text-slate-950 lg:px-8">
         <section className="mx-auto max-w-7xl">

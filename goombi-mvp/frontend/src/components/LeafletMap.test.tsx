@@ -241,11 +241,11 @@ test("multiple layer types render with their layer-specific marker types", () =>
   ];
   render(<LeafletMap listings={listings} onSelect={() => undefined} />);
 
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(3);
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(2);
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(1);
 });
 
-test("estate_living_zone listing renders as circle-marker", () => {
+test("estate_living_zone listing does not render a public marker", () => {
   const estateListing = makeListing({
     id: "estate-1",
     name: "Waterfall Estate Demo",
@@ -254,7 +254,7 @@ test("estate_living_zone listing renders as circle-marker", () => {
   });
   render(<LeafletMap listings={[estateListing]} onSelect={() => undefined} />);
 
-  expect(screen.getByTestId("circle-marker")).toBeInTheDocument();
+  expect(screen.queryByTestId("circle-marker")).not.toBeInTheDocument();
   expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
 });
 
@@ -278,7 +278,7 @@ test("exactly 7 layer types are defined", () => {
   expect(ALL_LISTING_TYPES).toEqual(expected);
 });
 
-// ── GMB-01E: all 8 layers render markers ─────────────────────────────────────
+// ── Public marker rendering coverage ─────────────────────────────────────────
 
 test("restaurant listing renders as food-pin marker", () => {
   const listing = makeListing({
@@ -322,7 +322,7 @@ test("event_space listing renders as circle-marker", () => {
   expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
 });
 
-test("all 7 layer types render the correct marker type", () => {
+test("all public layer types render the correct marker type", () => {
   const listings: Listing[] = [
     makeListing({ id: "acc", listing_type: "accommodation" }),
     makeListing({ id: "tour", listing_type: "tourism_experience", category: "accommodation" }),
@@ -343,8 +343,8 @@ test("all 7 layer types render the correct marker type", () => {
   });
   render(<LeafletMap listings={[...listings, workspace]} onSelect={() => undefined} />);
 
-  // 5 non-workspace/non-restaurant layers render as circle-markers
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(5);
+  // estate markers are suppressed from public map rendering
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(4);
   // workspace and restaurant render custom Marker icons
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(2);
 });

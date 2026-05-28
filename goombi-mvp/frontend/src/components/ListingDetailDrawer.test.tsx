@@ -86,6 +86,23 @@ test("restaurant: shows cuisine/type when provider_type is set", () => {
   expect(screen.queryByText(/reviews/i)).not.toBeInTheDocument();
 });
 
+test("restaurant demo prospect: shows pending badge and CRM link", () => {
+  renderDrawer({
+    ...base,
+    listing_type: "restaurant",
+    category: "restaurant",
+    cuisine_tags: ["Contemporary"],
+    price_band_goombi: "$$",
+    demo_visibility: true,
+    approval_status: "prospect_only",
+    max_guests: null,
+    rooms: null,
+  });
+
+  expect(screen.getByText("Demo prospect — provider approval pending")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Manage in CRM" })).toHaveAttribute("href", "/goombi-mvp/#/admin/crm");
+});
+
 // ── Transport node ────────────────────────────────────────────────────────────
 test("transport_node: does not show rooms or guest count", () => {
   renderDrawer({

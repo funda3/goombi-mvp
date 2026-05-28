@@ -7,6 +7,7 @@ import { EnquiryFlow } from "./EnquiryFlow";
 import { NearbyListings } from "./NearbyListings";
 import { NearbyServices } from "./NearbyServices";
 import { PhotoCarousel } from "./PhotoCarousel";
+import { appHref } from "../utils/routes";
 
 const LAYER_LABELS: Record<string, string> = {
   tourism_experience: "Tourism Experience",
@@ -70,6 +71,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
 
   const isEstateZone = !!listing && getListingType(listing) === "estate_living_zone";
   const layerType = listing ? getListingType(listing) : null;
+  const isDemoProspectRestaurant = !!listing && layerType === "restaurant" && listing.demo_visibility === true;
 
   const body = listing ? (
     <>
@@ -195,9 +197,22 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
               )}
               {listing.provider_type && <span><strong className="text-slate-950">Type:</strong> {listing.provider_type}</span>}
               {listing.price_band_goombi && <span><strong className="text-slate-950">Price band:</strong> {listing.price_band_goombi}</span>}
+              {listing.approval_status && (
+                <span><strong className="text-slate-950">Approval status:</strong> {listing.approval_status.replace(/_/g, " ")}</span>
+              )}
               <span className="w-fit rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-950">
-                {listing.verified_status ? "Partner verified" : "Demo/public-source record"}
+                {isDemoProspectRestaurant
+                  ? "Demo prospect — provider approval pending"
+                  : (listing.verified_status ? "Partner verified" : "Demo/public-source record")}
               </span>
+              {isDemoProspectRestaurant && (
+                <a
+                  className="secondary-button w-fit"
+                  href={appHref("/admin/crm")}
+                >
+                  Manage in CRM
+                </a>
+              )}
             </>
           )}
 
@@ -236,7 +251,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       </div>
 
       {/* Contact / external links — estate listings use discovery-only wording; no booking CTA */}
-      {(listing.website_url || (!isEstateZone && listing.booking_url) || listing.whatsapp_url || listing.contact_phone || listing.contact_email) && (
+      {!isDemoProspectRestaurant && (listing.website_url || (!isEstateZone && listing.booking_url) || listing.whatsapp_url || listing.contact_phone || listing.contact_email) && (
         <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4">
           {listing.website_url && (
             <a className="secondary-button flex items-center justify-center gap-2" href={listing.website_url} rel="noreferrer" target="_blank">
@@ -290,6 +305,10 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
             </button>
           )}
           <p><strong className="text-slate-950">Source note:</strong> {listing.source_note}</p>
+        </div>
+      ) : isDemoProspectRestaurant ? (
+        <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 text-sm text-slate-700">
+          <p className="text-xs text-slate-500">This marker is shown for internal demo visibility only.</p>
         </div>
       ) : (
         <EnquiryFlow listing={listing} />

@@ -32,3 +32,8 @@ export type ServiceGroup = {
   label: string;
   nearest: NearbyServiceItem | null;
 };
+
+export type NearbyServicesApiResponse = {
+  status: "ok" | "fallback";
+  services: ServiceGroup[];
+};

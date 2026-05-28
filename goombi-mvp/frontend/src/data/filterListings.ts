@@ -22,12 +22,17 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const matchesRegion = filters.region === "all" || listing.province === filters.region;
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
     const effectiveType = getListingType(listing);
+    const isEstate = effectiveType === "estate_living_zone";
     const isWorkspace = effectiveType === "workspace";
     const isPublicRestaurant =
       effectiveType !== "restaurant" ||
       (
         listing.category === "restaurant" &&
-        (listing.source_type === "provider_approved" || listing.source_type === "manual_public_source")
+        (
+          listing.demo_visibility === true ||
+          listing.source_type === "provider_approved" ||
+          listing.source_type === "manual_public_source"
+        )
       );
     const recordCategory =
       effectiveType === "restaurant" ? "restaurant" :
@@ -48,6 +53,7 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
       filters.hiddenLayers.length === 0 || !filters.hiddenLayers.includes(effectiveType);
     return (
       matchesRegion &&
+      !isEstate &&
       isPublicRestaurant &&
       matchesCategory &&
       matchesWorkspaceType &&

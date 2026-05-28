@@ -39,7 +39,7 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
     setServiceGroups([]);
     fetchNearbyServices(selected.latitude, selected.longitude)
       .then((data) => { serviceCacheRef.current.set(key, data); setServiceGroups(data); })
-      .catch((err) => setServicesError(err instanceof Error ? err.message : "Failed to load services"))
+      .catch(() => setServicesError("Nearby services unavailable."))
       .finally(() => setServicesLoading(false));
   }, [coordKey, selected]);
 
@@ -51,7 +51,7 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
         <p className="py-2 text-sm text-slate-500">Select a listing on the map to see nearby services.</p>
       )}
       {selected && servicesLoading && (
-        <p className="py-2 text-sm text-slate-500">Fetching services from OpenStreetMap…</p>
+        <p className="py-2 text-sm text-slate-500">Loading nearby services...</p>
       )}
       {selected && servicesError && (
         <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{servicesError}</p>
@@ -69,7 +69,7 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
         </>
       )}
       {selected && !servicesLoading && !servicesError && serviceGroups.length > 0 && !hasServiceResults && (
-        <p className="py-2 text-sm text-slate-500">No services found within 5 km.</p>
+        <p className="py-2 text-sm text-slate-500">No nearby services found.</p>
       )}
     </div>
   );

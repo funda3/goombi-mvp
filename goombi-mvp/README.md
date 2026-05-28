@@ -166,3 +166,75 @@ The bundled seed data covers Gauteng, Western Cape, and KwaZulu-Natal with synth
 - AI recommendations or search
 - Authentication or user accounts
 
+## Deployment (GitHub Pages + Render)
+
+Goombi can be deployed with this split architecture:
+
+- Frontend: GitHub Pages
+- Backend API: Render (`goombi-api`)
+- Public frontend URL: `https://funda3.github.io/goombi-mvp/`
+
+### 1) Backend on Render
+
+`render.yaml` already defines:
+
+- `goombi-api` (Python web service rooted at `goombi-mvp/backend`)
+- `goombi-frontend` (static service rooted at `goombi-mvp/frontend`)
+
+For the backend service, set environment variables:
+
+- `CORS_ORIGINS=https://funda3.github.io`
+- Optional additional origins separated by commas as needed.
+
+Backend URL example:
+
+- `https://goombi-api.onrender.com`
+
+### 2) Frontend production environment
+
+In `frontend/`, create `.env.production` from `.env.production.example`:
+
+```powershell
+cd frontend
+Copy-Item .env.production.example .env.production
+```
+
+Required values:
+
+- `VITE_API_BASE_URL=https://goombi-api.onrender.com`
+- `VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP=true`
+
+### 3) GitHub Pages build and publish
+
+The frontend is configured with Vite base path `/goombi-mvp/` for GitHub Pages.
+
+Run:
+
+```powershell
+cd frontend
+npm.cmd test
+npm.cmd run build
+```
+
+Production deploy command:
+
+```powershell
+$env:VITE_API_BASE_URL="https://goombi-api.onrender.com"
+$env:VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP="true"
+npm.cmd run deploy:prod
+```
+
+### 4) Production bundle guard
+
+`deploy:check` fails deployment when:
+
+- the bundle contains `localhost` or `127.0.0.1`
+- `VITE_API_BASE_URL` is missing
+- the required Render API URL is not present in the built bundle
+
+### 5) Routing and assets
+
+- App navigation uses hash routes, so routes remain stable on GitHub Pages.
+- Assets are served from `/goombi-mvp/`.
+- Leaflet OpenStreetMap tiles continue loading normally in production.
+

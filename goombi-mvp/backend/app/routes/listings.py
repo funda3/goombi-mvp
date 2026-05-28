@@ -13,6 +13,8 @@ def store(request: Request):
 
 
 def is_public_listing(item: Listing) -> bool:
+    if item.listing_type == "estate_living_zone":
+        return False
     is_restaurant = item.category == "restaurant" or item.listing_type == "restaurant"
     if not is_restaurant:
         return True
@@ -33,7 +35,7 @@ def get_listings(request: Request, category: str | None = Query(default=None)) -
 @router.get("/{listing_id}", response_model=Listing)
 def get_listing(listing_id: str, request: Request) -> Listing:
     listing = store(request).get_listing(listing_id)
-    if not listing:
+    if not listing or not is_public_listing(listing):
         raise HTTPException(status_code=404, detail="Listing not found")
     return listing
 

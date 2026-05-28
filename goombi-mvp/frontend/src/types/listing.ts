@@ -78,6 +78,8 @@ export type Listing = {
   price_to?: number | null;
   capacity?: number | null;
   cuisine_tags?: string[];
+  approval_status?: string;
+  demo_visibility?: boolean;
   price_band_goombi?: string | null;
   description_goombi?: string | null;
   booking_url?: string | null;

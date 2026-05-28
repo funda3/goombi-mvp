@@ -39,7 +39,7 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
         cacheRef.current.set(listing.id, data);
         setGroups(data);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load services"))
+      .catch(() => setError("Nearby services unavailable."))
       .finally(() => setLoading(false));
   }, [expanded, listing.id, listing.latitude, listing.longitude]);
 
@@ -58,7 +58,7 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
 
       {expanded && (
         <div className="mt-3 grid gap-3">
-          {loading && <p className="text-xs text-slate-500">Fetching nearby services…</p>}
+          {loading && <p className="text-xs text-slate-500">Loading nearby services...</p>}
           {error && <p className="rounded-md bg-rose-50 px-2 py-1.5 text-xs text-rose-700">{error}</p>}
 
           {!loading && !error && groups.some((g) => g.nearest !== null) && (
@@ -87,7 +87,7 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
           )}
 
           {!loading && !error && !hasResults && (
-            <p className="text-xs text-slate-500">No services found within 5 km.</p>
+            <p className="text-xs text-slate-500">No nearby services found.</p>
           )}
         </div>
       )}

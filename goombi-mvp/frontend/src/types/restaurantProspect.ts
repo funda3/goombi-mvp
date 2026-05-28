@@ -29,3 +29,28 @@ export type RestaurantProspect = {
 };
 
 export type RestaurantProspectDraft = Omit<RestaurantProspect, "id" | "created_at" | "updated_at">;
+
+export type RestaurantProspectPublicMarker = {
+  id: string;
+  name: string;
+  province: string;
+  city: string;
+  suburb: string;
+  cuisine_tags: string[];
+  price_band?: string | null;
+  latitude: number;
+  longitude: number;
+  approval_status: RestaurantApprovalStatus;
+  demo_visibility: true;
+};
+
+export type RestaurantProspectPublicCounts = {
+  visible_restaurant_demo_prospects: number;
+  approved_restaurants: number;
+  pending_approval: number;
+};
+
+export type RestaurantProspectPublicResponse = {
+  restaurants: RestaurantProspectPublicMarker[];
+  counts: RestaurantProspectPublicCounts;
+};

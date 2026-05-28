@@ -1,9 +1,47 @@
+import os
+
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 
-from ..models import RestaurantProspect, RestaurantProspectCreate, RestaurantProspectUpdate
+from ..models import (
+    RestaurantProspect,
+    RestaurantProspectCreate,
+    RestaurantProspectPublicCounts,
+    RestaurantProspectPublicMarker,
+    RestaurantProspectPublicResponse,
+    RestaurantProspectUpdate,
+)
 
 
 router = APIRouter(prefix="/api/restaurant-prospects", tags=["restaurant-prospects"])
+
+
+_PENDING_APPROVAL_STATUSES = {
+    "prospect_only",
+    "contacted",
+    "loi_requested",
+    "loi_signed",
+}
+
+
+def _show_restaurant_prospects_on_map() -> bool:
+    value = os.environ.get("SHOW_RESTAURANT_PROSPECTS_ON_MAP", "")
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _to_public_marker(prospect: RestaurantProspect) -> RestaurantProspectPublicMarker:
+    return RestaurantProspectPublicMarker(
+        id=prospect.id,
+        name=prospect.name,
+        province=prospect.province,
+        city=prospect.city,
+        suburb=prospect.suburb,
+        cuisine_tags=prospect.cuisine_tags,
+        price_band=prospect.price_band,
+        latitude=prospect.latitude,
+        longitude=prospect.longitude,
+        approval_status=prospect.approval_status,
+        demo_visibility=True,
+    )
 
 
 @router.get("", response_model=list[RestaurantProspect])
@@ -24,6 +62,30 @@ def get_restaurant_prospects(
     if audit_status:
         prospects = [item for item in prospects if item.audit_status == audit_status]
     return prospects
+
+
+@router.get("/public", response_model=RestaurantProspectPublicResponse)
+def get_public_restaurant_prospects(request: Request) -> RestaurantProspectPublicResponse:
+    prospects = request.app.state.store.list_restaurant_prospects()
+    include_all = _show_restaurant_prospects_on_map()
+
+    if include_all:
+        visible = prospects
+    else:
+        visible = [item for item in prospects if item.approval_status == "provider_approved"]
+
+    markers = [_to_public_marker(item) for item in visible]
+    approved_count = sum(1 for item in prospects if item.approval_status == "provider_approved")
+    pending_count = sum(1 for item in prospects if item.approval_status in _PENDING_APPROVAL_STATUSES)
+
+    return RestaurantProspectPublicResponse(
+        restaurants=markers,
+        counts=RestaurantProspectPublicCounts(
+            visible_restaurant_demo_prospects=len(markers),
+            approved_restaurants=approved_count,
+            pending_approval=pending_count,
+        ),
+    )
 
 
 @router.get("/{prospect_id}", response_model=RestaurantProspect)

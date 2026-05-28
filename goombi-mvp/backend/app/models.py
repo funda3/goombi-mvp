@@ -386,6 +386,67 @@ class RestaurantProspect(RestaurantProspectBase):
         return cls(id=str(uuid4()), created_at=timestamp, updated_at=timestamp, **payload.model_dump())
 
 
+class RestaurantProspectPublicMarker(BaseModel):
+    id: str
+    name: str
+    province: str
+    city: str
+    suburb: str
+    cuisine_tags: list[str] = Field(default_factory=list)
+    price_band: str | None = None
+    latitude: float
+    longitude: float
+    approval_status: RestaurantApprovalStatusLiteral
+    demo_visibility: bool = True
+
+
+class RestaurantProspectPublicCounts(BaseModel):
+    visible_restaurant_demo_prospects: int
+    approved_restaurants: int
+    pending_approval: int
+
+
+class RestaurantProspectPublicResponse(BaseModel):
+    restaurants: list[RestaurantProspectPublicMarker]
+    counts: RestaurantProspectPublicCounts
+
+
+ServiceCategoryLiteral = Literal[
+    "gym",
+    "shopping",
+    "fuel",
+    "hospital",
+    "clinic",
+    "police",
+    "restaurant",
+    "atm",
+    "supermarket",
+    "pharmacy",
+    "transit",
+    "ev_charging",
+]
+
+
+class NearbyServiceItem(BaseModel):
+    id: int
+    name: str
+    lat: float
+    lon: float
+    distanceKm: float
+
+
+class NearbyServiceGroup(BaseModel):
+    category: ServiceCategoryLiteral
+    emoji: str
+    label: str
+    nearest: NearbyServiceItem | None = None
+
+
+class NearbyServicesResponse(BaseModel):
+    status: Literal["ok", "fallback"]
+    services: list[NearbyServiceGroup]
+
+
 class ProviderCrmBase(BaseModel):
     provider_type: ProviderTypeLiteral
     provider_record_id: str

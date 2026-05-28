@@ -2,7 +2,12 @@ import type { BookingEnquiryDraft, Enquiry, EnquiryDraft, Listing, ListingDraft 
 import type { EventCategory, EventRecord, EventRecurringType } from "../types/event";
 import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenue, NightlifeVenueType } from "../types/nightlife";
 import type { ProviderCrmDraft, ProviderCrmRecord } from "../types/providerCrm";
-import type { RestaurantProspect, RestaurantProspectDraft } from "../types/restaurantProspect";
+import type {
+  RestaurantProspect,
+  RestaurantProspectDraft,
+  RestaurantProspectPublicResponse,
+} from "../types/restaurantProspect";
+import type { NearbyServicesApiResponse } from "../types/services";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`;
 
@@ -78,6 +83,7 @@ export const api = {
   },
   createRestaurantProspect: (payload: RestaurantProspectDraft) =>
     request<RestaurantProspect>("/api/restaurant-prospects", { method: "POST", body: JSON.stringify(payload) }),
+  restaurantProspectsPublic: () => request<RestaurantProspectPublicResponse>("/api/restaurant-prospects/public"),
   updateRestaurantProspect: (id: string, payload: RestaurantProspectDraft) =>
     request<RestaurantProspect>(`/api/restaurant-prospects/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   deleteRestaurantProspect: (id: string) =>
@@ -125,4 +131,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ cellphone, code }),
     }),
+  nearbyServices: (lat: number, lon: number) => {
+    const params = new URLSearchParams({ lat: String(lat), lon: String(lon) });
+    return request<NearbyServicesApiResponse>(`/api/nearby-services?${params.toString()}`);
+  },
 };
