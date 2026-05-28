@@ -147,6 +147,7 @@ export function AdminPage() {
   const [sortKey, setSortKey] = useState<"name" | "layer" | "province" | "price" | "verified">("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [verifiedFilter, setVerifiedFilter] = useState<"all" | "verified" | "unverified">("all");
+  const [restaurantProspectProvince, setRestaurantProspectProvince] = useState<RegionOption>("all");
 
   const refresh = () => api.listings().then(setListings);
   const refreshRestaurantProspects = () => api.restaurantProspects().then(setRestaurantProspects);
@@ -190,6 +191,14 @@ export function AdminPage() {
       }
     });
   }, [filteredListings, sortKey, sortDir]);
+
+  const filteredRestaurantProspects = useMemo(
+    () =>
+      restaurantProspects.filter((prospect) =>
+        restaurantProspectProvince === "all" || prospect.province === restaurantProspectProvince,
+      ),
+    [restaurantProspectProvince, restaurantProspects],
+  );
 
   function handleSort(key: typeof sortKey) {
     if (key === sortKey) {
@@ -344,13 +353,31 @@ export function AdminPage() {
                 Internal-only prospect data for outreach and gap analysis. These records are not shown on the public map until provider approval.
               </p>
             </div>
-            <span className="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
-              KZN restaurant audit pending.
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="text-xs font-bold uppercase text-slate-500" htmlFor="restaurant-prospect-province">
+                Province
+              </label>
+              <select
+                id="restaurant-prospect-province"
+                className="field w-48"
+                value={restaurantProspectProvince}
+                onChange={(event) => setRestaurantProspectProvince(event.target.value as RegionOption)}
+              >
+                <option value="all">All provinces</option>
+                <option value="Gauteng">Gauteng</option>
+                <option value="Western Cape">Western Cape</option>
+                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+              </select>
+              <span className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900">
+                KZN restaurant audit seed completed — records remain internal until provider approval.
+              </span>
+            </div>
           </div>
         </div>
         {restaurantProspects.length === 0 ? (
           <p className="p-5 text-sm text-slate-600">No restaurant prospects loaded.</p>
+        ) : filteredRestaurantProspects.length === 0 ? (
+          <p className="p-5 text-sm text-slate-600">No restaurant prospects match the selected province.</p>
         ) : (
           <div className="overflow-auto">
             <table className="min-w-full border-collapse text-left text-sm">
@@ -366,7 +393,7 @@ export function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {restaurantProspects.slice(0, 80).map((prospect) => (
+                {filteredRestaurantProspects.slice(0, 80).map((prospect) => (
                   <tr className="border-t border-slate-100" key={prospect.id}>
                     <td className="p-3 font-semibold">{prospect.name}</td>
                     <td className="p-3 text-slate-600">{prospect.province}</td>
@@ -396,9 +423,9 @@ export function AdminPage() {
                 ))}
               </tbody>
             </table>
-            {restaurantProspects.length > 80 && (
+            {filteredRestaurantProspects.length > 80 && (
               <p className="border-t border-slate-100 p-3 text-xs text-slate-500">
-                Showing first 80 of {restaurantProspects.length} prospect records.
+                Showing first 80 of {filteredRestaurantProspects.length} prospect records.
               </p>
             )}
           </div>

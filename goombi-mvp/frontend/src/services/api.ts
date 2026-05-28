@@ -61,7 +61,20 @@ export const api = {
   updateListing: (id: string, payload: ListingDraft) =>
     request<Listing>(`/api/listings/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   deleteListing: (id: string) => request<void>(`/api/listings/${id}`, { method: "DELETE" }),
-  restaurantProspects: () => request<RestaurantProspect[]>("/api/restaurant-prospects"),
+  restaurantProspects: (filters?: {
+    province?: string;
+    city?: string;
+    approval_status?: string;
+    audit_status?: string;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.province) params.set("province", filters.province);
+    if (filters?.city) params.set("city", filters.city);
+    if (filters?.approval_status) params.set("approval_status", filters.approval_status);
+    if (filters?.audit_status) params.set("audit_status", filters.audit_status);
+    const query = params.toString();
+    return request<RestaurantProspect[]>(`/api/restaurant-prospects${query ? `?${query}` : ""}`);
+  },
   createRestaurantProspect: (payload: RestaurantProspectDraft) =>
     request<RestaurantProspect>("/api/restaurant-prospects", { method: "POST", body: JSON.stringify(payload) }),
   updateRestaurantProspect: (id: string, payload: RestaurantProspectDraft) =>

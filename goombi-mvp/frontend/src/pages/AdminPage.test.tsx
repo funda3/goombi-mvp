@@ -86,9 +86,9 @@ test("renders restaurant prospects as internal audit records and disables conver
     {
       id: "prospect-1",
       name: "Prospect Kitchen",
-      province: "Gauteng",
+      province: "KwaZulu-Natal",
       city: "Johannesburg",
-      suburb: "Sandton",
+      suburb: "Umhlanga",
       cuisine_tags: ["Grill"],
       price_band: "$$",
       source_document: "Goombi_TA_Gauteng_Restaurants.docx",
@@ -108,8 +108,65 @@ test("renders restaurant prospects as internal audit records and disables conver
   render(<AdminPage />);
 
   await waitFor(() => expect(screen.getByText("Prospect Kitchen")).toBeInTheDocument());
-  expect(screen.getByText("KZN restaurant audit pending.")).toBeInTheDocument();
+  expect(screen.getByText("KZN restaurant audit seed completed — records remain internal until provider approval.")).toBeInTheDocument();
+  expect(screen.getAllByText("KwaZulu-Natal").length).toBeGreaterThan(0);
   expect(screen.getByRole("button", { name: "Convert to public restaurant marker" })).toBeDisabled();
+});
+
+test("restaurant prospect province filter shows KwaZulu-Natal records", async () => {
+  mockListings.mockResolvedValue(ALL_LISTINGS);
+  mockEnquiries.mockResolvedValue([]);
+  mockRestaurantProspects.mockResolvedValue([
+    {
+      id: "prospect-kzn",
+      name: "KZN Prospect Kitchen",
+      province: "KwaZulu-Natal",
+      city: "Durban",
+      suburb: "Durban",
+      cuisine_tags: ["Seafood"],
+      price_band: "RR",
+      source_document: "KZN Restaurant Audit Seed",
+      source_type: "restaurant_audit_seed",
+      audit_status: "prospect_only",
+      approval_status: "prospect_only",
+      public_website_url: "",
+      public_contact_url: "",
+      notes_internal: "Internal only.",
+      latitude: -29.8587,
+      longitude: 31.0218,
+      coordinate_accuracy: "approximate",
+      created_at: "2026-05-28T00:00:00Z",
+      updated_at: "2026-05-28T00:00:00Z",
+    },
+    {
+      id: "prospect-gp",
+      name: "Gauteng Prospect Kitchen",
+      province: "Gauteng",
+      city: "Johannesburg",
+      suburb: "Sandton",
+      cuisine_tags: ["Grill"],
+      price_band: "RR",
+      source_document: "Goombi_TA_Gauteng_Restaurants.docx",
+      source_type: "restaurant_audit_seed",
+      audit_status: "prospect_only",
+      approval_status: "prospect_only",
+      public_website_url: "",
+      public_contact_url: "",
+      notes_internal: "Internal only.",
+      latitude: -26.1,
+      longitude: 28.05,
+      coordinate_accuracy: "city_or_suburb_centroid_estimate",
+      created_at: "2026-05-28T00:00:00Z",
+      updated_at: "2026-05-28T00:00:00Z",
+    },
+  ]);
+  render(<AdminPage />);
+
+  await waitFor(() => expect(screen.getByText("KZN Prospect Kitchen")).toBeInTheDocument());
+  fireEvent.change(screen.getByRole("combobox", { name: "Province" }), { target: { value: "KwaZulu-Natal" } });
+
+  expect(screen.getByText("KZN Prospect Kitchen")).toBeInTheDocument();
+  expect(screen.queryByText("Gauteng Prospect Kitchen")).not.toBeInTheDocument();
 });
 
 test("approved restaurant prospects can be converted to public restaurant listings", async () => {

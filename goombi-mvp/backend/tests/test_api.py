@@ -147,6 +147,54 @@ def test_restaurant_prospects_are_separate_from_public_listings(tmp_path):
     assert all(item["name"] != "Prospect Kitchen" for item in public_listings)
 
 
+def test_restaurant_prospect_seed_includes_kzn_records(tmp_path):
+    api = _seed_client(tmp_path)
+    response = api.get("/api/restaurant-prospects", params={"province": "KwaZulu-Natal"})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) >= 60
+    assert all(item["province"] == "KwaZulu-Natal" for item in data)
+    assert any(item["city"] == "Durban" for item in data)
+    assert any(item["city"] == "St Lucia" for item in data)
+
+
+def test_restaurant_prospect_filters_by_city_approval_and_audit_status(tmp_path):
+    api = _seed_client(tmp_path)
+    response = api.get(
+        "/api/restaurant-prospects",
+        params={
+            "province": "KwaZulu-Natal",
+            "city": "Ballito",
+            "approval_status": "prospect_only",
+            "audit_status": "prospect_only",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) > 0
+    assert all(item["province"] == "KwaZulu-Natal" for item in data)
+    assert all(item["city"] == "Ballito" for item in data)
+    assert all(item["approval_status"] == "prospect_only" for item in data)
+    assert all(item["audit_status"] == "prospect_only" for item in data)
+
+
+def test_kzn_restaurant_prospects_default_to_internal_seed_statuses(tmp_path):
+    api = _seed_client(tmp_path)
+    data = api.get("/api/restaurant-prospects", params={"province": "KwaZulu-Natal"}).json()
+    assert len(data) > 0
+    for item in data:
+        assert item["source_type"] == "restaurant_audit_seed"
+        assert item["audit_status"] == "prospect_only"
+        assert item["approval_status"] == "prospect_only"
+        assert item["coordinate_accuracy"] == "approximate"
+
+
+def test_public_listings_contain_no_restaurant_audit_seed_records(tmp_path):
+    api = _seed_client(tmp_path)
+    public_listings = api.get("/api/listings").json()
+    assert [item for item in public_listings if item.get("source_type") == "restaurant_audit_seed"] == []
+
+
 def test_get_events_returns_seed_records(tmp_path):
     api = client(tmp_path)
     response = api.get("/api/events")

@@ -1,8 +1,9 @@
 {
   "province": "KwaZulu-Natal",
-  "status": "pending",
-  "source_type": "restaurant_audit_todo",
-  "notes_internal": "KZN restaurant audit pending.",
-  "created_at": "2026-05-28T04:33:30.175854+00:00",
-  "updated_at": "2026-05-28T04:33:30.175854+00:00"
+  "status": "completed",
+  "source_type": "restaurant_audit_seed",
+  "records_added": 77,
+  "notes_internal": "KZN restaurant audit seed completed. Records remain internal until provider approval.",
+  "created_at": "2026-05-28T05:00:50.260011+00:00",
+  "updated_at": "2026-05-28T05:00:50.260011+00:00"
 }
