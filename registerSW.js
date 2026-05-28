@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/goombi/sw.js', { scope: '/goombi/' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/goombi-mvp/sw.js', { scope: '/goombi-mvp/' })})}
