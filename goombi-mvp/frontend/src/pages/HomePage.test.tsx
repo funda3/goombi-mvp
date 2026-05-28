@@ -202,15 +202,15 @@ test("marker click opens a single bottom sheet and selecting another marker upda
 
   fireEvent.click(screen.getByTestId("marker-alpha"));
 
-  expect(screen.getAllByTestId("listing-bottom-sheet")).toHaveLength(1);
-  expect(within(screen.getByTestId("listing-bottom-sheet")).getByRole("heading", { name: "Alpha Lodge" })).toBeInTheDocument();
+  expect(screen.getAllByTestId("listing-detail-drawer")).toHaveLength(1);
+  expect(within(screen.getByTestId("listing-detail-drawer")).getByRole("heading", { name: "Alpha Lodge" })).toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("alpha");
 
   fireEvent.click(screen.getByTestId("marker-beta"));
 
-  expect(screen.getAllByTestId("listing-bottom-sheet")).toHaveLength(1);
-  expect(within(screen.getByTestId("listing-bottom-sheet")).getByRole("heading", { name: "Beta Suites" })).toBeInTheDocument();
-  expect(within(screen.getByTestId("listing-bottom-sheet")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
+  expect(screen.getAllByTestId("listing-detail-drawer")).toHaveLength(1);
+  expect(within(screen.getByTestId("listing-detail-drawer")).getByRole("heading", { name: "Beta Suites" })).toBeInTheDocument();
+  expect(within(screen.getByTestId("listing-detail-drawer")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("beta");
 });
 
@@ -357,13 +357,13 @@ test("close button hides the bottom sheet and clears marker selection", async ()
   await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
 
   fireEvent.click(screen.getByTestId("marker-alpha"));
-  expect(within(screen.getByTestId("listing-bottom-sheet")).getByRole("heading", { name: "Alpha Lodge" })).toBeInTheDocument();
+  expect(within(screen.getByTestId("listing-detail-drawer")).getByRole("heading", { name: "Alpha Lodge" })).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Close detail" }));
 
-  expect(within(screen.getByTestId("listing-bottom-sheet")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
+  expect(within(screen.getByTestId("listing-detail-drawer")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("none");
-  expect(screen.getByTestId("listing-bottom-sheet").className).toContain("translate-y-[110%]");
+  expect(screen.getByTestId("listing-detail-drawer").className).toContain("translate-y-[110%]");
 });
 
 test("clicking an event marker opens event bottom sheet", async () => {

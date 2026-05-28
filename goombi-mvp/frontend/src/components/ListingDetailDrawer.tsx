@@ -63,7 +63,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
           </button>
         );
       })()}
-      <button aria-label="Close detail" className="secondary-button h-9 w-9 p-0" type="button" onClick={onClose}>
+      <button aria-label="Close detail" className="secondary-button h-9 w-9 p-0" data-testid="listing-detail-close" type="button" onClick={onClose}>
         <X className="h-4 w-4" />
       </button>
     </div>
@@ -162,13 +162,13 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
         </div>
       ) : (
         <div className="mt-4 grid gap-2 text-sm text-slate-700">
-          {/* Price display — shared across accommodation, experiences, eats, events */}
+          {/* Price display shared across accommodation, experiences, eats, events */}
           {listing.price_per_night > 0 && (
             <strong className="text-lg text-slate-950">R{listing.price_per_night}/night</strong>
           )}
           {listing.price_from != null && (
             <strong className="text-lg text-slate-950">
-              From R{listing.price_from}{listing.price_to != null ? `–R${listing.price_to}` : ""}
+              From R{listing.price_from}{listing.price_to != null ? `-R${listing.price_to}` : ""}
               {listing.price_unit ? ` / ${listing.price_unit}` : ""}
             </strong>
           )}
@@ -202,7 +202,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
               )}
               <span className="w-fit rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-950">
                 {isDemoProspectRestaurant
-                  ? "Demo prospect — provider approval pending"
+                  ? "Demo prospect - provider approval pending"
                   : (listing.verified_status ? "Partner verified" : "Demo/public-source record")}
               </span>
               {isDemoProspectRestaurant && (
@@ -250,7 +250,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
         ))}
       </div>
 
-      {/* Contact / external links — estate listings use discovery-only wording; no booking CTA */}
+      {/* Contact / external links for estate listings uses discovery-only wording; no booking CTA */}
       {!isDemoProspectRestaurant && (listing.website_url || (!isEstateZone && listing.booking_url) || listing.whatsapp_url || listing.contact_phone || listing.contact_email) && (
         <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4">
           {listing.website_url && (
@@ -287,7 +287,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
             <p className="text-xs text-slate-500"><strong className="text-slate-700">Source note:</strong> {listing.source_note}</p>
           )}
           <p className="text-xs italic text-slate-500">
-            Goombi is a discovery platform only. For estate enquiries, visit the estate’s official website.
+            Goombi is a discovery platform only. For estate enquiries, visit the estate's official website.
           </p>
         </div>
       ) : isWorkspace(listing) ? (
@@ -316,7 +316,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       {onOpenPlanner && (
         <div className="mt-4 border-t border-slate-200 pt-4">
           <button type="button" className="primary-button w-full" onClick={onOpenPlanner}>
-            🗺️ Plan my journey
+            Plan my journey
           </button>
         </div>
       )}
@@ -333,8 +333,9 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
   return (
     <aside
       aria-label="Listing detail"
-      data-testid="listing-bottom-sheet"
-      className={`fixed bottom-0 z-40 flex h-[62vh] min-h-[55vh] max-h-[70vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out md:h-[50vh] md:min-h-[40vh] md:max-h-[60vh] ${listing ? "translate-y-0 pointer-events-auto" : "translate-y-[110%] pointer-events-none"} inset-x-2 sm:inset-x-4 md:inset-x-auto md:left-1/2 md:w-[min(92vw,520px)] md:-translate-x-1/2`}
+      data-placement="right-drawer"
+      data-testid="listing-detail-drawer"
+      className={`fixed bottom-0 z-40 flex h-[78vh] max-h-[82vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out inset-x-2 sm:inset-x-4 md:bottom-auto md:left-auto md:right-20 md:top-24 md:h-auto md:max-h-[calc(100vh-7rem)] md:w-[min(28rem,calc(100vw-7rem))] md:rounded-xl md:shadow-[0_18px_44px_rgba(15,23,42,0.22)] ${listing ? "translate-y-0 pointer-events-auto md:translate-x-0" : "translate-y-[110%] pointer-events-none md:translate-y-0 md:translate-x-[120%]"}`}
     >
       <div className="flex shrink-0 justify-center pt-3 pb-1">
         <div className="h-1 w-12 rounded-full bg-slate-200" />

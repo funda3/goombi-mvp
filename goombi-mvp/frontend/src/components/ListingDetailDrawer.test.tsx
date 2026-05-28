@@ -99,11 +99,22 @@ test("restaurant demo prospect: shows pending badge and CRM link", () => {
     rooms: null,
   });
 
-  expect(screen.getByText("Demo prospect — provider approval pending")).toBeInTheDocument();
+  expect(screen.getByText("Demo prospect - provider approval pending")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Manage in CRM" })).toHaveAttribute("href", "/goombi-mvp/#/admin/crm");
 });
 
 // ── Transport node ────────────────────────────────────────────────────────────
+test("drawer uses right-side desktop placement and keeps nearby services in the same panel", () => {
+  renderDrawer({ ...base, listing_type: "accommodation", max_guests: 2, rooms: 1 });
+
+  const drawer = screen.getByTestId("listing-detail-drawer");
+  expect(drawer).toHaveAttribute("data-placement", "right-drawer");
+  expect(drawer.className).toContain("md:right-20");
+  expect(drawer.className).toContain("md:top-24");
+  expect(drawer.className).toContain("md:max-h-[calc(100vh-7rem)]");
+  expect(screen.getByTestId("nearby-services")).toBeInTheDocument();
+});
+
 test("transport_node: does not show rooms or guest count", () => {
   renderDrawer({
     ...base,
