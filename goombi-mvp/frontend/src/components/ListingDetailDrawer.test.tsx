@@ -111,7 +111,7 @@ test("drawer uses right-side desktop placement and keeps nearby services in the 
   expect(drawer).toHaveAttribute("data-placement", "right-drawer");
   expect(drawer.className).toContain("md:right-20");
   expect(drawer.className).toContain("md:top-24");
-  expect(drawer.className).toContain("md:max-h-[calc(100vh-7rem)]");
+  expect(drawer.className).toContain("md:max-h-[32rem]");
   expect(screen.getByTestId("nearby-services")).toBeInTheDocument();
 });
 
