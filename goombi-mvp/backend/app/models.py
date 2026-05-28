@@ -424,6 +424,9 @@ ServiceCategoryLiteral = Literal[
     "pharmacy",
     "transit",
     "ev_charging",
+    "workspace",
+    "attraction",
+    "parking",
 ]
 
 
@@ -433,6 +436,10 @@ class NearbyServiceItem(BaseModel):
     lat: float
     lon: float
     distanceKm: float
+    source: Literal["external", "fallback"] = "external"
+    isFallback: bool = False
+    badgeLabel: str = "Live result"
+    reason: str | None = None
 
 
 class NearbyServiceGroup(BaseModel):
@@ -443,7 +450,8 @@ class NearbyServiceGroup(BaseModel):
 
 
 class NearbyServicesResponse(BaseModel):
-    status: Literal["ok", "fallback"]
+    status: Literal["live", "fallback", "empty"]
+    message: str
     services: list[NearbyServiceGroup]
 
 

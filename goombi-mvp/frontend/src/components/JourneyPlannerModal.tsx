@@ -81,11 +81,20 @@ export function JourneyPlannerModal({ selected, allListings, onClose }: Props) {
     if (cached) { setServiceGroups(cached); return; }
 
     setServicesLoading(true);
-    fetchNearbyServices(fetchLat, fetchLon)
-      .then((data) => { cacheRef.current.set(key, data); setServiceGroups(data); })
+    fetchNearbyServices({
+      lat: fetchLat,
+      lon: fetchLon,
+      province: stayAt?.province ?? selected.province,
+      city: stayAt?.city ?? selected.city,
+      suburb: stayAt?.suburb ?? selected.suburb,
+    })
+      .then((result) => {
+        cacheRef.current.set(key, result.services);
+        setServiceGroups(result.services);
+      })
       .catch(() => setServiceGroups([]))
       .finally(() => setServicesLoading(false));
-  }, [fetchLat, fetchLon]);
+  }, [fetchLat, fetchLon, selected.city, selected.province, selected.suburb, stayAt?.city, stayAt?.province, stayAt?.suburb]);
 
   // ---------------------------------------------------------------------------
   // Derived values

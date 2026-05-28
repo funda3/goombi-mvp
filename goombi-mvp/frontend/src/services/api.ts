@@ -131,8 +131,19 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ cellphone, code }),
     }),
-  nearbyServices: (lat: number, lon: number) => {
-    const params = new URLSearchParams({ lat: String(lat), lon: String(lon) });
+  nearbyServices: (lookup: {
+    lat?: number | null;
+    lon?: number | null;
+    province?: string | null;
+    city?: string | null;
+    suburb?: string | null;
+  }) => {
+    const params = new URLSearchParams();
+    if (lookup.lat !== undefined && lookup.lat !== null) params.set("lat", String(lookup.lat));
+    if (lookup.lon !== undefined && lookup.lon !== null) params.set("lon", String(lookup.lon));
+    if (lookup.province) params.set("province", lookup.province);
+    if (lookup.city) params.set("city", lookup.city);
+    if (lookup.suburb) params.set("suburb", lookup.suburb);
     return request<NearbyServicesApiResponse>(`/api/nearby-services?${params.toString()}`);
   },
 };

@@ -1,5 +1,6 @@
 import { api } from "./api";
-import type { NearbyServiceItem, ServiceCategory, ServiceGroup } from "../types/services";
+import { buildDemoNearbyServiceGroups, hasLocationHint, type NearbyLookupContext } from "./nearbyFallback";
+import type { NearbyServiceItem, NearbyServicesResult, ServiceCategory, ServiceGroup } from "../types/services";
 
 const VALID_CATEGORIES = new Set<ServiceCategory>([
   "gym",
@@ -14,6 +15,9 @@ const VALID_CATEGORIES = new Set<ServiceCategory>([
   "pharmacy",
   "transit",
   "ev_charging",
+  "workspace",
+  "attraction",
+  "parking",
 ]);
 
 function isNearbyServiceItem(value: unknown): value is NearbyServiceItem {
@@ -52,14 +56,63 @@ function normalizeServiceGroups(value: unknown): ServiceGroup[] {
   return groups;
 }
 
-export async function fetchNearbyServices(lat: number, lon: number): Promise<ServiceGroup[]> {
+function emptyResult(message = "Nearby services require listing coordinates."): NearbyServicesResult {
+  return { status: "empty", message, services: [] };
+}
+
+function fallbackResult(context: NearbyLookupContext): NearbyServicesResult {
+  const services = buildDemoNearbyServiceGroups(context);
+  if (services.length > 0) {
+    return {
+      status: "fallback",
+      message: "Demo nearby services shown",
+      services,
+    };
+  }
+  return emptyResult();
+}
+
+export async function fetchNearbyServices(context: NearbyLookupContext): Promise<NearbyServicesResult> {
+  if (!hasLocationHint(context)) {
+    return emptyResult();
+  }
+
   try {
-    const payload = await api.nearbyServices(lat, lon);
-    if (!payload || payload.status === "fallback") {
-      throw new Error("Nearby services unavailable.");
+    const payload = await api.nearbyServices(context);
+    if (!payload || typeof payload !== "object") {
+      return fallbackResult(context);
     }
-    return normalizeServiceGroups(payload.services);
+
+    const status = payload.status;
+    const message = typeof payload.message === "string" && payload.message.trim()
+      ? payload.message
+      : status === "live"
+        ? "Live nearby services"
+        : status === "fallback"
+          ? "Demo nearby services shown"
+          : "Nearby services require listing coordinates.";
+    const services = normalizeServiceGroups(payload.services);
+    const hasResults = services.some((group) => group.nearest !== null);
+
+    if (status === "live" && hasResults) {
+      return { status: "live", message, services };
+    }
+
+    if (status === "fallback") {
+      if (hasResults) {
+        return { status: "fallback", message: "Demo nearby services shown", services };
+      }
+      return fallbackResult(context);
+    }
+
+    if (status === "empty") {
+      return hasLocationHint(context) ? fallbackResult(context) : emptyResult(message);
+    }
+
+    return hasResults
+      ? { status: "live", message: "Live nearby services", services }
+      : fallbackResult(context);
   } catch {
-    throw new Error("Nearby services unavailable.");
+    return fallbackResult(context);
   }
 }

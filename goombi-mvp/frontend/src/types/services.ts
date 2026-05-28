@@ -10,7 +10,10 @@ export type ServiceCategory =
   | "supermarket"
   | "pharmacy"
   | "transit"
-  | "ev_charging";
+  | "ev_charging"
+  | "workspace"
+  | "attraction"
+  | "parking";
 
 export type ServiceMarker = {
   lat: number;
@@ -24,6 +27,10 @@ export type NearbyServiceItem = {
   lat: number;
   lon: number;
   distanceKm: number;
+  source?: "external" | "fallback";
+  isFallback?: boolean;
+  badgeLabel?: string;
+  reason?: string | null;
 };
 
 export type ServiceGroup = {
@@ -34,6 +41,13 @@ export type ServiceGroup = {
 };
 
 export type NearbyServicesApiResponse = {
-  status: "ok" | "fallback";
+  status: "live" | "fallback" | "empty";
+  message: string;
+  services: ServiceGroup[];
+};
+
+export type NearbyServicesResult = {
+  status: "live" | "fallback" | "empty";
+  message: string;
   services: ServiceGroup[];
 };

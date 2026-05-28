@@ -579,7 +579,7 @@ def test_public_restaurant_prospect_payload_respects_flag(tmp_path, monkeypatch)
 
 
 def test_nearby_services_fallback_works(tmp_path, monkeypatch):
-    """If the nearby services upstream call fails, API must return a fallback response."""
+    """If the nearby services upstream call fails, API must return deterministic fallback services."""
     import httpx
 
     def _boom(*args, **kwargs):
@@ -587,9 +587,196 @@ def test_nearby_services_fallback_works(tmp_path, monkeypatch):
 
     monkeypatch.setattr(httpx, "post", _boom)
     api = _seed_client(tmp_path)
-    response = api.get("/api/nearby-services", params={"lat": -26.1, "lon": 28.0})
+    response = api.get(
+        "/api/nearby-services",
+        params={"lat": -26.1, "lon": 28.0, "province": "Gauteng", "city": "Johannesburg", "suburb": "Bryanston"},
+    )
     assert response.status_code == 200
-    assert response.json() == {"services": [], "status": "fallback"}
+    payload = response.json()
+    assert payload["status"] == "fallback"
+    assert payload["message"] == "Demo nearby services shown"
+    assert 4 <= len(payload["services"]) <= 8
+
+    sample = payload["services"][0]
+    assert set(sample.keys()) == {"category", "emoji", "label", "nearest"}
+    assert sample["nearest"] is not None
+    assert set(sample["nearest"].keys()) == {
+        "id",
+        "name",
+        "lat",
+        "lon",
+        "distanceKm",
+        "source",
+        "isFallback",
+        "badgeLabel",
+        "reason",
+    }
+    assert sample["nearest"]["source"] == "fallback"
+    assert sample["nearest"]["isFallback"] is True
+    assert sample["nearest"]["badgeLabel"] == "Fallback estimate"
+    assert sample["nearest"]["reason"] == "External nearby service provider unavailable"
+    assert sample["nearest"]["name"].startswith("Estimated ")
+
+
+def test_nearby_services_empty_upstream_payload_falls_back(tmp_path, monkeypatch):
+    """If upstream returns no POIs, API should still return demo fallback services."""
+    import httpx
+
+    class _Response:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"elements": []}
+
+    def _ok(*args, **kwargs):
+        return _Response()
+
+    monkeypatch.setattr(httpx, "post", _ok)
+    api = _seed_client(tmp_path)
+    response = api.get(
+        "/api/nearby-services",
+        params={"lat": -29.9, "lon": 31.0, "province": "KwaZulu-Natal", "city": "Durban", "suburb": "Umhlanga"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "fallback"
+    assert payload["message"] == "Demo nearby services shown"
+    assert len(payload["services"]) >= 4
+    assert all(group["nearest"]["source"] == "fallback" for group in payload["services"] if group["nearest"])
+
+
+def test_nearby_services_accepts_lng_alias(tmp_path, monkeypatch):
+    import httpx
+
+    def _boom(*args, **kwargs):
+        raise httpx.ConnectError("offline")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    api = _seed_client(tmp_path)
+    response = api.get("/api/nearby-services", params={"lat": -26.2041, "lng": 28.0473})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "fallback"
+    assert len(payload["services"]) >= 3
+
+
+def test_nearby_services_accepts_lon_parameter(tmp_path, monkeypatch):
+    import httpx
+
+    def _boom(*args, **kwargs):
+        raise httpx.ConnectError("offline")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    api = _seed_client(tmp_path)
+    response = api.get("/api/nearby-services", params={"lat": -26.2041, "lon": 28.0473})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "fallback"
+    assert len(payload["services"]) >= 3
+    assert all(group["nearest"]["source"] == "fallback" for group in payload["services"] if group["nearest"])
+
+
+def test_nearby_services_prefers_lng_when_both_longitude_params_exist(tmp_path, monkeypatch):
+    import httpx
+
+    def _boom(*args, **kwargs):
+        raise httpx.ConnectError("offline")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    api = _seed_client(tmp_path)
+    lng_only = api.get("/api/nearby-services", params={"lat": -26.2041, "lng": 28.0473})
+    both = api.get("/api/nearby-services", params={"lat": -26.2041, "lng": 28.0473, "lon": 18.4241})
+
+    assert lng_only.status_code == 200
+    assert both.status_code == 200
+    assert both.json() == lng_only.json()
+
+
+def test_nearby_services_fallback_is_deterministic(tmp_path, monkeypatch):
+    import httpx
+
+    def _boom(*args, **kwargs):
+        raise httpx.TimeoutException("timeout")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    api = _seed_client(tmp_path)
+    params = {"lat": -26.2041, "lon": 28.0473, "radius_m": 5000}
+
+    first = api.get("/api/nearby-services", params=params)
+    second = api.get("/api/nearby-services", params=params)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json() == second.json()
+    names = [group["nearest"]["name"] for group in first.json()["services"] if group["nearest"]]
+    assert names
+    assert all(name in {
+        "Estimated café / food option",
+        "Estimated fuel / transport service",
+        "Estimated retail / convenience option",
+        "Estimated pharmacy / health service",
+        "Estimated parking / access point",
+        "Estimated accommodation support option",
+    } for name in names)
+
+
+def test_nearby_services_lng_and_lon_outputs_are_equivalent(tmp_path, monkeypatch):
+    import httpx
+
+    def _boom(*args, **kwargs):
+        raise httpx.TimeoutException("timeout")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    api = _seed_client(tmp_path)
+
+    lng_first = api.get("/api/nearby-services", params={"lat": -26.2041, "lng": 28.0473})
+    lng_second = api.get("/api/nearby-services", params={"lat": -26.2041, "lng": 28.0473})
+    lon_first = api.get("/api/nearby-services", params={"lat": -26.2041, "lon": 28.0473})
+    lon_second = api.get("/api/nearby-services", params={"lat": -26.2041, "lon": 28.0473})
+
+    assert lng_first.status_code == 200
+    assert lon_first.status_code == 200
+    assert lng_first.json() == lng_second.json()
+    assert lon_first.json() == lon_second.json()
+    assert lng_first.json() == lon_first.json()
+    assert len(lng_first.json()["services"]) >= 3
+
+
+def test_nearby_services_missing_lat_lon_returns_empty_not_500(tmp_path):
+    """Missing coordinates should return empty status, not raise a server error."""
+    api = _seed_client(tmp_path)
+    response = api.get("/api/nearby-services")
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "empty",
+        "message": "Nearby services require listing coordinates.",
+        "services": [],
+    }
+
+
+def test_nearby_services_missing_latitude_returns_controlled_empty(tmp_path):
+    api = _seed_client(tmp_path)
+    response = api.get("/api/nearby-services", params={"lng": 28.0473})
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "empty",
+        "message": "Nearby services require listing coordinates.",
+        "services": [],
+    }
+
+
+def test_nearby_services_missing_longitude_returns_controlled_empty(tmp_path):
+    api = _seed_client(tmp_path)
+    response = api.get("/api/nearby-services", params={"lat": -26.2041})
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "empty",
+        "message": "Nearby services require listing coordinates.",
+        "services": [],
+    }
 
 
 def test_province_without_region_is_normalised(tmp_path):

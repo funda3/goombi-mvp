@@ -4,7 +4,7 @@ import { MapPin, X } from "lucide-react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchNearbyServices } from "../services/overpass";
 import type { Listing } from "../types/listing";
-import type { ServiceGroup } from "../types/services";
+import type { NearbyServicesResult, ServiceGroup } from "../types/services";
 import { ServiceCard } from "./ServiceCard";
 
 type Props = {
@@ -17,8 +17,13 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
-  const [servicesError, setServicesError] = useState<string | null>(null);
-  const serviceCacheRef = useRef(new Map<string, ServiceGroup[]>());
+  const [servicesStatus, setServicesStatus] = useState<NearbyServicesResult["status"]>("empty");
+  const [servicesMessage, setServicesMessage] = useState("Nearby services require listing coordinates.");
+  const serviceCacheRef = useRef(new Map<string, NearbyServicesResult>());
+
+  const hasCoordinates = selected
+    ? Number.isFinite(selected.latitude) && Number.isFinite(selected.longitude)
+    : false;
 
   const coordKey = selected
     ? `${selected.latitude.toFixed(4)},${selected.longitude.toFixed(4)}`
@@ -32,18 +37,35 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
     if (!selected) return;
     const key = coordKey!;
     const cached = serviceCacheRef.current.get(key);
-    if (cached) { setServiceGroups(cached); return; }
+    if (cached) {
+      setServiceGroups(cached.services);
+      setServicesStatus(cached.status);
+      setServicesMessage(cached.message);
+      return;
+    }
 
     setServicesLoading(true);
-    setServicesError(null);
+    setServicesStatus("empty");
+    setServicesMessage("Nearby services require listing coordinates.");
     setServiceGroups([]);
-    fetchNearbyServices(selected.latitude, selected.longitude)
-      .then((data) => { serviceCacheRef.current.set(key, data); setServiceGroups(data); })
-      .catch(() => setServicesError("Nearby services unavailable."))
+    fetchNearbyServices({
+      lat: selected.latitude,
+      lon: selected.longitude,
+      province: selected.province,
+      city: selected.city,
+      suburb: selected.suburb,
+    })
+      .then((result) => {
+        serviceCacheRef.current.set(key, result);
+        setServiceGroups(result.services);
+        setServicesStatus(result.status);
+        setServicesMessage(result.message);
+      })
       .finally(() => setServicesLoading(false));
   }, [coordKey, selected]);
 
   const hasServiceResults = serviceGroups.some((g) => g.nearest !== null);
+  const isFallback = servicesStatus === "fallback";
 
   const serviceContent = (
     <div className="px-3 pb-3">
@@ -53,23 +75,37 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
       {selected && servicesLoading && (
         <p className="py-2 text-sm text-slate-500">Loading nearby services...</p>
       )}
-      {selected && servicesError && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{servicesError}</p>
+      {selected && !servicesLoading && isFallback && hasServiceResults && (
+        <p className="mb-2 inline-flex w-fit items-center rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
+          Demo-safe nearby estimates
+        </p>
       )}
-      {selected && !servicesLoading && !servicesError && hasServiceResults && (
+      {selected && !servicesLoading && hasServiceResults && (
         <>
-          <p className="mb-2 text-xs text-slate-400">Near {selected.name} · within 5 km</p>
+          <p className="mb-2 text-xs text-slate-400">
+            Near {selected.name} · within 5 km
+            {isFallback ? " · fallback estimates shown" : ""}
+          </p>
           <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto">
             {serviceGroups
               .filter((g) => g.nearest !== null)
               .map((g) => (
-                <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} />
+                <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} demoMode={isFallback} />
               ))}
           </div>
         </>
       )}
-      {selected && !servicesLoading && !servicesError && serviceGroups.length > 0 && !hasServiceResults && (
+      {selected && !servicesLoading && servicesStatus === "fallback" && !hasServiceResults && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">Demo-safe nearby estimates shown.</p>
+      )}
+      {selected && !servicesLoading && servicesStatus === "live" && serviceGroups.length > 0 && !hasServiceResults && (
         <p className="py-2 text-sm text-slate-500">No nearby services found.</p>
+      )}
+      {selected && !servicesLoading && servicesStatus === "empty" && !hasCoordinates && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">Nearby services require listing coordinates.</p>
+      )}
+      {selected && !servicesLoading && servicesStatus === "empty" && hasCoordinates && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">{servicesMessage || "Demo-safe nearby estimates shown."}</p>
       )}
     </div>
   );

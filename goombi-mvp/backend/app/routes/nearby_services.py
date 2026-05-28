@@ -30,7 +30,129 @@ _SERVICE_DEFS: dict[ServiceCategoryLiteral, _ServiceDef] = {
     "pharmacy": _ServiceDef("💊", "Pharmacy", [{"amenity": "pharmacy"}]),
     "transit": _ServiceDef("🚉", "Transit Stop", [{"railway": "station"}, {"public_transport": "stop_position"}, {"highway": "bus_stop"}]),
     "ev_charging": _ServiceDef("⚡", "EV Charging", [{"amenity": "charging_station"}]),
+    "workspace": _ServiceDef("💼", "Workspace", [{"office": "coworking"}, {"amenity": "coworking_space"}]),
+    "attraction": _ServiceDef("🎟️", "Event / Attraction", [{"tourism": "attraction"}, {"tourism": "museum"}, {"leisure": "park"}]),
+    "parking": _ServiceDef("🅿️", "Parking / Access", [{"amenity": "parking"}]),
 }
+
+_PROVINCE_CENTERS: dict[str, tuple[float, float]] = {
+    "gauteng": (-26.2041, 28.0473),
+    "western cape": (-33.9249, 18.4241),
+    "kwa-zulu natal": (-29.8587, 31.0218),
+    "kwazulu-natal": (-29.8587, 31.0218),
+    "kzn": (-29.8587, 31.0218),
+}
+
+_FALLBACK_BASE: dict[str, list[ServiceCategoryLiteral]] = {
+    "gauteng": ["restaurant", "fuel", "supermarket", "pharmacy", "parking", "transit"],
+    "kwa-zulu natal": ["restaurant", "fuel", "supermarket", "pharmacy", "parking", "transit"],
+    "kwazulu-natal": ["restaurant", "fuel", "supermarket", "pharmacy", "parking", "transit"],
+    "western cape": ["restaurant", "fuel", "supermarket", "pharmacy", "parking", "transit"],
+}
+
+_FALLBACK_NAMES: dict[ServiceCategoryLiteral, str] = {
+    "restaurant": "Estimated café / food option",
+    "fuel": "Estimated fuel / transport service",
+    "supermarket": "Estimated retail / convenience option",
+    "shopping": "Estimated retail / convenience option",
+    "pharmacy": "Estimated pharmacy / health service",
+    "clinic": "Estimated pharmacy / health service",
+    "hospital": "Estimated pharmacy / health service",
+    "parking": "Estimated parking / access point",
+    "transit": "Estimated parking / access point",
+    "workspace": "Estimated accommodation support option",
+    "atm": "Estimated retail / convenience option",
+    "police": "Estimated accommodation support option",
+    "gym": "Estimated accommodation support option",
+    "ev_charging": "Estimated fuel / transport service",
+    "attraction": "Estimated retail / convenience option",
+}
+
+_FALLBACK_REASON = "External nearby service provider unavailable"
+
+
+def _normalize_location_text(value: str | None) -> str:
+    return (value or "").strip().lower()
+
+
+def _stable_seed(*parts: str | None) -> int:
+    text = "|".join(_normalize_location_text(part) for part in parts if part)
+    if not text:
+        return 17
+    return sum((idx + 1) * ord(ch) for idx, ch in enumerate(text))
+
+
+def _fallback_base_coords(
+    lat: float | None,
+    lon: float | None,
+    province: str | None,
+) -> tuple[float, float] | None:
+    if lat is not None and lon is not None:
+        return lat, lon
+    province_key = _normalize_location_text(province)
+    if province_key in _PROVINCE_CENTERS:
+        return _PROVINCE_CENTERS[province_key]
+    return None
+
+
+def _offset_coords(lat: float, lon: float, distance_km: float, bearing_deg: float) -> tuple[float, float]:
+    bearing = math.radians(bearing_deg)
+    lat_delta = (distance_km / 111.0) * math.cos(bearing)
+    lon_scale = max(0.2, math.cos(math.radians(lat)))
+    lon_delta = (distance_km / (111.0 * lon_scale)) * math.sin(bearing)
+    return lat + lat_delta, lon + lon_delta
+
+
+def _fallback_categories(province: str | None) -> list[ServiceCategoryLiteral]:
+    province_key = _normalize_location_text(province)
+    if province_key in _FALLBACK_BASE:
+        return _FALLBACK_BASE[province_key]
+    return ["restaurant", "fuel", "supermarket", "pharmacy", "parking", "transit"]
+
+
+def _build_fallback_groups(
+    lat: float | None,
+    lon: float | None,
+    province: str | None,
+    city: str | None,
+    suburb: str | None,
+) -> list[NearbyServiceGroup]:
+    base_coords = _fallback_base_coords(lat, lon, province)
+    if base_coords is None:
+        return []
+
+    seed = _stable_seed(suburb, city, province, str(lat) if lat is not None else None, str(lon) if lon is not None else None)
+    categories = _fallback_categories(province)
+    count = 4 + (seed % 5)  # 4..8 demo cards
+    chosen = categories[:count] if len(categories) >= count else (categories * ((count // len(categories)) + 1))[:count]
+    distances = [0.9, 1.2, 1.6, 2.1, 2.8, 3.4, 4.2, 5.1]
+
+    groups: list[NearbyServiceGroup] = []
+    for index, category in enumerate(chosen):
+        definition = _SERVICE_DEFS[category]
+        distance = round(distances[(seed + index) % len(distances)], 2)
+        bearing = float((seed + (index * 47)) % 360)
+        item_lat, item_lon = _offset_coords(base_coords[0], base_coords[1], distance, bearing)
+        nearest = NearbyServiceItem(
+            id=seed * 100 + index + 1,
+            name=_FALLBACK_NAMES[category],
+            lat=round(item_lat, 6),
+            lon=round(item_lon, 6),
+            distanceKm=distance,
+            source="fallback",
+            isFallback=True,
+            badgeLabel="Fallback estimate",
+            reason=_FALLBACK_REASON,
+        )
+        groups.append(
+            NearbyServiceGroup(
+                category=category,
+                emoji=definition.emoji,
+                label=definition.label,
+                nearest=nearest,
+            )
+        )
+    return groups
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -75,12 +197,24 @@ def _classify(tags: dict[str, str]) -> ServiceCategoryLiteral | None:
 
 @router.get("", response_model=NearbyServicesResponse)
 def get_nearby_services(
-    lat: float = Query(...),
-    lon: float = Query(...),
+    lat: float | None = Query(default=None),
+    lon: float | None = Query(default=None),
+    lng: float | None = Query(default=None),
+    province: str | None = Query(default=None),
+    city: str | None = Query(default=None),
+    suburb: str | None = Query(default=None),
     radius_m: int = Query(default=5000, ge=500, le=15000),
 ) -> NearbyServicesResponse:
+    lng_value = lng if lng is not None else lon
+    if lat is None or lng_value is None:
+        return NearbyServicesResponse(
+            status="empty",
+            message="Nearby services require listing coordinates.",
+            services=[],
+        )
+
     try:
-        query = _build_query(lat, lon, radius_m)
+        query = _build_query(lat, lng_value, radius_m)
         response = httpx.post(
             "https://overpass-api.de/api/interpreter",
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -111,15 +245,21 @@ def get_nearby_services(
                 name=str(tags.get("name") or _SERVICE_DEFS[category].label),
                 lat=coords[0],
                 lon=coords[1],
-                distanceKm=_haversine_km(lat, lon, coords[0], coords[1]),
+                distanceKm=_haversine_km(lat, lng_value, coords[0], coords[1]),
+                source="external",
+                isFallback=False,
+                badgeLabel="Live result",
+                reason=None,
             )
             buckets[category].append(service)
 
         groups: list[NearbyServiceGroup] = []
+        has_live_results = False
         for category, definition in _SERVICE_DEFS.items():
             nearest = None
             if buckets[category]:
                 nearest = min(buckets[category], key=lambda item: item.distanceKm)
+                has_live_results = True
             groups.append(
                 NearbyServiceGroup(
                     category=category,
@@ -129,7 +269,35 @@ def get_nearby_services(
                 )
             )
 
-        return NearbyServicesResponse(status="ok", services=groups)
+        if has_live_results:
+            return NearbyServicesResponse(
+                status="live",
+                message="Live nearby services",
+                services=groups,
+            )
+
+        fallback = _build_fallback_groups(lat, lng_value, province, city, suburb)
+        if fallback:
+            return NearbyServicesResponse(
+                status="fallback",
+                message="Demo nearby services shown",
+                services=fallback,
+            )
+        return NearbyServicesResponse(
+            status="empty",
+            message="Nearby services unavailable.",
+            services=[],
+        )
     except Exception:
-        # Demo-safe fallback: no crash and no raw fetch error propagation.
-        return NearbyServicesResponse(status="fallback", services=[])
+        fallback = _build_fallback_groups(lat, lng_value, province, city, suburb)
+        if fallback:
+            return NearbyServicesResponse(
+                status="fallback",
+                message="Demo nearby services shown",
+                services=fallback,
+            )
+        return NearbyServicesResponse(
+            status="empty",
+            message="Nearby services unavailable.",
+            services=[],
+        )
