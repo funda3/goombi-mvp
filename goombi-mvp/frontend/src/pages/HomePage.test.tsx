@@ -6,15 +6,7 @@ import type { Listing } from "../types/listing";
 import type { NightlifeVenue } from "../types/nightlife";
 import { HomePage } from "./HomePage";
 
-vi.mock("../components/BottomPanel", () => ({
-  BottomPanel: ({ selected }: { selected?: Listing }) => selected ? (
-    <section data-testid="nearby-services-panel">
-      <p>Nearby Services for {selected.name}</p>
-      <div data-testid="nearby-service-card">Estimated cafe / food option</div>
-      <span data-testid="nearby-fallback-badge">Fallback estimate</span>
-    </section>
-  ) : null,
-}));
+vi.mock("../components/BottomPanel", () => ({ BottomPanel: () => null }));
 vi.mock("../components/FilterPanel", () => ({
   FilterPanel: ({ filters, onChange }: { filters: { category: string }; onChange: (filters: unknown) => void }) => (
     <div data-testid="filter-panel">
@@ -86,7 +78,7 @@ vi.mock("../components/MapCanvas", () => ({
   ),
 }));
 
-// Keep heavier child components lightweight for these integration-style marker behavior tests.
+// Keep ListingDetailDrawer lightweight for this integration-style marker/sheet behavior test.
 vi.mock("../components/PhotoCarousel", () => ({ PhotoCarousel: () => <div data-testid="photo-carousel" /> }));
 vi.mock("../components/EnquiryFlow", () => ({ EnquiryFlow: () => <div data-testid="enquiry-flow" /> }));
 vi.mock("../components/BookingEnquiryModal", () => ({ BookingEnquiryModal: () => <div data-testid="booking-modal" /> }));
@@ -199,7 +191,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-test("marker click selects a listing, updates nearby services, and does not open detail drawer", async () => {
+test("marker click opens a single bottom sheet and selecting another marker updates it", async () => {
   const alpha = makeListing("alpha", "Alpha Lodge");
   const beta = makeListing("beta", "Beta Suites");
   mockListings.mockResolvedValue([alpha, beta]);
@@ -210,18 +202,16 @@ test("marker click selects a listing, updates nearby services, and does not open
 
   fireEvent.click(screen.getByTestId("marker-alpha"));
 
+  expect(screen.getAllByTestId("listing-detail-drawer")).toHaveLength(1);
+  expect(within(screen.getByTestId("listing-detail-drawer")).getByRole("heading", { name: "Alpha Lodge" })).toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("alpha");
-  expect(screen.getByTestId("nearby-services-panel")).toHaveTextContent("Alpha Lodge");
-  expect(screen.getByTestId("nearby-service-card")).toHaveTextContent("Estimated cafe / food option");
-  expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
-  expect(screen.queryByTestId("listing-detail-drawer")).not.toBeInTheDocument();
-  expect(screen.queryByText("Nearby services unavailable.")).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByTestId("marker-beta"));
 
+  expect(screen.getAllByTestId("listing-detail-drawer")).toHaveLength(1);
+  expect(within(screen.getByTestId("listing-detail-drawer")).getByRole("heading", { name: "Beta Suites" })).toBeInTheDocument();
+  expect(within(screen.getByTestId("listing-detail-drawer")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("beta");
-  expect(screen.getByTestId("nearby-services-panel")).toHaveTextContent("Beta Suites");
-  expect(screen.queryByTestId("listing-detail-drawer")).not.toBeInTheDocument();
 });
 
 const makeRestaurant = (id: string, name: string, sourceType: Listing["source_type"] = "manual_public_source"): Listing => ({
@@ -313,6 +303,17 @@ test("all mode shows accommodation workspace events nightlife and restaurants", 
   expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
 });
 
+test("nightlife near me floating overlay is not rendered while nightlife markers remain", async () => {
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
+  mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument());
+  expect(screen.queryByText(/nightlife near me/i)).not.toBeInTheDocument();
+  expect(screen.queryByText("South Africa")).not.toBeInTheDocument();
+});
+
 test("demo mode renders all restaurant prospects as map markers", async () => {
   vi.stubEnv("VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP", "true");
   mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
@@ -358,7 +359,7 @@ test("demo mode renders all restaurant prospects as map markers", async () => {
   expect(screen.getByTestId("marker-demo-prospect-prospect-2")).toBeInTheDocument();
 });
 
-test("marker click does not render the listing detail drawer or open the journey planner", async () => {
+test("close button hides the bottom sheet and clears marker selection", async () => {
   const alpha = makeListing("alpha", "Alpha Lodge");
   mockListings.mockResolvedValue([alpha]);
 
@@ -367,9 +368,13 @@ test("marker click does not render the listing detail drawer or open the journey
   await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
 
   fireEvent.click(screen.getByTestId("marker-alpha"));
-  expect(screen.getByTestId("selected-marker")).toHaveTextContent("alpha");
-  expect(screen.queryByTestId("listing-detail-drawer")).not.toBeInTheDocument();
-  expect(screen.queryByText("Plan my journey")).not.toBeInTheDocument();
+  expect(within(screen.getByTestId("listing-detail-drawer")).getByRole("heading", { name: "Alpha Lodge" })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Close detail" }));
+
+  expect(within(screen.getByTestId("listing-detail-drawer")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
+  expect(screen.getByTestId("selected-marker")).toHaveTextContent("none");
+  expect(screen.getByTestId("listing-detail-drawer").className).toContain("translate-y-[110%]");
 });
 
 test("clicking an event marker opens event bottom sheet", async () => {

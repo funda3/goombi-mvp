@@ -5,10 +5,11 @@ import { BottomPanel } from "../components/BottomPanel";
 import { EventDetailSheet } from "../components/EventDetailSheet";
 import { EventsNearbyPanel } from "../components/EventsNearbyPanel";
 import { FilterPanel } from "../components/FilterPanel";
+import { JourneyPlannerModal } from "../components/JourneyPlannerModal";
+import { ListingDetailDrawer } from "../components/ListingDetailDrawer";
 import { MapLegend } from "../components/MapLegend";
 import { MapCanvas } from "../components/MapCanvas";
 import { NightlifeDetailSheet } from "../components/NightlifeDetailSheet";
-import { NightlifeNearbyPanel } from "../components/NightlifeNearbyPanel";
 import { SearchBar, type SearchAction } from "../components/SearchBar";
 import { useListingFilters } from "../hooks/useListingFilters";
 import { useFavourites } from "../hooks/useFavourites";
@@ -80,13 +81,14 @@ export function HomePage() {
   const [selectedEvent, setSelectedEvent] = useState<EventRecord>();
   const [selectedNightlife, setSelectedNightlife] = useState<NightlifeVenue>();
   const [serviceMarker, setServiceMarker] = useState<ServiceMarker | null>(null);
+  const [plannerOpen, setPlannerOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [flyTo, setFlyTo] = useState<FlyTo | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(JHB);
   const { filters, setFilters, filteredListings, suburbs } = useListingFilters(listings);
-  const { ids: favouriteIds, count: favouriteCount } = useFavourites();
+  const { ids: favouriteIds, isFavourite, toggle: toggleFavourite, count: favouriteCount } = useFavourites();
 
   const displayedListings = useMemo(
     () => filters.favouritesOnly ? filteredListings.filter((l) => favouriteIds.has(l.id)) : filteredListings,
@@ -329,15 +331,17 @@ export function HomePage() {
             onSelectEvent={selectEvent}
           />
         )}
-        {(filters.category === "nightlife" || filters.category === "all") && (
-          <NightlifeNearbyPanel
-            venues={filteredNightlife}
-            selectedProvince={filters.region}
-            selectedVenueId={selectedNightlife?.id}
-            onSelectVenue={selectNightlife}
-          />
-        )}
         <MapLegend />
+        <ListingDetailDrawer
+          listing={selected}
+          allListings={listings}
+          onClose={() => { setSelected(undefined); setServiceMarker(null); }}
+          onSelect={selectListing}
+          onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
+          onOpenPlanner={() => setPlannerOpen(true)}
+          isFavourite={selected ? isFavourite(selected.id) : false}
+          onToggleFavourite={toggleFavourite}
+        />
         <BottomPanel
           selected={selected}
           onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
@@ -353,6 +357,13 @@ export function HomePage() {
           allEvents={events}
           onClose={() => setSelectedNightlife(undefined)}
         />
+        {plannerOpen && selected && (
+          <JourneyPlannerModal
+            selected={selected}
+            allListings={listings}
+            onClose={() => setPlannerOpen(false)}
+          />
+        )}
         {error && (
           <p className="pointer-events-none absolute bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-md bg-rose-50 px-4 py-2 text-sm text-rose-700 shadow">
             {error}

@@ -76,15 +76,15 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
         <p className="py-2 text-sm text-slate-500">Loading nearby services...</p>
       )}
       {selected && !servicesLoading && isFallback && hasServiceResults && (
-        <p className="mb-2 inline-flex w-fit items-center rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-700" data-testid="nearby-fallback-badge">
+        <p className="mb-2 inline-flex w-fit items-center rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
           Demo-safe nearby estimates
         </p>
       )}
       {selected && !servicesLoading && hasServiceResults && (
         <>
           <p className="mb-2 text-xs text-slate-400">
-            Near {selected.name} - within 5 km
-            {isFallback ? " - fallback estimates shown" : ""}
+            Near {selected.name} · within 5 km
+            {isFallback ? " · fallback estimates shown" : ""}
           </p>
           <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto">
             {serviceGroups
@@ -153,7 +153,7 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
   }
 
   return (
-    <section className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto rounded-lg border border-white/70 bg-white/95 shadow-panel md:left-[22rem]" data-testid="nearby-services-panel">
+    <section className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto rounded-lg border border-white/70 bg-white/95 shadow-panel md:left-[22rem]">
       <div className="px-3 pt-2.5 pb-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
       </div>
