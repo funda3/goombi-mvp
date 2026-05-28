@@ -6,13 +6,21 @@ import type { Listing } from "../types/listing";
 import type { NightlifeVenue } from "../types/nightlife";
 import { HomePage } from "./HomePage";
 
-vi.mock("../components/BottomPanel", () => ({ BottomPanel: () => null }));
+vi.mock("../components/BottomPanel", () => ({ BottomPanel: () => (
+  <section data-testid="nearby-services-panel">
+    <div data-testid="nearby-service-card">
+      <span data-testid="nearby-fallback-badge">Fallback estimate</span>
+    </div>
+  </section>
+) }));
 vi.mock("../components/FilterPanel", () => ({
-  FilterPanel: ({ filters, onChange }: { filters: { category: string }; onChange: (filters: unknown) => void }) => (
+  FilterPanel: ({ filters, onChange }: { filters: { category: string; region?: string }; onChange: (filters: unknown) => void }) => (
     <div data-testid="filter-panel">
       <button type="button" onClick={() => onChange({ ...filters, category: "all" })}>All layers</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "restaurant" })}>Restaurants only</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "events" })}>Events only</button>
+      <button type="button" onClick={() => onChange({ ...filters, category: "nightlife" })}>Nightlife only</button>
+      <button type="button" onClick={() => onChange({ ...filters, region: "KwaZulu-Natal" })}>KwaZulu-Natal province</button>
     </div>
   ),
 }));
@@ -323,6 +331,35 @@ test("events nearby floating overlay is not rendered while event markers remain"
   await waitFor(() => expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument());
   expect(screen.queryByText(/what'?s happening nearby/i)).not.toBeInTheDocument();
   expect(screen.queryByText(/happening nearby/i)).not.toBeInTheDocument();
+});
+
+test("floating nearby overlays stay removed across province and layer changes", async () => {
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
+  mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
+  mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument());
+  expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
+  expect(screen.getByTestId("nearby-services-panel")).toBeInTheDocument();
+  expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
+
+  fireEvent.click(screen.getByRole("button", { name: "KwaZulu-Natal province" }));
+  fireEvent.click(screen.getByRole("button", { name: "Events only" }));
+
+  expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument();
+  expect(screen.queryByText(/what'?s happening nearby/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/happening nearby/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/nightlife near me/i)).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Nightlife only" }));
+
+  expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
+  expect(screen.queryByText(/what'?s happening nearby/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/happening nearby/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/nightlife near me/i)).not.toBeInTheDocument();
+  expect(screen.getByTestId("nearby-services-panel")).toBeInTheDocument();
 });
 
 test("demo mode renders all restaurant prospects as map markers", async () => {

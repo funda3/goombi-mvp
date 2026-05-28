@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      selfDestroying: true,
       includeAssets: ["favicon.ico"],
       manifest: {
         name: "Goombi",
