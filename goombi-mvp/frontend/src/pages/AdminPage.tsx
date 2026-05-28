@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { Building2, FileUp, MapPinned, Pencil, Plus, Trash2 } from "lucide-react";
+import { Building2, FileUp, MapPinned, Pencil, Plus, Trash2, Utensils } from "lucide-react";
 import Papa from "papaparse";
 
 import { api } from "../services/api";
@@ -14,6 +14,7 @@ import {
   type ListingDraft,
   type ListingType,
 } from "../types/listing";
+import type { RestaurantProspect } from "../types/restaurantProspect";
 
 const LAYER_LABELS: Record<ListingType, string> = {
   accommodation: "Stays",
@@ -62,6 +63,9 @@ const emptyDraft: ListingDraft = {
   price_from: null,
   price_to: null,
   capacity: null,
+  cuisine_tags: [],
+  price_band_goombi: "",
+  description_goombi: "",
   booking_url: "",
   source_url: "",
   source_note: "",
@@ -88,6 +92,8 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
     category:
       row.category === "workspace"
         ? "workspace"
+        : row.category === "restaurant"
+          ? "restaurant"
         : row.category === "bnb" || row.category === "guesthouse"
           ? row.category
           : "accommodation",
@@ -106,6 +112,9 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
     price_from: row.price_from === "" || row.price_from === undefined ? null : Number(row.price_from),
     price_to: row.price_to === "" || row.price_to === undefined ? null : Number(row.price_to),
     capacity: row.capacity === "" || row.capacity === undefined ? null : Number(row.capacity),
+    cuisine_tags: typeof row.cuisine_tags === "string" ? row.cuisine_tags.split("|").map((item) => item.trim()).filter(Boolean) : [],
+    price_band_goombi: String(row.price_band_goombi ?? ""),
+    description_goombi: String(row.description_goombi ?? ""),
     amenities: Array.isArray(amenities) ? amenities.map(String) : emptyDraft.amenities,
     photos: Array.isArray(photos) ? photos.map(String) : emptyDraft.photos,
     images: Array.isArray(images) ? images.map(String) : emptyDraft.images,
@@ -126,6 +135,7 @@ type RegionOption = typeof REGION_OPTIONS[number];
 export function AdminPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [restaurantProspects, setRestaurantProspects] = useState<RestaurantProspect[]>([]);
   const [draft, setDraft] = useState<ListingDraft>(emptyDraft);
   const [editingId, setEditingId] = useState("");
   const [status, setStatus] = useState("");
@@ -139,6 +149,7 @@ export function AdminPage() {
   const [verifiedFilter, setVerifiedFilter] = useState<"all" | "verified" | "unverified">("all");
 
   const refresh = () => api.listings().then(setListings);
+  const refreshRestaurantProspects = () => api.restaurantProspects().then(setRestaurantProspects);
 
   useEffect(() => {
     refresh()
@@ -147,6 +158,7 @@ export function AdminPage() {
     api.enquiries()
       .then((data) => setEnquiries([...data].sort((a, b) => b.created_at.localeCompare(a.created_at))))
       .catch(() => {});
+    refreshRestaurantProspects().catch(() => {});
   }, []);
 
   const suburbs = useMemo(() => Array.from(new Set(listings.map((listing) => listing.suburb))).sort(), [listings]);
@@ -250,6 +262,50 @@ export function AdminPage() {
     }
   }
 
+  async function convertRestaurantProspect(prospect: RestaurantProspect) {
+    if (prospect.approval_status !== "provider_approved") return;
+    setBusy(true);
+    try {
+      await api.createListing({
+        ...emptyDraft,
+        name: prospect.name,
+        category: "restaurant",
+        listing_type: "restaurant",
+        partner_status: "active",
+        province: prospect.province,
+        region: prospect.province,
+        city: prospect.city,
+        suburb: prospect.suburb,
+        address: `${prospect.suburb}, ${prospect.city}`,
+        latitude: prospect.latitude,
+        longitude: prospect.longitude,
+        price_per_night: 0,
+        max_guests: null,
+        rooms: null,
+        cuisine_tags: prospect.cuisine_tags,
+        price_band_goombi: prospect.price_band,
+        description: "Provider-approved Goombi restaurant marker.",
+        description_goombi: "Provider-approved Goombi restaurant marker.",
+        amenities: [],
+        photos: [],
+        owner_name: "Restaurant provider",
+        owner_phone: "",
+        website_url: prospect.public_website_url ?? "",
+        booking_url: prospect.public_contact_url ?? prospect.public_website_url ?? "",
+        provider_type: prospect.cuisine_tags.join(", "),
+        verified_status: true,
+        source_type: "provider_approved",
+        source_note: "Converted from internal prospect record after provider approval. TripAdvisor-derived metrics and notes are not published.",
+      });
+      setStatus(`${prospect.name} converted to a public restaurant marker.`);
+      await refresh();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Restaurant conversion failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
       <nav className="fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-white/70 bg-white/95 p-1 shadow-panel backdrop-blur">
@@ -276,6 +332,78 @@ export function AdminPage() {
           </ul>
         )}
       </div>
+      <section className="mx-auto mb-6 max-w-7xl overflow-hidden rounded-lg border border-amber-100 bg-white shadow-panel">
+        <div className="border-b border-amber-100 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-2 text-xs font-bold uppercase text-amber-700">
+                <Utensils className="h-4 w-4" />Restaurant Prospects
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold">Audit seed records</h2>
+              <p className="mt-1 max-w-3xl text-sm text-slate-600">
+                Internal-only prospect data for outreach and gap analysis. These records are not shown on the public map until provider approval.
+              </p>
+            </div>
+            <span className="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+              KZN restaurant audit pending.
+            </span>
+          </div>
+        </div>
+        {restaurantProspects.length === 0 ? (
+          <p className="p-5 text-sm text-slate-600">No restaurant prospects loaded.</p>
+        ) : (
+          <div className="overflow-auto">
+            <table className="min-w-full border-collapse text-left text-sm">
+              <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-600">
+                <tr>
+                  <th className="p-3">Restaurant</th>
+                  <th className="p-3">Province</th>
+                  <th className="p-3">Suburb</th>
+                  <th className="p-3">Cuisine</th>
+                  <th className="p-3">Approval</th>
+                  <th className="p-3">Source document</th>
+                  <th className="p-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {restaurantProspects.slice(0, 80).map((prospect) => (
+                  <tr className="border-t border-slate-100" key={prospect.id}>
+                    <td className="p-3 font-semibold">{prospect.name}</td>
+                    <td className="p-3 text-slate-600">{prospect.province}</td>
+                    <td className="p-3 text-slate-600">{prospect.suburb}</td>
+                    <td className="p-3 text-slate-600">{prospect.cuisine_tags.join(", ") || "-"}</td>
+                    <td className="p-3">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        prospect.approval_status === "provider_approved"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {prospect.approval_status.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="p-3 text-xs text-slate-500">{prospect.source_document}</td>
+                    <td className="p-3">
+                      <button
+                        className="secondary-button"
+                        disabled={busy || prospect.approval_status !== "provider_approved"}
+                        type="button"
+                        onClick={() => convertRestaurantProspect(prospect)}
+                      >
+                        Convert to public restaurant marker
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {restaurantProspects.length > 80 && (
+              <p className="border-t border-slate-100 p-3 text-xs text-slate-500">
+                Showing first 80 of {restaurantProspects.length} prospect records.
+              </p>
+            )}
+          </div>
+        )}
+      </section>
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[24rem_1fr]">
         <form className="h-fit rounded-lg border border-emerald-100 bg-white p-5 shadow-panel" onSubmit={save}>
           <div className="flex items-center justify-between gap-3">
@@ -291,7 +419,7 @@ export function AdminPage() {
           <div className="mt-5 grid gap-3">
             <label className="label">Name<input className="field" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
             <div className="grid grid-cols-2 gap-3">
-              <label className="label">Category<select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as ListingDraft["category"] })}><option value="guesthouse">Guesthouse</option><option value="bnb">B&B</option><option value="accommodation">Accommodation</option><option value="workspace">Workspace</option></select></label>
+              <label className="label">Category<select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as ListingDraft["category"] })}><option value="guesthouse">Guesthouse</option><option value="bnb">B&B</option><option value="accommodation">Accommodation</option><option value="workspace">Workspace</option><option value="restaurant">Restaurant</option></select></label>
               <label className="label">Suburb<input className="field" list="known-suburbs" required value={draft.suburb} onChange={(event) => setDraft({ ...draft, suburb: event.target.value })} /></label>
             </div>
             <datalist id="known-suburbs">{suburbs.map((suburb) => <option key={suburb} value={suburb} />)}</datalist>

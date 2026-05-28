@@ -3,6 +3,7 @@ import { Heart, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { EVENT_CATEGORY_LABELS } from "../types/event";
 import { type Filters, type ListingType } from "../types/listing";
+import { NIGHTLIFE_MUSIC_LABELS, NIGHTLIFE_TIER_LABELS, NIGHTLIFE_VENUE_TYPE_LABELS } from "../types/nightlife";
 
 type Props = {
   filters: Filters;
@@ -139,7 +140,9 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="all">All</option>
           <option value="accommodation">Accommodation</option>
           <option value="workspace">Workspace</option>
+          <option value="restaurant">Restaurants</option>
           <option value="events">Events</option>
+          <option value="nightlife">Nightlife</option>
         </select>
       </label>
       <label className="label">
@@ -151,6 +154,45 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
         >
           <option value="all">All event types</option>
           {Object.entries(EVENT_CATEGORY_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+      </label>
+      <label className="label">
+        Nightlife tier
+        <select
+          className="field"
+          value={filters.nightlifeTier}
+          onChange={(event) => onChange({ ...filters, nightlifeTier: event.target.value as Filters["nightlifeTier"] })}
+        >
+          <option value="all">All nightlife tiers</option>
+          {Object.entries(NIGHTLIFE_TIER_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+      </label>
+      <label className="label">
+        Music focus
+        <select
+          className="field"
+          value={filters.nightlifeMusicFocus}
+          onChange={(event) => onChange({ ...filters, nightlifeMusicFocus: event.target.value as Filters["nightlifeMusicFocus"] })}
+        >
+          <option value="all">All music styles</option>
+          {Object.entries(NIGHTLIFE_MUSIC_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+      </label>
+      <label className="label">
+        Venue type
+        <select
+          className="field"
+          value={filters.nightlifeVenueType}
+          onChange={(event) => onChange({ ...filters, nightlifeVenueType: event.target.value as Filters["nightlifeVenueType"] })}
+        >
+          <option value="all">All venue types</option>
+          {Object.entries(NIGHTLIFE_VENUE_TYPE_LABELS).map(([key, label]) => (
             <option key={key} value={key}>{label}</option>
           ))}
         </select>

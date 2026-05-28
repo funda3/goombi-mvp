@@ -1,0 +1,31 @@
+export type RestaurantApprovalStatus =
+  | "prospect_only"
+  | "contacted"
+  | "loi_requested"
+  | "loi_signed"
+  | "provider_approved"
+  | "rejected";
+
+export type RestaurantProspect = {
+  id: string;
+  name: string;
+  province: string;
+  city: string;
+  suburb: string;
+  cuisine_tags: string[];
+  price_band: string;
+  source_document: string;
+  source_type: "restaurant_audit_seed";
+  audit_status: "prospect_only";
+  approval_status: RestaurantApprovalStatus;
+  public_website_url?: string | null;
+  public_contact_url?: string | null;
+  notes_internal: string;
+  latitude: number;
+  longitude: number;
+  coordinate_accuracy: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RestaurantProspectDraft = Omit<RestaurantProspect, "id" | "created_at" | "updated_at">;

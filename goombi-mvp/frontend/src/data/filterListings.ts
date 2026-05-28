@@ -4,6 +4,9 @@ export const defaultFilters: Filters = {
   region: "all",
   category: "all",
   eventCategory: "all",
+  nightlifeMusicFocus: "all",
+  nightlifeVenueType: "all",
+  nightlifeTier: "all",
   workspaceType: "all",
   suburb: "all",
   minPrice: 0,
@@ -18,17 +21,20 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
   return listings.filter((listing) => {
     const matchesRegion = filters.region === "all" || listing.province === filters.region;
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
-    const isWorkspace = listing.category === "workspace";
-    const recordCategory = isWorkspace ? "workspace" : "accommodation";
+    const effectiveType = getListingType(listing);
+    const isWorkspace = effectiveType === "workspace";
+    const recordCategory =
+      effectiveType === "restaurant" ? "restaurant" :
+      effectiveType === "workspace" ? "workspace" :
+      "accommodation";
     const matchesCategory =
       filters.category === "all" ||
-      (filters.category !== "events" && filters.category === recordCategory);
+      (filters.category !== "events" && filters.category !== "nightlife" && filters.category === recordCategory);
     const matchesWorkspaceType =
       filters.workspaceType === "all" || (isWorkspace && listing.workspace_type === filters.workspaceType);
     const matchesPrice =
-      isWorkspace ||
+      effectiveType !== "accommodation" ||
       (listing.price_per_night >= filters.minPrice && listing.price_per_night <= filters.maxPrice);
-    const effectiveType = getListingType(listing);
     const isStay = effectiveType === "accommodation";
     const matchesGuests = !isStay || (listing.max_guests != null && listing.max_guests >= filters.minGuests);
     const matchesVerified = !filters.verifiedOnly || listing.verified_status;

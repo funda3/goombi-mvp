@@ -190,7 +190,14 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
           {/* Restaurant / Eatery: cuisine type from provider_type */}
           {layerType === "restaurant" && (
             <>
-              {listing.provider_type && <span><strong className="text-slate-950">Cuisine / type:</strong> {listing.provider_type}</span>}
+              {listing.cuisine_tags && listing.cuisine_tags.length > 0 && (
+                <span><strong className="text-slate-950">Cuisine:</strong> {listing.cuisine_tags.join(", ")}</span>
+              )}
+              {listing.provider_type && <span><strong className="text-slate-950">Type:</strong> {listing.provider_type}</span>}
+              {listing.price_band_goombi && <span><strong className="text-slate-950">Price band:</strong> {listing.price_band_goombi}</span>}
+              <span className="w-fit rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-950">
+                {listing.verified_status ? "Partner verified" : "Demo/public-source record"}
+              </span>
             </>
           )}
 
@@ -214,7 +221,9 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
 
       {/* Short description (shown when available, otherwise fall back to description) */}
       <p className="mt-4 text-sm leading-6 text-slate-700">
-        {listing.short_description || listing.description}
+        {layerType === "restaurant"
+          ? (listing.description_goombi || listing.short_description || listing.description)
+          : (listing.short_description || listing.description)}
       </p>
       {listing.long_description && (
         <p className="mt-2 text-sm leading-6 text-slate-500">{listing.long_description}</p>

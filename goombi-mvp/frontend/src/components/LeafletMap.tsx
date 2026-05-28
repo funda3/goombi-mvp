@@ -4,6 +4,7 @@ import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from "
 import type { Map as LeafletMapInstance } from "leaflet";
 
 import type { EventRecord } from "../types/event";
+import type { NightlifeVenue } from "../types/nightlife";
 import { getListingType, type Listing, type ListingType } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
@@ -12,14 +13,18 @@ export type FlyTo = { lat: number; lng: number; zoom: number };
 type Props = {
   listings: Listing[];
   events?: EventRecord[];
+  nightlife?: NightlifeVenue[];
   selectedId?: string;
   selectedEventId?: string;
+  selectedNightlifeId?: string;
   onSelect: (listing: Listing) => void;
   onSelectEvent?: (event: EventRecord) => void;
+  onSelectNightlife?: (venue: NightlifeVenue) => void;
   serviceMarker?: ServiceMarker | null;
   centerRegion?: string;
   flyTo?: FlyTo | null;
   highlightedListingIds?: string[];
+  highlightedEventIds?: string[];
 };
 
 const JHB_CENTER: [number, number] = [-26.1076, 28.0567];
@@ -53,17 +58,22 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapIn
 export function LeafletMap({
   listings,
   events = [],
+  nightlife = [],
   selectedId,
   selectedEventId,
+  selectedNightlifeId,
   onSelect,
   onSelectEvent,
+  onSelectNightlife,
   serviceMarker,
   centerRegion,
   flyTo,
   highlightedListingIds = [],
+  highlightedEventIds = [],
 }: Props) {
   const mapRef = useRef<LeafletMapInstance | null>(null);
   const highlighted = new Set(highlightedListingIds);
+  const highlightedEvents = new Set(highlightedEventIds);
 
   useEffect(() => {
     if (!flyTo || !mapRef.current) return;
@@ -82,10 +92,11 @@ export function LeafletMap({
   }, [centerRegion]);
 
   function fitResults() {
-    if (!mapRef.current || (listings.length === 0 && events.length === 0)) return;
+    if (!mapRef.current || (listings.length === 0 && events.length === 0 && nightlife.length === 0)) return;
     const listingCoords = listings.map((l) => [l.latitude, l.longitude] as [number, number]);
     const eventCoords = events.map((e) => [e.latitude, e.longitude] as [number, number]);
-    const coords = [...listingCoords, ...eventCoords];
+    const nightlifeCoords = nightlife.map((n) => [n.latitude, n.longitude] as [number, number]);
+    const coords = [...listingCoords, ...eventCoords, ...nightlifeCoords];
     mapRef.current.fitBounds(coords, { padding: [40, 40] });
   }
 
@@ -126,6 +137,28 @@ export function LeafletMap({
       html: `<div class="goombi-event-marker-wrap"><span class="${ring}"></span><span class="goombi-event-star" style="font-size:${size}px;">★</span></div>`,
       iconSize: [size + 8, size + 8],
       iconAnchor: [(size + 8) / 2, (size + 8) / 2],
+      className: "",
+    });
+  }
+
+  function nightlifeIcon(isSelected: boolean) {
+    const size = isSelected ? 24 : 20;
+    const ring = isSelected ? "goombi-nightlife-pulse goombi-nightlife-selected" : "goombi-nightlife-pulse";
+    return divIcon({
+      html: `<div class="goombi-nightlife-marker-wrap"><span class="${ring}"></span><span class="goombi-nightlife-moon" style="font-size:${size}px;">☾</span></div>`,
+      iconSize: [size + 8, size + 8],
+      iconAnchor: [(size + 8) / 2, (size + 8) / 2],
+      className: "",
+    });
+  }
+
+  function restaurantIcon(isSelected: boolean) {
+    const size = isSelected ? 28 : 24;
+    const border = isSelected ? "#f59e0b" : "#ffffff";
+    return divIcon({
+      html: `<div style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;background:#dc2626;border:${isSelected ? 3 : 2}px solid ${border};box-sizing:border-box;color:#fff;font-size:${Math.round(size * 0.58)}px;line-height:1;">🍴</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
       className: "",
     });
   }
@@ -177,6 +210,18 @@ export function LeafletMap({
               </Marker>
             );
           }
+          if (lt === "restaurant") {
+            return (
+              <Marker
+                key={listing.id}
+                position={[listing.latitude, listing.longitude]}
+                icon={restaurantIcon(isHighlighted)}
+                eventHandlers={{ click: () => onSelect(listing) }}
+              >
+                <Tooltip>{listing.name}</Tooltip>
+              </Marker>
+            );
+          }
           const fillColor =
             lt === "accommodation"
               ? listing.verified_status ? "#0f766e" : "#e8790a"
@@ -198,14 +243,27 @@ export function LeafletMap({
             </CircleMarker>
           );
         })}
-        {events.map((event) => (
+        {events.map((event) => {
+          const isHighlighted = selectedEventId === event.id || highlightedEvents.has(event.id);
+          return (
+            <Marker
+              key={event.id}
+              position={[event.latitude, event.longitude]}
+              icon={eventIcon(isHighlighted)}
+              eventHandlers={{ click: () => onSelectEvent?.(event) }}
+            >
+              <Tooltip>{event.name}</Tooltip>
+            </Marker>
+          );
+        })}
+        {nightlife.map((venue) => (
           <Marker
-            key={event.id}
-            position={[event.latitude, event.longitude]}
-            icon={eventIcon(selectedEventId === event.id)}
-            eventHandlers={{ click: () => onSelectEvent?.(event) }}
+            key={venue.id}
+            position={[venue.latitude, venue.longitude]}
+            icon={nightlifeIcon(selectedNightlifeId === venue.id)}
+            eventHandlers={{ click: () => onSelectNightlife?.(venue) }}
           >
-            <Tooltip>{event.name}</Tooltip>
+            <Tooltip>{venue.name}</Tooltip>
           </Marker>
         ))}
       </MapContainer>
@@ -218,7 +276,7 @@ export function LeafletMap({
         <button
           aria-label="Fit to results"
           className="rounded px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40"
-          disabled={listings.length === 0}
+          disabled={listings.length + events.length + nightlife.length === 0}
           onClick={fitResults}
           type="button"
         >

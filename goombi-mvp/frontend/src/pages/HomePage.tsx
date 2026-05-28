@@ -9,12 +9,15 @@ import { JourneyPlannerModal } from "../components/JourneyPlannerModal";
 import { ListingDetailDrawer } from "../components/ListingDetailDrawer";
 import { MapLegend } from "../components/MapLegend";
 import { MapCanvas } from "../components/MapCanvas";
+import { NightlifeDetailSheet } from "../components/NightlifeDetailSheet";
+import { NightlifeNearbyPanel } from "../components/NightlifeNearbyPanel";
 import { SearchBar, type SearchAction } from "../components/SearchBar";
 import { useListingFilters } from "../hooks/useListingFilters";
 import { useFavourites } from "../hooks/useFavourites";
 import { api } from "../services/api";
 import type { EventRecord } from "../types/event";
 import type { Listing } from "../types/listing";
+import type { NightlifeVenue } from "../types/nightlife";
 import type { ServiceMarker } from "../types/services";
 import type { FlyTo } from "../components/LeafletMap";
 import { haversineKm } from "../utils/haversine";
@@ -24,8 +27,10 @@ const JHB: [number, number] = [-26.1076, 28.0567];
 export function HomePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [events, setEvents] = useState<EventRecord[]>([]);
+  const [nightlife, setNightlife] = useState<NightlifeVenue[]>([]);
   const [selected, setSelected] = useState<Listing>();
   const [selectedEvent, setSelectedEvent] = useState<EventRecord>();
+  const [selectedNightlife, setSelectedNightlife] = useState<NightlifeVenue>();
   const [serviceMarker, setServiceMarker] = useState<ServiceMarker | null>(null);
   const [plannerOpen, setPlannerOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -51,6 +56,18 @@ export function HomePage() {
     [events, filters.eventCategory, filters.region],
   );
 
+  const filteredNightlife = useMemo(
+    () =>
+      nightlife.filter((venue) => {
+        const matchesRegion = filters.region === "all" || venue.province === filters.region;
+        const matchesTier = filters.nightlifeTier === "all" || venue.nightlife_tier === filters.nightlifeTier;
+        const matchesMusicFocus = filters.nightlifeMusicFocus === "all" || venue.music_focus.includes(filters.nightlifeMusicFocus);
+        const matchesVenueType = filters.nightlifeVenueType === "all" || venue.venue_type === filters.nightlifeVenueType;
+        return matchesRegion && matchesTier && matchesMusicFocus && matchesVenueType;
+      }),
+    [filters.nightlifeMusicFocus, filters.nightlifeTier, filters.nightlifeVenueType, filters.region, nightlife],
+  );
+
   const nearbyForEvent = useMemo(() => {
     if (!selectedEvent) return [];
     return listings
@@ -68,25 +85,71 @@ export function HomePage() {
       .slice(0, 6);
   }, [listings, selectedEvent]);
 
-  const highlightedListingIds = useMemo(() => nearbyForEvent.map((item) => item.id), [nearbyForEvent]);
+  const nearbyForNightlife = useMemo(() => {
+    if (!selectedNightlife) return [];
+    return listings
+      .filter((listing) => {
+        const isStayOrWorkspace = listing.category === "workspace" || listing.category === "accommodation" || listing.category === "bnb" || listing.category === "guesthouse";
+        if (!isStayOrWorkspace) return false;
+        const distanceKm = haversineKm(selectedNightlife.latitude, selectedNightlife.longitude, listing.latitude, listing.longitude);
+        return distanceKm <= 5;
+      })
+      .sort((a, b) => {
+        const aDistance = haversineKm(selectedNightlife.latitude, selectedNightlife.longitude, a.latitude, a.longitude);
+        const bDistance = haversineKm(selectedNightlife.latitude, selectedNightlife.longitude, b.latitude, b.longitude);
+        return aDistance - bDistance;
+      })
+      .slice(0, 8);
+  }, [listings, selectedNightlife]);
+
+  const nearbyEventsForNightlife = useMemo(() => {
+    if (!selectedNightlife) return [];
+    return events
+      .filter((event) => haversineKm(selectedNightlife.latitude, selectedNightlife.longitude, event.latitude, event.longitude) <= 10)
+      .sort((a, b) => {
+        const aDistance = haversineKm(selectedNightlife.latitude, selectedNightlife.longitude, a.latitude, a.longitude);
+        const bDistance = haversineKm(selectedNightlife.latitude, selectedNightlife.longitude, b.latitude, b.longitude);
+        return aDistance - bDistance;
+      })
+      .slice(0, 10);
+  }, [events, selectedNightlife]);
+
+  const highlightedListingIds = useMemo(() => {
+    const ids = new Set<string>();
+    nearbyForEvent.forEach((item) => ids.add(item.id));
+    nearbyForNightlife.forEach((item) => ids.add(item.id));
+    return Array.from(ids);
+  }, [nearbyForEvent, nearbyForNightlife]);
+
+  const highlightedEventIds = useMemo(
+    () => nearbyEventsForNightlife.map((item) => item.id),
+    [nearbyEventsForNightlife],
+  );
 
   const mapListings = useMemo(() => {
-    if (filters.category !== "events") return displayedListings;
+    if (filters.category !== "events" && filters.category !== "nightlife") return displayedListings;
     if (highlightedListingIds.length === 0) return [];
     const highlighted = listings.filter((listing) => highlightedListingIds.includes(listing.id));
     return highlighted;
   }, [displayedListings, filters.category, highlightedListingIds, listings]);
 
-  const mapEvents = useMemo(
-    () => (filters.category === "accommodation" || filters.category === "workspace" ? [] : filteredEvents),
-    [filteredEvents, filters.category],
-  );
+  const mapEvents = useMemo(() => {
+    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant") return [];
+    if (filters.category === "nightlife") return nearbyEventsForNightlife;
+    return filteredEvents;
+  }, [filteredEvents, filters.category, nearbyEventsForNightlife]);
+
+  const mapNightlife = useMemo(() => {
+    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "events") return [];
+    return filteredNightlife;
+  }, [filteredNightlife, filters.category]);
 
   useEffect(() => {
-    Promise.all([api.listings(), api.events()])
-      .then(([listingData, eventData]) => {
+    Promise.all([api.listings(), api.events(), api.nightlife()])
+      .then(([listingData, eventData, nightlifeData]) => {
         setListings(listingData);
         setEvents(eventData);
+        setNightlife(nightlifeData);
       })
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Listings failed to load."))
       .finally(() => setLoading(false));
@@ -95,15 +158,26 @@ export function HomePage() {
   const selectListing = useCallback((listing: Listing) => {
     setSelected(listing);
     setSelectedEvent(undefined);
+    setSelectedNightlife(undefined);
     setServiceMarker(null);
   }, []);
 
   const selectEvent = useCallback((event: EventRecord) => {
     setSelected(undefined);
+    setSelectedNightlife(undefined);
     setServiceMarker(null);
     setSelectedEvent(event);
     setFlyTo({ lat: event.latitude, lng: event.longitude, zoom: 13 });
     setMapCenter([event.latitude, event.longitude]);
+  }, []);
+
+  const selectNightlife = useCallback((venue: NightlifeVenue) => {
+    setSelected(undefined);
+    setSelectedEvent(undefined);
+    setServiceMarker(null);
+    setSelectedNightlife(venue);
+    setFlyTo({ lat: venue.latitude, lng: venue.longitude, zoom: 13 });
+    setMapCenter([venue.latitude, venue.longitude]);
   }, []);
 
   function handleResultSelect(action: SearchAction) {
@@ -162,11 +236,15 @@ export function HomePage() {
           <MapCanvas
             listings={mapListings}
             events={mapEvents}
+            nightlife={mapNightlife}
             selectedId={selected?.id}
             selectedEventId={selectedEvent?.id}
+            selectedNightlifeId={selectedNightlife?.id}
             onSelect={selectListing}
             onSelectEvent={selectEvent}
+            onSelectNightlife={selectNightlife}
             highlightedListingIds={highlightedListingIds}
+            highlightedEventIds={highlightedEventIds}
             serviceMarker={serviceMarker}
             region={filters.region}
             flyTo={flyTo}
@@ -176,19 +254,29 @@ export function HomePage() {
           <FilterPanel
             filters={filters}
             suburbs={suburbs}
-            resultCount={displayedListings.length + mapEvents.length}
+            resultCount={displayedListings.length + mapEvents.length + mapNightlife.length}
             favouriteCount={favouriteCount}
             onChange={setFilters}
             isOpen={filterOpen}
             onClose={() => setFilterOpen(false)}
           />
         </div>
-        <EventsNearbyPanel
-          events={filteredEvents}
-          selectedProvince={filters.region}
-          selectedEventId={selectedEvent?.id}
-          onSelectEvent={selectEvent}
-        />
+        {filters.category !== "nightlife" && (
+          <EventsNearbyPanel
+            events={filteredEvents}
+            selectedProvince={filters.region}
+            selectedEventId={selectedEvent?.id}
+            onSelectEvent={selectEvent}
+          />
+        )}
+        {(filters.category === "nightlife" || filters.category === "all") && (
+          <NightlifeNearbyPanel
+            venues={filteredNightlife}
+            selectedProvince={filters.region}
+            selectedVenueId={selectedNightlife?.id}
+            onSelectVenue={selectNightlife}
+          />
+        )}
         <MapLegend />
         <ListingDetailDrawer
           listing={selected}
@@ -208,6 +296,12 @@ export function HomePage() {
           event={selectedEvent}
           allListings={listings}
           onClose={() => setSelectedEvent(undefined)}
+        />
+        <NightlifeDetailSheet
+          venue={selectedNightlife}
+          allListings={listings}
+          allEvents={events}
+          onClose={() => setSelectedNightlife(undefined)}
         />
         {plannerOpen && selected && (
           <JourneyPlannerModal

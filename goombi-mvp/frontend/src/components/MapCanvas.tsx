@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { EventRecord } from "../types/event";
+import type { NightlifeVenue } from "../types/nightlife";
 import { getListingType, isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 import { LeafletMap, type FlyTo } from "./LeafletMap";
@@ -9,14 +10,18 @@ import { MockMap } from "./MockMap";
 type Props = {
   listings: Listing[];
   events?: EventRecord[];
+  nightlife?: NightlifeVenue[];
   selectedId?: string;
   selectedEventId?: string;
+  selectedNightlifeId?: string;
   onSelect: (listing: Listing) => void;
   onSelectEvent?: (event: EventRecord) => void;
+  onSelectNightlife?: (venue: NightlifeVenue) => void;
   serviceMarker?: ServiceMarker | null;
   region?: string;
   flyTo?: FlyTo | null;
   highlightedListingIds?: string[];
+  highlightedEventIds?: string[];
 };
 
 type GoogleState = "idle" | "loading" | "ready" | "failed";
@@ -57,12 +62,16 @@ function loadGoogleMaps(apiKey: string): Promise<void> {
 function GoogleCircleMap({
   listings,
   events = [],
+  nightlife = [],
   selectedId,
   selectedEventId,
+  selectedNightlifeId,
   onSelect,
   onSelectEvent,
+  onSelectNightlife,
   serviceMarker,
   highlightedListingIds = [],
+  highlightedEventIds = [],
 }: Props) {
   const targetRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +104,7 @@ function GoogleCircleMap({
       : null;
 
     const highlighted = new Set(highlightedListingIds);
+    const highlightedEvents = new Set(highlightedEventIds);
 
     const shapes = listings.map((listing) => {
       const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
@@ -137,6 +147,7 @@ function GoogleCircleMap({
     });
 
     const eventMarkers = events.map((event) => {
+      const isHighlighted = selectedEventId === event.id || highlightedEvents.has(event.id);
       const marker = new googleApi.maps.Marker({
         map,
         position: { lat: event.latitude, lng: event.longitude },
@@ -145,9 +156,9 @@ function GoogleCircleMap({
           path: "M0,-12 L2.8,-3.8 L11.4,-3.8 L4.5,1.5 L7.3,10 L0,5.1 L-7.3,10 L-4.5,1.5 L-11.4,-3.8 L-2.8,-3.8 z",
           fillColor: "#e11d48",
           fillOpacity: 0.95,
-          strokeColor: selectedEventId === event.id ? "#fbbf24" : "#ffffff",
-          strokeWeight: selectedEventId === event.id ? 2.5 : 1.8,
-          scale: selectedEventId === event.id ? 1.25 : 1,
+          strokeColor: isHighlighted ? "#fbbf24" : "#ffffff",
+          strokeWeight: isHighlighted ? 2.5 : 1.8,
+          scale: isHighlighted ? 1.25 : 1,
           anchor: new googleApi.maps.Point(0, 0),
         },
       });
@@ -156,13 +167,34 @@ function GoogleCircleMap({
       return marker;
     });
 
-    if (listings.length + events.length > 1) map.fitBounds(bounds, 54);
+    const nightlifeMarkers = nightlife.map((venue) => {
+      const marker = new googleApi.maps.Marker({
+        map,
+        position: { lat: venue.latitude, lng: venue.longitude },
+        title: venue.name,
+        icon: {
+          path: "M0,-10 A10,10 0 1,0 0,10 A6.8,6.8 0 1,1 0,-10 z",
+          fillColor: "#4f46e5",
+          fillOpacity: 0.94,
+          strokeColor: selectedNightlifeId === venue.id ? "#fbbf24" : "#ffffff",
+          strokeWeight: selectedNightlifeId === venue.id ? 2.5 : 1.8,
+          scale: selectedNightlifeId === venue.id ? 1.2 : 1,
+          anchor: new googleApi.maps.Point(0, 0),
+        },
+      });
+      marker.addListener("click", () => onSelectNightlife?.(venue));
+      bounds.extend(marker.getPosition());
+      return marker;
+    });
+
+    if (listings.length + events.length + nightlife.length > 1) map.fitBounds(bounds, 54);
     return () => {
       shapes.forEach((shape) => shape.setMap(null));
       eventMarkers.forEach((marker) => marker.setMap(null));
+      nightlifeMarkers.forEach((marker) => marker.setMap(null));
       servicePin?.setMap(null);
     };
-  }, [events, highlightedListingIds, listings, onSelect, onSelectEvent, selectedEventId, selectedId, serviceMarker]);
+  }, [events, highlightedEventIds, highlightedListingIds, listings, nightlife, onSelect, onSelectEvent, onSelectNightlife, selectedEventId, selectedId, selectedNightlifeId, serviceMarker]);
 
   return <div className="h-full w-full" ref={targetRef} />;
 }
@@ -170,14 +202,18 @@ function GoogleCircleMap({
 export function MapCanvas({
   listings,
   events = [],
+  nightlife = [],
   selectedId,
   selectedEventId,
+  selectedNightlifeId,
   onSelect,
   onSelectEvent,
+  onSelectNightlife,
   serviceMarker,
   region,
   flyTo,
   highlightedListingIds = [],
+  highlightedEventIds = [],
 }: Props) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const [googleState, setGoogleState] = useState<GoogleState>(apiKey ? "loading" : "idle");
@@ -192,12 +228,16 @@ export function MapCanvas({
       <GoogleCircleMap
         listings={listings}
         events={events}
+        nightlife={nightlife}
         selectedId={selectedId}
         selectedEventId={selectedEventId}
+        selectedNightlifeId={selectedNightlifeId}
         onSelect={onSelect}
         onSelectEvent={onSelectEvent}
+        onSelectNightlife={onSelectNightlife}
         serviceMarker={serviceMarker}
         highlightedListingIds={highlightedListingIds}
+        highlightedEventIds={highlightedEventIds}
       />
     );
   }
@@ -209,27 +249,35 @@ export function MapCanvas({
       <MockMap
         listings={listings}
         events={events}
+        nightlife={nightlife}
         selectedId={selectedId}
         selectedEventId={selectedEventId}
+        selectedNightlifeId={selectedNightlifeId}
         onSelect={onSelect}
         onSelectEvent={onSelectEvent}
+        onSelectNightlife={onSelectNightlife}
         serviceMarker={serviceMarker}
         region={region}
         highlightedListingIds={highlightedListingIds}
+        highlightedEventIds={highlightedEventIds}
       />
     )
     : (
       <LeafletMap
         listings={listings}
         events={events}
+        nightlife={nightlife}
         selectedId={selectedId}
         selectedEventId={selectedEventId}
+        selectedNightlifeId={selectedNightlifeId}
         onSelect={onSelect}
         onSelectEvent={onSelectEvent}
+        onSelectNightlife={onSelectNightlife}
         serviceMarker={serviceMarker}
         centerRegion={region}
         flyTo={flyTo}
         highlightedListingIds={highlightedListingIds}
+        highlightedEventIds={highlightedEventIds}
       />
     );
 }

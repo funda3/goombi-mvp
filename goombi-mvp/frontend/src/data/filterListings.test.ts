@@ -59,6 +59,27 @@ test("filters workspace records by category and workspace type", () => {
   ).toEqual([workspace]);
 });
 
+test("filters approved public restaurant listings by restaurant category", () => {
+  const restaurant: Listing = {
+    ...baseListing,
+    id: "restaurant-approved",
+    name: "Approved Kitchen",
+    category: "restaurant",
+    listing_type: "restaurant",
+    max_guests: null,
+    rooms: null,
+    cuisine_tags: ["South African"],
+    source_type: "provider_approved",
+  };
+
+  expect(
+    filterListings([baseListing, restaurant], {
+      ...defaultFilters,
+      category: "restaurant",
+    }),
+  ).toEqual([restaurant]);
+});
+
 test("hiddenLayers hides listings of the specified layer type", () => {
   const tourismListing: Listing = {
     ...baseListing,

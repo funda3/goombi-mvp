@@ -70,12 +70,20 @@ test("restaurant: shows cuisine/type when provider_type is set", () => {
   renderDrawer({
     ...base,
     listing_type: "restaurant",
-    category: "accommodation",
+    category: "restaurant",
     provider_type: "Fine dining",
+    cuisine_tags: ["Contemporary", "South African"],
+    price_band_goombi: "$$$",
+    description_goombi: "Provider-approved Goombi restaurant marker.",
     max_guests: null,
     rooms: null,
   });
-  expect(screen.getByText("Fine dining")).toBeInTheDocument();
+  expect(screen.getByText(/Fine dining/)).toBeInTheDocument();
+  expect(screen.getByText(/Contemporary, South African/)).toBeInTheDocument();
+  expect(screen.getByText(/Price band:/)).toBeInTheDocument();
+  expect(screen.getByText("Provider-approved Goombi restaurant marker.")).toBeInTheDocument();
+  expect(screen.queryByText(/TripAdvisor/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/reviews/i)).not.toBeInTheDocument();
 });
 
 // ── Transport node ────────────────────────────────────────────────────────────

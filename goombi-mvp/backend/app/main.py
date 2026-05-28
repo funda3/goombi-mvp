@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import enquiries, events, listings, otp
+from .routes import enquiries, events, listings, nightlife, otp, restaurant_prospects
 from .storage import JsonStore
 
 _DEFAULT_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
@@ -35,6 +35,8 @@ def create_app(store: JsonStore | None = None) -> FastAPI:
 
     app.include_router(listings.router)
     app.include_router(events.router)
+    app.include_router(nightlife.router)
+    app.include_router(restaurant_prospects.router)
     app.include_router(enquiries.router)
     app.include_router(otp.router)
     return app

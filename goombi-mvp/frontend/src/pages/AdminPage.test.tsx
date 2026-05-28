@@ -9,12 +9,16 @@ vi.mock("../services/api", () => ({
   api: {
     listings: vi.fn(),
     enquiries: vi.fn(),
+    restaurantProspects: vi.fn(),
+    createListing: vi.fn(),
   },
 }));
 
 import { api } from "../services/api";
 const mockListings = api.listings as ReturnType<typeof vi.fn>;
 const mockEnquiries = api.enquiries as ReturnType<typeof vi.fn>;
+const mockRestaurantProspects = api.restaurantProspects as ReturnType<typeof vi.fn>;
+const mockCreateListing = api.createListing as ReturnType<typeof vi.fn>;
 
 // ── Listing factory ───────────────────────────────────────────────────────────
 const makeListing = (id: string, name: string, province: string): Listing => ({
@@ -46,9 +50,20 @@ const WC_LISTING = makeListing("wc-1", "Cape Town Stay", "Western Cape");
 const KZN_LISTING = makeListing("kzn-1", "Durban Stay", "KwaZulu-Natal");
 const ALL_LISTINGS = [GP_LISTING, WC_LISTING, KZN_LISTING];
 
+beforeEach(() => {
+  mockListings.mockReset();
+  mockEnquiries.mockReset();
+  mockRestaurantProspects.mockReset();
+  mockCreateListing.mockReset();
+  mockRestaurantProspects.mockResolvedValue([]);
+  mockCreateListing.mockResolvedValue({});
+});
+
 function setup() {
   mockListings.mockResolvedValue(ALL_LISTINGS);
   mockEnquiries.mockResolvedValue([]);
+  mockRestaurantProspects.mockResolvedValue([]);
+  mockCreateListing.mockResolvedValue({});
   render(<AdminPage />);
 }
 
@@ -62,6 +77,80 @@ test("renders the region filter dropdown", async () => {
   setup();
   await waitForTable();
   expect(screen.getByRole("combobox", { name: "Region" })).toBeInTheDocument();
+});
+
+test("renders restaurant prospects as internal audit records and disables conversion until approved", async () => {
+  mockListings.mockResolvedValue(ALL_LISTINGS);
+  mockEnquiries.mockResolvedValue([]);
+  mockRestaurantProspects.mockResolvedValue([
+    {
+      id: "prospect-1",
+      name: "Prospect Kitchen",
+      province: "Gauteng",
+      city: "Johannesburg",
+      suburb: "Sandton",
+      cuisine_tags: ["Grill"],
+      price_band: "$$",
+      source_document: "Goombi_TA_Gauteng_Restaurants.docx",
+      source_type: "restaurant_audit_seed",
+      audit_status: "prospect_only",
+      approval_status: "prospect_only",
+      public_website_url: "",
+      public_contact_url: "",
+      notes_internal: "Internal only.",
+      latitude: -26.1,
+      longitude: 28.05,
+      coordinate_accuracy: "city_or_suburb_centroid_estimate",
+      created_at: "2026-05-28T00:00:00Z",
+      updated_at: "2026-05-28T00:00:00Z",
+    },
+  ]);
+  render(<AdminPage />);
+
+  await waitFor(() => expect(screen.getByText("Prospect Kitchen")).toBeInTheDocument());
+  expect(screen.getByText("KZN restaurant audit pending.")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Convert to public restaurant marker" })).toBeDisabled();
+});
+
+test("approved restaurant prospects can be converted to public restaurant listings", async () => {
+  mockListings.mockResolvedValue(ALL_LISTINGS);
+  mockEnquiries.mockResolvedValue([]);
+  mockRestaurantProspects.mockResolvedValue([
+    {
+      id: "prospect-2",
+      name: "Approved Kitchen",
+      province: "Western Cape",
+      city: "Cape Town",
+      suburb: "V&A Waterfront",
+      cuisine_tags: ["Seafood"],
+      price_band: "$$$",
+      source_document: "Goombi_TA_WesternCape_Restaurants.docx",
+      source_type: "restaurant_audit_seed",
+      audit_status: "prospect_only",
+      approval_status: "provider_approved",
+      public_website_url: "https://example.com",
+      public_contact_url: "https://example.com/contact",
+      notes_internal: "Internal only.",
+      latitude: -33.9,
+      longitude: 18.42,
+      coordinate_accuracy: "city_or_suburb_centroid_estimate",
+      created_at: "2026-05-28T00:00:00Z",
+      updated_at: "2026-05-28T00:00:00Z",
+    },
+  ]);
+  mockCreateListing.mockResolvedValue({});
+  render(<AdminPage />);
+
+  await waitFor(() => expect(screen.getByText("Approved Kitchen")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Convert to public restaurant marker" }));
+
+  await waitFor(() => expect(mockCreateListing).toHaveBeenCalled());
+  expect(mockCreateListing.mock.calls[0][0]).toMatchObject({
+    category: "restaurant",
+    listing_type: "restaurant",
+    source_type: "provider_approved",
+    name: "Approved Kitchen",
+  });
 });
 
 test("region dropdown has the correct options", async () => {

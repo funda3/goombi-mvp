@@ -2,19 +2,24 @@ import { MouseEvent, PointerEvent, WheelEvent, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 
 import type { EventRecord } from "../types/event";
+import type { NightlifeVenue } from "../types/nightlife";
 import { isWorkspace, type Listing } from "../types/listing";
 import type { ServiceMarker } from "../types/services";
 
 type Props = {
   listings: Listing[];
   events?: EventRecord[];
+  nightlife?: NightlifeVenue[];
   selectedId?: string;
   selectedEventId?: string;
+  selectedNightlifeId?: string;
   onSelect: (listing: Listing) => void;
   onSelectEvent?: (event: EventRecord) => void;
+  onSelectNightlife?: (venue: NightlifeVenue) => void;
   serviceMarker?: ServiceMarker | null;
   region?: string;
   highlightedListingIds?: string[];
+  highlightedEventIds?: string[];
 };
 
 type Point = {
@@ -47,14 +52,19 @@ function listingPosition(listing: Listing) {
 export function MockMap({
   listings,
   events = [],
+  nightlife = [],
   selectedId,
   selectedEventId,
+  selectedNightlifeId,
   onSelect,
   onSelectEvent,
+  onSelectNightlife,
   serviceMarker,
   highlightedListingIds = [],
+  highlightedEventIds = [],
 }: Props) {
   const highlighted = new Set(highlightedListingIds);
+  const highlightedEvents = new Set(highlightedEventIds);
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
@@ -90,7 +100,7 @@ export function MockMap({
   }
 
   function fitToResults() {
-    if (!viewportRef.current || (listings.length === 0 && events.length === 0)) {
+    if (!viewportRef.current || (listings.length === 0 && events.length === 0 && nightlife.length === 0)) {
       resetView();
       return;
     }
@@ -103,7 +113,11 @@ export function MockMap({
       const position = listingPosition({ latitude: event.latitude, longitude: event.longitude } as Listing);
       return { x: Number.parseFloat(position.left), y: Number.parseFloat(position.top) };
     });
-    const positions = [...listingPositions, ...eventPositions];
+    const nightlifePositions = nightlife.map((venue) => {
+      const position = listingPosition({ latitude: venue.latitude, longitude: venue.longitude } as Listing);
+      return { x: Number.parseFloat(position.left), y: Number.parseFloat(position.top) };
+    });
+    const positions = [...listingPositions, ...eventPositions, ...nightlifePositions];
     const minX = Math.min(...positions.map((position) => position.x));
     const maxX = Math.max(...positions.map((position) => position.x));
     const minY = Math.min(...positions.map((position) => position.y));
@@ -199,7 +213,7 @@ export function MockMap({
           <button
             key={event.id}
             aria-label={`Open ${event.name}`}
-            className={`goombi-event-star-marker absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full text-lg leading-none text-rose-600 transition hover:scale-110 ${selectedEventId === event.id ? "ring-2 ring-amber-300" : ""}`}
+            className={`goombi-event-star-marker absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full text-lg leading-none text-rose-600 transition hover:scale-110 ${(selectedEventId === event.id || highlightedEvents.has(event.id)) ? "ring-2 ring-amber-300" : ""}`}
             style={listingPosition({ latitude: event.latitude, longitude: event.longitude } as Listing)}
             title={`${event.name}, ${event.city}`}
             type="button"
@@ -208,6 +222,21 @@ export function MockMap({
             onPointerDown={keepMarkerClickable}
           >
             ★
+          </button>
+        ))}
+        {nightlife.map((venue) => (
+          <button
+            key={venue.id}
+            aria-label={`Open ${venue.name}`}
+            className={`goombi-nightlife-moon-marker absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full text-lg leading-none text-indigo-700 transition hover:scale-110 ${selectedNightlifeId === venue.id ? "ring-2 ring-amber-300" : ""}`}
+            style={listingPosition({ latitude: venue.latitude, longitude: venue.longitude } as Listing)}
+            title={`${venue.name}, ${venue.city}`}
+            type="button"
+            onClick={() => onSelectNightlife?.(venue)}
+            onMouseDown={keepMarkerClickable}
+            onPointerDown={keepMarkerClickable}
+          >
+            ☾
           </button>
         ))}
         {serviceMarker && (

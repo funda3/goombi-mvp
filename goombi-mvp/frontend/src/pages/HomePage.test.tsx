@@ -3,6 +3,7 @@ import { vi } from "vitest";
 
 import type { EventRecord } from "../types/event";
 import type { Listing } from "../types/listing";
+import type { NightlifeVenue } from "../types/nightlife";
 import { HomePage } from "./HomePage";
 
 vi.mock("../components/BottomPanel", () => ({ BottomPanel: () => null }));
@@ -13,21 +14,28 @@ vi.mock("../components/MapCanvas", () => ({
   MapCanvas: ({
     listings,
     events,
+    nightlife,
     selectedId,
     selectedEventId,
+    selectedNightlifeId,
     onSelect,
     onSelectEvent,
+    onSelectNightlife,
   }: {
     listings: Listing[];
     events?: EventRecord[];
+    nightlife?: NightlifeVenue[];
     selectedId?: string;
     selectedEventId?: string;
+    selectedNightlifeId?: string;
     onSelect: (listing: Listing) => void;
     onSelectEvent?: (event: EventRecord) => void;
+    onSelectNightlife?: (venue: NightlifeVenue) => void;
   }) => (
     <div data-testid="map-canvas">
       <div data-testid="selected-marker">{selectedId ?? "none"}</div>
       <div data-testid="selected-event-marker">{selectedEventId ?? "none"}</div>
+      <div data-testid="selected-nightlife-marker">{selectedNightlifeId ?? "none"}</div>
       {listings.map((listing) => (
         <button
           key={listing.id}
@@ -48,6 +56,16 @@ vi.mock("../components/MapCanvas", () => ({
           {event.name}
         </button>
       ))}
+      {(nightlife ?? []).map((venue) => (
+        <button
+          key={venue.id}
+          data-testid={`nightlife-marker-${venue.id}`}
+          type="button"
+          onClick={() => onSelectNightlife?.(venue)}
+        >
+          {venue.name}
+        </button>
+      ))}
     </div>
   ),
 }));
@@ -63,6 +81,7 @@ vi.mock("../services/api", () => ({
   api: {
     listings: vi.fn(),
     events: vi.fn(),
+    nightlife: vi.fn(),
   },
 }));
 
@@ -70,6 +89,7 @@ import { api } from "../services/api";
 
 const mockListings = api.listings as ReturnType<typeof vi.fn>;
 const mockEvents = api.events as ReturnType<typeof vi.fn>;
+const mockNightlife = api.nightlife as ReturnType<typeof vi.fn>;
 
 const makeListing = (id: string, name: string): Listing => ({
   id,
@@ -117,10 +137,34 @@ const makeEvent = (id: string, name: string): EventRecord => ({
   verified_status: "guide_seed_phase_1",
 });
 
+const makeNightlife = (id: string, name: string): NightlifeVenue => ({
+  id,
+  name,
+  province: "KwaZulu-Natal",
+  city: "Durban",
+  suburb: "Umhlanga",
+  address: "Umhlanga nightlife strip",
+  latitude: -29.7269,
+  longitude: 31.0842,
+  coordinate_accuracy: "approximate",
+  nightlife_tier: "premium",
+  music_focus: ["afrobeats", "house"],
+  venue_type: "nightclub",
+  description: "Demo nightlife venue",
+  opening_pattern: "Fri-Sat nights",
+  website_url: null,
+  instagram_url: null,
+  source_type: "manual_seed",
+  source_note: "Seed",
+  verified_status: "unverified_public_research",
+});
+
 beforeEach(() => {
   mockListings.mockReset();
   mockEvents.mockReset();
+  mockNightlife.mockReset();
   mockEvents.mockResolvedValue([]);
+  mockNightlife.mockResolvedValue([]);
 });
 
 test("marker click opens a single bottom sheet and selecting another marker updates it", async () => {
@@ -144,6 +188,18 @@ test("marker click opens a single bottom sheet and selecting another marker upda
   expect(within(screen.getByTestId("listing-bottom-sheet")).getByRole("heading", { name: "Beta Suites" })).toBeInTheDocument();
   expect(within(screen.getByTestId("listing-bottom-sheet")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("beta");
+});
+
+test("unapproved restaurant prospects are not rendered on the public map", async () => {
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
+  mockEvents.mockResolvedValue([]);
+  mockNightlife.mockResolvedValue([]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
+  expect(screen.queryByText("Prospect Kitchen")).not.toBeInTheDocument();
+  expect(mockListings).toHaveBeenCalledTimes(1);
 });
 
 test("close button hides the bottom sheet and clears marker selection", async () => {
@@ -213,4 +269,66 @@ test("event bottom sheet shows nearby accommodation/workspace records", async ()
   expect(within(sheet).getByText("Nearby Accommodation and Workspace")).toBeInTheDocument();
   expect(within(sheet).getByText("Durban Stay")).toBeInTheDocument();
   expect(within(sheet).getByText("Durban Workspace")).toBeInTheDocument();
+});
+
+test("clicking a nightlife marker opens nightlife bottom sheet", async () => {
+  const alpha = makeListing("alpha", "Alpha Lodge");
+  const venue = makeNightlife("nightlife-kzn-origin", "Origin Nightclub");
+  mockListings.mockResolvedValue([alpha]);
+  mockNightlife.mockResolvedValue([venue]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId("nightlife-marker-nightlife-kzn-origin"));
+
+  expect(screen.getByRole("heading", { name: "Origin Nightclub" })).toBeInTheDocument();
+  expect(screen.getByTestId("selected-nightlife-marker")).toHaveTextContent("nightlife-kzn-origin");
+});
+
+test("nightlife bottom sheet shows nearby accommodation workspace and events", async () => {
+  const nearbyStay = {
+    ...makeListing("durban-stay", "Durban Stay"),
+    province: "KwaZulu-Natal",
+    city: "Durban",
+    suburb: "Umhlanga",
+    latitude: -29.727,
+    longitude: 31.084,
+  };
+  const nearbyWorkspace = {
+    ...nearbyStay,
+    id: "durban-workspace",
+    name: "Durban Workspace",
+    category: "workspace" as const,
+    provider_name: "Workspace Co",
+    workspace_type: "coworking" as const,
+    pricing_status: "not_publicly_available" as const,
+    source_url: "https://example.com",
+    source_note: "Seeded",
+  };
+  const nearbyEvent = {
+    ...makeEvent("event-kzn-demo", "Durban After Dark"),
+    city: "Durban",
+    suburb: "Umhlanga",
+    latitude: -29.7265,
+    longitude: 31.0851,
+  };
+  const venue = makeNightlife("nightlife-kzn-origin", "Origin Nightclub");
+
+  mockListings.mockResolvedValue([nearbyStay, nearbyWorkspace]);
+  mockEvents.mockResolvedValue([nearbyEvent]);
+  mockNightlife.mockResolvedValue([venue]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId("nightlife-marker-nightlife-kzn-origin"));
+
+  const sheet = screen.getByTestId("nightlife-bottom-sheet");
+  expect(within(sheet).getByText("Accommodation within 5 km")).toBeInTheDocument();
+  expect(within(sheet).getByText("Workspace within 5 km")).toBeInTheDocument();
+  expect(within(sheet).getByText("Events within 10 km")).toBeInTheDocument();
+  expect(within(sheet).getByText("Durban Stay")).toBeInTheDocument();
+  expect(within(sheet).getByText("Durban Workspace")).toBeInTheDocument();
+  expect(within(sheet).getByText("Durban After Dark")).toBeInTheDocument();
 });

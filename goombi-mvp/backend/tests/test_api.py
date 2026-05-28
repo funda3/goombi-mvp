@@ -35,11 +35,37 @@ def client(tmp_path) -> TestClient:
     listings_path = tmp_path / "listings.json"
     enquiries_path = tmp_path / "enquiries.json"
     events_path = tmp_path / "events.json"
+    nightlife_path = tmp_path / "nightlife.json"
+    restaurant_prospects_path = tmp_path / "restaurant_prospects.json"
     listings_path.write_text("[]", encoding="utf-8")
     enquiries_path.write_text("[]", encoding="utf-8")
+    restaurant_prospects_path.write_text("[]", encoding="utf-8")
     seed_events = pathlib.Path(__file__).parent.parent / "app" / "data" / "events.json"
+    seed_nightlife = pathlib.Path(__file__).parent.parent / "app" / "data" / "nightlife.json"
     events_path.write_text(seed_events.read_text(encoding="utf-8"), encoding="utf-8")
-    return TestClient(create_app(JsonStore(listings_path, enquiries_path, events_path)))
+    nightlife_path.write_text(seed_nightlife.read_text(encoding="utf-8"), encoding="utf-8")
+    return TestClient(create_app(JsonStore(listings_path, enquiries_path, events_path, nightlife_path, restaurant_prospects_path)))
+
+
+def restaurant_prospect_payload(name: str = "Prospect Kitchen") -> dict:
+    return {
+        "name": name,
+        "province": "Gauteng",
+        "city": "Johannesburg",
+        "suburb": "Sandton",
+        "cuisine_tags": ["South African", "Grill"],
+        "price_band": "$$",
+        "source_document": "Goombi_TA_Gauteng_Restaurants.docx",
+        "source_type": "restaurant_audit_seed",
+        "audit_status": "prospect_only",
+        "approval_status": "prospect_only",
+        "public_website_url": "",
+        "public_contact_url": "",
+        "notes_internal": "Internal prospect seed only. Do not publish TA-derived metrics or notes.",
+        "latitude": -26.1076,
+        "longitude": 28.0567,
+        "coordinate_accuracy": "city_or_suburb_centroid_estimate",
+    }
 
 
 def test_healthz(tmp_path):
@@ -91,6 +117,36 @@ def test_otp_placeholder(tmp_path):
     assert verified.json()["otp_verified"] is True
 
 
+def test_restaurant_prospect_crud(tmp_path):
+    api = client(tmp_path)
+    created = api.post("/api/restaurant-prospects", json=restaurant_prospect_payload()).json()
+    assert created["name"] == "Prospect Kitchen"
+    assert created["audit_status"] == "prospect_only"
+    assert created["approval_status"] == "prospect_only"
+    assert created["source_type"] == "restaurant_audit_seed"
+
+    listed = api.get("/api/restaurant-prospects").json()
+    assert listed[0]["id"] == created["id"]
+    assert api.get(f"/api/restaurant-prospects/{created['id']}").status_code == 200
+
+    update_payload = restaurant_prospect_payload("Approved Kitchen")
+    update_payload["approval_status"] = "provider_approved"
+    updated = api.put(f"/api/restaurant-prospects/{created['id']}", json=update_payload)
+    assert updated.status_code == 200
+    assert updated.json()["approval_status"] == "provider_approved"
+
+    assert api.delete(f"/api/restaurant-prospects/{created['id']}").status_code == 204
+    assert api.get(f"/api/restaurant-prospects/{created['id']}").status_code == 404
+
+
+def test_restaurant_prospects_are_separate_from_public_listings(tmp_path):
+    api = client(tmp_path)
+    created = api.post("/api/restaurant-prospects", json=restaurant_prospect_payload()).json()
+    assert created["name"] == "Prospect Kitchen"
+    public_listings = api.get("/api/listings").json()
+    assert all(item["name"] != "Prospect Kitchen" for item in public_listings)
+
+
 def test_get_events_returns_seed_records(tmp_path):
     api = client(tmp_path)
     response = api.get("/api/events")
@@ -119,6 +175,44 @@ def test_get_events_filters_by_province_and_category(tmp_path):
     assert len(data) > 0
     assert all(item["province"] == "Western Cape" for item in data)
     assert all(item["category"] == "market" for item in data)
+
+
+def test_get_nightlife_returns_seed_records(tmp_path):
+    api = client(tmp_path)
+    response = api.get("/api/nightlife")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert any(venue["name"] == "Konka Soweto" for venue in data)
+
+
+def test_get_nightlife_by_id(tmp_path):
+    api = client(tmp_path)
+    venue_id = "nightlife-gp-konka-soweto"
+    response = api.get(f"/api/nightlife/{venue_id}")
+    assert response.status_code == 200
+    venue = response.json()
+    assert venue["id"] == venue_id
+    assert venue["verified_status"] == "unverified_public_research"
+
+
+def test_get_nightlife_filters_by_province(tmp_path):
+    api = client(tmp_path)
+    response = api.get("/api/nightlife", params={"province": "Western Cape"})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) > 0
+    assert all(item["province"] == "Western Cape" for item in data)
+
+
+def test_get_nightlife_filters_by_music_focus(tmp_path):
+    api = client(tmp_path)
+    response = api.get("/api/nightlife", params={"music_focus": "amapiano"})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) > 0
+    assert all("amapiano" in item["music_focus"] for item in data)
 
 
 # ── GMB-01: listing_type and partner_status tests ──────────────────────────────

@@ -3,6 +3,7 @@ import { vi } from "vitest";
 
 import type { EventRecord } from "../types/event";
 import type { Listing } from "../types/listing";
+import type { NightlifeVenue } from "../types/nightlife";
 import { ALL_LISTING_TYPES } from "../types/listing";
 
 // Stable mock map methods captured via vi.hoisted so they're available in the factory
@@ -118,6 +119,29 @@ const makeEvent = (overrides: Partial<EventRecord> = {}): EventRecord => ({
   ...overrides,
 });
 
+const makeNightlife = (overrides: Partial<NightlifeVenue> = {}): NightlifeVenue => ({
+  id: "night-1",
+  name: "Origin Nightclub",
+  province: "KwaZulu-Natal",
+  city: "Durban",
+  suburb: "Umhlanga",
+  address: "Umhlanga nightlife strip",
+  latitude: -29.7269,
+  longitude: 31.0842,
+  coordinate_accuracy: "approximate",
+  nightlife_tier: "premium",
+  music_focus: ["house", "afrobeats"],
+  venue_type: "nightclub",
+  description: "Demo nightlife venue",
+  opening_pattern: "Fri-Sat nights",
+  website_url: null,
+  instagram_url: null,
+  source_type: "manual_seed",
+  source_note: "Seed",
+  verified_status: "unverified_public_research",
+  ...overrides,
+});
+
 test("renders the map container and tile layer", () => {
   render(<LeafletMap listings={[]} onSelect={() => undefined} />);
 
@@ -208,7 +232,7 @@ test("tourism_experience listings render as circle-markers (not workspace marker
   expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
 });
 
-test("multiple layer types all render as circle-markers except workspace", () => {
+test("multiple layer types render with their layer-specific marker types", () => {
   const listings = [
     makeListing({ id: "acc-1", listing_type: "accommodation" }),
     makeListing({ id: "rest-1", listing_type: "restaurant", category: "accommodation" }),
@@ -217,8 +241,8 @@ test("multiple layer types all render as circle-markers except workspace", () =>
   ];
   render(<LeafletMap listings={listings} onSelect={() => undefined} />);
 
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(4);
-  expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(3);
+  expect(screen.getAllByTestId("workspace-marker")).toHaveLength(1);
 });
 
 test("estate_living_zone listing renders as circle-marker", () => {
@@ -256,7 +280,7 @@ test("exactly 7 layer types are defined", () => {
 
 // ── GMB-01E: all 8 layers render markers ─────────────────────────────────────
 
-test("restaurant listing renders as circle-marker", () => {
+test("restaurant listing renders as food-pin marker", () => {
   const listing = makeListing({
     id: "rest-1",
     name: "Open Kitchen",
@@ -266,8 +290,8 @@ test("restaurant listing renders as circle-marker", () => {
     rooms: null,
   });
   render(<LeafletMap listings={[listing]} onSelect={() => undefined} />);
-  expect(screen.getByTestId("circle-marker")).toBeInTheDocument();
-  expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
+  expect(screen.getByTestId("workspace-marker")).toBeInTheDocument();
+  expect(screen.queryByTestId("circle-marker")).not.toBeInTheDocument();
 });
 
 test("transport_node listing renders as circle-marker", () => {
@@ -319,10 +343,10 @@ test("all 7 layer types render the correct marker type", () => {
   });
   render(<LeafletMap listings={[...listings, workspace]} onSelect={() => undefined} />);
 
-  // 6 non-workspace layers render as circle-markers
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(6);
-  // 1 workspace renders as workspace-marker
-  expect(screen.getAllByTestId("workspace-marker")).toHaveLength(1);
+  // 5 non-workspace/non-restaurant layers render as circle-markers
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(5);
+  // workspace and restaurant render custom Marker icons
+  expect(screen.getAllByTestId("workspace-marker")).toHaveLength(2);
 });
 
 test("renders event markers and handles event click", () => {
@@ -335,4 +359,15 @@ test("renders event markers and handles event click", () => {
   fireEvent.click(markers[1]);
 
   expect(onSelectEvent).toHaveBeenCalledWith(event);
+});
+
+test("renders nightlife marker and handles nightlife click", () => {
+  const onSelectNightlife = vi.fn();
+  const venue = makeNightlife();
+  render(<LeafletMap listings={[]} nightlife={[venue]} onSelect={() => undefined} onSelectNightlife={onSelectNightlife} />);
+
+  expect(screen.getByText("Origin Nightclub")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: /Marker at/i }));
+
+  expect(onSelectNightlife).toHaveBeenCalledWith(venue);
 });

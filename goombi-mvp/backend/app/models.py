@@ -38,6 +38,47 @@ EventNearbyFocusLiteral = Literal["accommodation", "workspace", "restaurant", "m
 
 EventCoordinateAccuracyLiteral = Literal["venue", "approximate"]
 
+NightlifeCoordinateAccuracyLiteral = Literal["venue", "approximate"]
+
+NightlifeTierLiteral = Literal[
+    "premium",
+    "underground",
+    "alternative",
+    "student",
+    "township",
+    "jazz_soul",
+    "multi_floor",
+    "beach_club",
+]
+
+NightlifeMusicFocusLiteral = Literal[
+    "amapiano",
+    "afro_house",
+    "deep_house",
+    "house",
+    "techno",
+    "trance",
+    "hip_hop",
+    "afrobeats",
+    "gqom",
+    "kwaito",
+    "jazz",
+    "soul",
+    "commercial",
+    "live_music",
+]
+
+NightlifeVenueTypeLiteral = Literal[
+    "nightclub",
+    "lounge",
+    "rooftop",
+    "beach_club",
+    "jazz_bar",
+    "entertainment_complex",
+    "restaurant_club",
+    "market_lifestyle",
+]
+
 PartnerStatusLiteral = Literal[
     "seed",
     "identified",
@@ -52,12 +93,15 @@ PartnerStatusLiteral = Literal[
 
 class ListingBase(BaseModel):
     name: str = Field(min_length=2)
-    category: Literal["bnb", "guesthouse", "accommodation", "workspace"]
+    category: Literal["bnb", "guesthouse", "accommodation", "workspace", "restaurant"]
     # Spatial layer — defaults from category if omitted (migration-safe)
     listing_type: ListingTypeLiteral | None = None
     accommodation_type: Literal["bnb", "guesthouse"] | None = None
     provider_name: str | None = None
     provider_type: str | None = None
+    cuisine_tags: list[str] = Field(default_factory=list)
+    price_band_goombi: str | None = None
+    description_goombi: str | None = None
     workspace_type: Literal[
         "coworking", "meeting_room", "boardroom", "serviced_office", "virtual_office"
     ] | None = None
@@ -107,13 +151,18 @@ class ListingBase(BaseModel):
     estate_type: str | None = None
     lifestyle_summary: str | None = None
     long_stay_relevant: bool = False
-    source_type: Literal["manual_seed"] = "manual_seed"
+    source_type: Literal["manual_seed", "provider_approved", "manual_public_source"] = "manual_seed"
 
     @model_validator(mode="after")
     def _validate_and_set_defaults(self):
         # Default listing_type from category when not explicitly provided
         if self.listing_type is None:
-            self.listing_type = "workspace" if self.category == "workspace" else "accommodation"
+            if self.category == "workspace":
+                self.listing_type = "workspace"
+            elif self.category == "restaurant":
+                self.listing_type = "restaurant"
+            else:
+                self.listing_type = "accommodation"
 
         # Normalise province ↔ region: keep them in sync; reject records missing both
         if self.province and not self.region:
@@ -237,3 +286,73 @@ class Event(BaseModel):
     source_type: Literal["events_guide_manual_seed"] = "events_guide_manual_seed"
     source_document: str
     verified_status: str
+
+
+class NightlifeVenue(BaseModel):
+    id: str
+    name: str = Field(min_length=2)
+    province: Literal["Gauteng", "Western Cape", "KwaZulu-Natal"]
+    city: str = Field(min_length=2)
+    suburb: str
+    address: str
+    latitude: float
+    longitude: float
+    coordinate_accuracy: NightlifeCoordinateAccuracyLiteral
+    nightlife_tier: NightlifeTierLiteral
+    music_focus: list[NightlifeMusicFocusLiteral] = Field(default_factory=list)
+    venue_type: NightlifeVenueTypeLiteral
+    description: str
+    opening_pattern: str
+    website_url: str | None = None
+    instagram_url: str | None = None
+    source_type: Literal["manual_seed"] = "manual_seed"
+    source_note: str
+    verified_status: Literal["unverified_public_research"] = "unverified_public_research"
+
+
+RestaurantApprovalStatusLiteral = Literal[
+    "prospect_only",
+    "contacted",
+    "loi_requested",
+    "loi_signed",
+    "provider_approved",
+    "rejected",
+]
+
+
+class RestaurantProspectBase(BaseModel):
+    name: str = Field(min_length=2)
+    province: str
+    city: str
+    suburb: str
+    cuisine_tags: list[str] = Field(default_factory=list)
+    price_band: str | None = None
+    source_document: str
+    source_type: Literal["restaurant_audit_seed"] = "restaurant_audit_seed"
+    audit_status: Literal["prospect_only"] = "prospect_only"
+    approval_status: RestaurantApprovalStatusLiteral = "prospect_only"
+    public_website_url: str | None = None
+    public_contact_url: str | None = None
+    notes_internal: str
+    latitude: float
+    longitude: float
+    coordinate_accuracy: str
+
+
+class RestaurantProspectCreate(RestaurantProspectBase):
+    pass
+
+
+class RestaurantProspectUpdate(RestaurantProspectBase):
+    pass
+
+
+class RestaurantProspect(RestaurantProspectBase):
+    id: str
+    created_at: str
+    updated_at: str
+
+    @classmethod
+    def from_create(cls, payload: RestaurantProspectCreate) -> "RestaurantProspect":
+        timestamp = utc_now()
+        return cls(id=str(uuid4()), created_at=timestamp, updated_at=timestamp, **payload.model_dump())

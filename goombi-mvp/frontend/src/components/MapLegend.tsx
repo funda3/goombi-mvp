@@ -12,6 +12,9 @@ export function MapLegend() {
         <li className="flex items-center gap-2">
           <span className="goombi-event-star-marker inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] text-rose-600">★</span>Star/Pulse = Event
         </li>
+        <li className="flex items-center gap-2">
+          <span className="goombi-nightlife-moon-marker inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] text-indigo-700">☾</span>Moon/Pulse = Nightlife
+        </li>
       </ul>
     </aside>
   );

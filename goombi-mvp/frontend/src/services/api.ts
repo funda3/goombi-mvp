@@ -1,5 +1,7 @@
 import type { BookingEnquiryDraft, Enquiry, EnquiryDraft, Listing, ListingDraft } from "../types/listing";
 import type { EventCategory, EventRecord, EventRecurringType } from "../types/event";
+import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenue, NightlifeVenueType } from "../types/nightlife";
+import type { RestaurantProspect, RestaurantProspectDraft } from "../types/restaurantProspect";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`;
 
@@ -35,11 +37,37 @@ export const api = {
     return request<EventRecord[]>(`/api/events${query ? `?${query}` : ""}`);
   },
   eventById: (id: string) => request<EventRecord>(`/api/events/${id}`),
+  nightlife: (filters?: {
+    province?: string;
+    city?: string;
+    suburb?: string;
+    nightlife_tier?: NightlifeTier;
+    music_focus?: NightlifeMusicFocus;
+    venue_type?: NightlifeVenueType;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.province) params.set("province", filters.province);
+    if (filters?.city) params.set("city", filters.city);
+    if (filters?.suburb) params.set("suburb", filters.suburb);
+    if (filters?.nightlife_tier) params.set("nightlife_tier", filters.nightlife_tier);
+    if (filters?.music_focus) params.set("music_focus", filters.music_focus);
+    if (filters?.venue_type) params.set("venue_type", filters.venue_type);
+    const query = params.toString();
+    return request<NightlifeVenue[]>(`/api/nightlife${query ? `?${query}` : ""}`);
+  },
+  nightlifeById: (id: string) => request<NightlifeVenue>(`/api/nightlife/${id}`),
   createListing: (payload: ListingDraft) =>
     request<Listing>("/api/listings", { method: "POST", body: JSON.stringify(payload) }),
   updateListing: (id: string, payload: ListingDraft) =>
     request<Listing>(`/api/listings/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   deleteListing: (id: string) => request<void>(`/api/listings/${id}`, { method: "DELETE" }),
+  restaurantProspects: () => request<RestaurantProspect[]>("/api/restaurant-prospects"),
+  createRestaurantProspect: (payload: RestaurantProspectDraft) =>
+    request<RestaurantProspect>("/api/restaurant-prospects", { method: "POST", body: JSON.stringify(payload) }),
+  updateRestaurantProspect: (id: string, payload: RestaurantProspectDraft) =>
+    request<RestaurantProspect>(`/api/restaurant-prospects/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  deleteRestaurantProspect: (id: string) =>
+    request<void>(`/api/restaurant-prospects/${id}`, { method: "DELETE" }),
   createEnquiry: (payload: EnquiryDraft) =>
     request("/api/enquiries", { method: "POST", body: JSON.stringify(payload) }),
   createBookingEnquiry: (payload: BookingEnquiryDraft) =>

@@ -1,8 +1,9 @@
 import type { EventCategory } from "./event";
+import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenueType } from "./nightlife";
 
 export type AccommodationType = "bnb" | "guesthouse";
 export type WorkspaceType = "coworking" | "meeting_room" | "boardroom" | "serviced_office" | "virtual_office";
-export type ListingCategory = AccommodationType | "accommodation" | "workspace";
+export type ListingCategory = AccommodationType | "accommodation" | "workspace" | "restaurant";
 
 export type ListingType =
   | "accommodation"
@@ -76,6 +77,9 @@ export type Listing = {
   price_from?: number | null;
   price_to?: number | null;
   capacity?: number | null;
+  cuisine_tags?: string[];
+  price_band_goombi?: string | null;
+  description_goombi?: string | null;
   booking_url?: string | null;
   source_url?: string | null;
   source_note?: string | null;
@@ -91,7 +95,7 @@ export type Listing = {
   estate_type?: string | null;
   lifestyle_summary?: string | null;
   long_stay_relevant?: boolean;
-  source_type: "manual_seed";
+  source_type: "manual_seed" | "provider_approved" | "manual_public_source";
   created_at: string;
   updated_at: string;
 };
@@ -131,8 +135,11 @@ export type Enquiry = {
 
 export type Filters = {
   region: "all" | "Gauteng" | "Western Cape" | "KwaZulu-Natal";
-  category: "all" | "accommodation" | "workspace" | "events";
+  category: "all" | "accommodation" | "workspace" | "restaurant" | "events" | "nightlife";
   eventCategory: "all" | EventCategory;
+  nightlifeMusicFocus: "all" | NightlifeMusicFocus;
+  nightlifeVenueType: "all" | NightlifeVenueType;
+  nightlifeTier: "all" | NightlifeTier;
   workspaceType: "all" | WorkspaceType;
   suburb: string;
   minPrice: number;
@@ -147,11 +154,12 @@ export type Filters = {
 export function getListingType(listing: Listing): ListingType {
   if (listing.listing_type) return listing.listing_type;
   if (listing.category === "workspace") return "workspace";
+  if (listing.category === "restaurant") return "restaurant";
   return "accommodation";
 }
 
 export function isWorkspace(listing: Listing) {
-  return listing.category === "workspace";
+  return getListingType(listing) === "workspace";
 }
 
 /** Human-readable label for the listing's spatial layer. */
@@ -167,4 +175,3 @@ export function displayCategory(listing: Listing): string {
     default: return "Accommodation";
   }
 }
-
