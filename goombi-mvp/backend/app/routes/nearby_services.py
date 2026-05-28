@@ -18,21 +18,21 @@ class _ServiceDef:
 
 
 _SERVICE_DEFS: dict[ServiceCategoryLiteral, _ServiceDef] = {
-    "gym": _ServiceDef("🏋️", "Gym / Fitness", [{"amenity": "gym"}, {"leisure": "fitness_centre"}]),
-    "shopping": _ServiceDef("🛒", "Shopping Centre", [{"shop": "mall"}, {"shop": "department_store"}]),
-    "fuel": _ServiceDef("⛽", "Fuel Station", [{"amenity": "fuel"}]),
-    "hospital": _ServiceDef("🏥", "Hospital", [{"amenity": "hospital"}]),
-    "clinic": _ServiceDef("💊", "Clinic / Doctor", [{"amenity": "clinic"}, {"amenity": "doctors"}]),
-    "police": _ServiceDef("👮", "Police Station", [{"amenity": "police"}]),
-    "restaurant": _ServiceDef("🍽️", "Restaurant / Cafe", [{"amenity": "restaurant"}, {"amenity": "cafe"}]),
-    "atm": _ServiceDef("🏧", "ATM / Bank", [{"amenity": "atm"}, {"amenity": "bank"}]),
-    "supermarket": _ServiceDef("🛍️", "Supermarket", [{"shop": "supermarket"}]),
-    "pharmacy": _ServiceDef("💊", "Pharmacy", [{"amenity": "pharmacy"}]),
-    "transit": _ServiceDef("🚉", "Transit Stop", [{"railway": "station"}, {"public_transport": "stop_position"}, {"highway": "bus_stop"}]),
-    "ev_charging": _ServiceDef("⚡", "EV Charging", [{"amenity": "charging_station"}]),
-    "workspace": _ServiceDef("💼", "Workspace", [{"office": "coworking"}, {"amenity": "coworking_space"}]),
-    "attraction": _ServiceDef("🎟️", "Event / Attraction", [{"tourism": "attraction"}, {"tourism": "museum"}, {"leisure": "park"}]),
-    "parking": _ServiceDef("🅿️", "Parking / Access", [{"amenity": "parking"}]),
+    "gym": _ServiceDef("Fitness", "Gym / Fitness", [{"amenity": "gym"}, {"leisure": "fitness_centre"}]),
+    "shopping": _ServiceDef("Shop", "Shopping Centre", [{"shop": "mall"}, {"shop": "department_store"}]),
+    "fuel": _ServiceDef("Fuel", "Fuel Station", [{"amenity": "fuel"}]),
+    "hospital": _ServiceDef("Health", "Hospital", [{"amenity": "hospital"}]),
+    "clinic": _ServiceDef("Health", "Clinic / Doctor", [{"amenity": "clinic"}, {"amenity": "doctors"}]),
+    "police": _ServiceDef("Safety", "Police Station", [{"amenity": "police"}]),
+    "restaurant": _ServiceDef("Food", "Restaurant / Cafe", [{"amenity": "restaurant"}, {"amenity": "cafe"}]),
+    "atm": _ServiceDef("ATM", "ATM / Bank", [{"amenity": "atm"}, {"amenity": "bank"}]),
+    "supermarket": _ServiceDef("Shop", "Supermarket", [{"shop": "supermarket"}]),
+    "pharmacy": _ServiceDef("Health", "Pharmacy", [{"amenity": "pharmacy"}]),
+    "transit": _ServiceDef("Transit", "Transit Stop", [{"railway": "station"}, {"public_transport": "stop_position"}, {"highway": "bus_stop"}]),
+    "ev_charging": _ServiceDef("EV", "EV Charging", [{"amenity": "charging_station"}]),
+    "workspace": _ServiceDef("Work", "Workspace", [{"office": "coworking"}, {"amenity": "coworking_space"}]),
+    "attraction": _ServiceDef("Place", "Event / Attraction", [{"tourism": "attraction"}, {"tourism": "museum"}, {"leisure": "park"}]),
+    "parking": _ServiceDef("Parking", "Parking / Access", [{"amenity": "parking"}]),
 }
 
 _PROVINCE_CENTERS: dict[str, tuple[float, float]] = {
@@ -51,7 +51,7 @@ _FALLBACK_BASE: dict[str, list[ServiceCategoryLiteral]] = {
 }
 
 _FALLBACK_NAMES: dict[ServiceCategoryLiteral, str] = {
-    "restaurant": "Estimated café / food option",
+    "restaurant": "Estimated cafe / food option",
     "fuel": "Estimated fuel / transport service",
     "supermarket": "Estimated retail / convenience option",
     "shopping": "Estimated retail / convenience option",

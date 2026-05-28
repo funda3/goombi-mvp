@@ -63,7 +63,7 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
   const fallbackBadge = "Fallback estimate";
 
   return (
-    <div className="mt-4 border-t border-slate-200 pt-4">
+    <div className="mt-4 border-t border-slate-200 pt-4" data-testid="nearby-services-panel">
       <button
         type="button"
         className="flex w-full items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-500 hover:text-slate-700"
@@ -88,14 +88,17 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
               {groups
                 .filter((g) => g.nearest !== null)
                 .map((g) => (
-                  <li key={g.category} className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 text-xs">
-                    <span className="shrink-0 text-base leading-none">{g.emoji}</span>
+                  <li key={g.category} className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 text-xs" data-testid="nearby-service-card">
+                    {g.emoji && <span className="shrink-0 rounded bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">{g.emoji}</span>}
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold text-slate-800">{g.nearest!.name}</p>
                       <p className="text-slate-500">{fmtDist(g.nearest!.distanceKm, demoMode || Boolean(g.nearest!.isFallback))}</p>
                       {(demoMode || g.nearest!.isFallback) && (
                         <div className="mt-1 flex flex-wrap gap-1">
-                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                          <span
+                            className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800"
+                            data-testid="nearby-fallback-badge"
+                          >
                             {g.nearest!.badgeLabel || fallbackBadge}
                           </span>
                           <span className="text-[11px] text-amber-700">
@@ -131,7 +134,7 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
           )}
 
           {!loading && !hasResults && status === "empty" && hasCoordinates && (
-            <p className="rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-700">{message || "Demo-safe nearby estimates shown."}</p>
+            <p className="rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-700" data-testid="nearby-services-unavailable">{message || "Demo-safe nearby estimates shown."}</p>
           )}
         </div>
       )}

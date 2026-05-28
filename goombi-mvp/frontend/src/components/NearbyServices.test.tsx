@@ -63,11 +63,11 @@ test("renders fallback service cards with demo badge and no unavailable message"
     services: [
       {
         category: "restaurant",
-        emoji: "🍽️",
+        emoji: "Food",
         label: "Restaurant / Cafe",
         nearest: {
           id: 1,
-          name: "Estimated café / food option",
+          name: "Estimated cafe / food option",
           lat: -26.11,
           lon: 28.06,
           distanceKm: 1.2,
@@ -79,7 +79,7 @@ test("renders fallback service cards with demo badge and no unavailable message"
       },
       {
         category: "pharmacy",
-        emoji: "💊",
+        emoji: "Health",
         label: "Pharmacy",
         nearest: {
           id: 2,
@@ -101,7 +101,10 @@ test("renders fallback service cards with demo badge and no unavailable message"
   fireEvent.click(screen.getByRole("button", { name: /Nearby Services/i }));
 
   await waitFor(() => expect(screen.getByText("Demo-safe nearby estimates")).toBeInTheDocument());
-  expect(screen.getByText("Estimated café / food option")).toBeInTheDocument();
+  expect(screen.getByTestId("nearby-services-panel")).toBeInTheDocument();
+  expect(screen.getByText("Estimated cafe / food option")).toBeInTheDocument();
+  expect(screen.getAllByTestId("nearby-service-card")).toHaveLength(2);
+  expect(screen.getAllByTestId("nearby-fallback-badge").length).toBeGreaterThan(0);
   expect(screen.getAllByText("Fallback estimate").length).toBeGreaterThan(0);
   expect(screen.getAllByText("External nearby service provider unavailable").length).toBeGreaterThan(0);
   expect(screen.queryByText("Nearby services unavailable.")).not.toBeInTheDocument();
@@ -138,7 +141,7 @@ test("renders without crashing across multiple listing types", async () => {
     services: [
       {
         category: "atm",
-        emoji: "🏧",
+        emoji: "ATM",
         label: "ATM / Bank",
         nearest: {
           id: 3,

@@ -616,6 +616,8 @@ def test_nearby_services_fallback_works(tmp_path, monkeypatch):
     assert sample["nearest"]["badgeLabel"] == "Fallback estimate"
     assert sample["nearest"]["reason"] == "External nearby service provider unavailable"
     assert sample["nearest"]["name"].startswith("Estimated ")
+    assert sample["emoji"].isascii()
+    assert sample["nearest"]["name"].isascii()
 
 
 def test_nearby_services_empty_upstream_payload_falls_back(tmp_path, monkeypatch):
@@ -714,13 +716,14 @@ def test_nearby_services_fallback_is_deterministic(tmp_path, monkeypatch):
     names = [group["nearest"]["name"] for group in first.json()["services"] if group["nearest"]]
     assert names
     assert all(name in {
-        "Estimated café / food option",
+        "Estimated cafe / food option",
         "Estimated fuel / transport service",
         "Estimated retail / convenience option",
         "Estimated pharmacy / health service",
         "Estimated parking / access point",
         "Estimated accommodation support option",
     } for name in names)
+    assert all(name.isascii() for name in names)
 
 
 def test_nearby_services_lng_and_lon_outputs_are_equivalent(tmp_path, monkeypatch):

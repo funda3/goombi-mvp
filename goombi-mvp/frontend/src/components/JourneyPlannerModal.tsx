@@ -13,9 +13,9 @@ import type { ServiceGroup } from "../types/services";
 type StopCategory = "gym" | "restaurant" | "supermarket";
 
 const STOP_OPTIONS: { cat: StopCategory; emoji: string; label: string }[] = [
-  { cat: "gym",         emoji: "🏋️", label: "Gym" },
-  { cat: "restaurant",  emoji: "🍽️", label: "Coffee / Eat" },
-  { cat: "supermarket", emoji: "🛍️", label: "Supermarket" },
+  { cat: "gym",         emoji: "Fitness", label: "Gym" },
+  { cat: "restaurant",  emoji: "Food", label: "Coffee / Eat" },
+  { cat: "supermarket", emoji: "Shop", label: "Supermarket" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -235,11 +235,11 @@ export function JourneyPlannerModal({ selected, allListings, onClose }: Props) {
             {stopCat && (
               <div className="mt-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs">
                 {servicesLoading && (
-                  <p className="text-slate-500">Loading nearby stops…</p>
+                  <p className="text-slate-500">Loading nearby stops...</p>
                 )}
                 {!servicesLoading && !stopItem && (
                   <p className="text-slate-500">
-                    No {stopCat === "restaurant" ? "café or restaurant" : stopCat} found within 5 km.
+                    No {stopCat === "restaurant" ? "cafe or restaurant" : stopCat} found within 5 km.
                   </p>
                 )}
                 {!servicesLoading && stopItem && (
