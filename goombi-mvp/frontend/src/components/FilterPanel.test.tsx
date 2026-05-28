@@ -17,18 +17,21 @@ function renderPanel(overrides = {}) {
   );
 }
 
-test("renders exactly 7 layer buttons", () => {
+test("renders exactly 5 public layer buttons", () => {
   renderPanel();
-  const layerNames = ["Stays", "Workspace", "Experiences", "Eats", "Transport", "Estates", "Events"];
+  const layerNames = ["Stays", "Workspace", "Events", "Nightlife", "Restaurants"];
   layerNames.forEach((name) => {
     expect(screen.getByRole("button", { name })).toBeInTheDocument();
   });
-  expect(layerNames).toHaveLength(7);
+  expect(layerNames).toHaveLength(5);
 });
 
-test("Estates layer button is rendered", () => {
+test("old generic layer buttons are not rendered", () => {
   renderPanel();
-  expect(screen.getByRole("button", { name: "Estates" })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Experiences" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Eats" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Transport" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Estates" })).not.toBeInTheDocument();
 });
 
 test("Stays layer button is rendered", () => {
@@ -39,6 +42,11 @@ test("Stays layer button is rendered", () => {
 test("Workspace layer button is rendered", () => {
   renderPanel();
   expect(screen.getByRole("button", { name: "Workspace" })).toBeInTheDocument();
+});
+
+test("Restaurants layer button is rendered", () => {
+  renderPanel();
+  expect(screen.getByRole("button", { name: "Restaurants" })).toBeInTheDocument();
 });
 
 test("Relocation layer button is NOT rendered", () => {
@@ -69,6 +77,11 @@ test("category filter includes Events option", () => {
 test("category filter includes Nightlife option", () => {
   renderPanel();
   expect(screen.getByRole("option", { name: "Nightlife" })).toBeInTheDocument();
+});
+
+test("category filter includes Restaurants option", () => {
+  renderPanel();
+  expect(screen.getByRole("option", { name: "Restaurants" })).toBeInTheDocument();
 });
 
 test("event type filter renders all event categories", () => {

@@ -324,6 +324,9 @@ export function AdminPage() {
         <a className="nav-link nav-link-active" href="/admin" title="Admin listings">
           <Building2 className="h-4 w-4" />Admin
         </a>
+        <a className="nav-link" href="/admin/crm" title="Provider CRM">
+          <Utensils className="h-4 w-4" />CRM
+        </a>
       </nav>
     <main className="min-h-screen bg-[#e7f1ec] px-4 pb-10 pt-24 text-slate-950 lg:px-8">
       {/* Enquiry stats card */}

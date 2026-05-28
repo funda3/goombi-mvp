@@ -23,6 +23,12 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
     const effectiveType = getListingType(listing);
     const isWorkspace = effectiveType === "workspace";
+    const isPublicRestaurant =
+      effectiveType !== "restaurant" ||
+      (
+        listing.category === "restaurant" &&
+        (listing.source_type === "provider_approved" || listing.source_type === "manual_public_source")
+      );
     const recordCategory =
       effectiveType === "restaurant" ? "restaurant" :
       effectiveType === "workspace" ? "workspace" :
@@ -42,6 +48,7 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
       filters.hiddenLayers.length === 0 || !filters.hiddenLayers.includes(effectiveType);
     return (
       matchesRegion &&
+      isPublicRestaurant &&
       matchesCategory &&
       matchesWorkspaceType &&
       matchesSuburb &&

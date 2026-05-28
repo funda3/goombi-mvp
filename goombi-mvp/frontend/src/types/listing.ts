@@ -84,7 +84,7 @@ export type Listing = {
   source_url?: string | null;
   source_note?: string | null;
   featured?: boolean;
-  verified_status: boolean;
+  verified_status: boolean | "demo_verified";
   partner_status?: PartnerStatus;
   diaspora_relevant?: boolean;
   luxury_relevant?: boolean;

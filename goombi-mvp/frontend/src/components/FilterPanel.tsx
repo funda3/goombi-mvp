@@ -2,7 +2,7 @@ import { Heart, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 
 import { useIsMobile } from "../hooks/useIsMobile";
 import { EVENT_CATEGORY_LABELS } from "../types/event";
-import { type Filters, type ListingType } from "../types/listing";
+import { type Filters } from "../types/listing";
 import { NIGHTLIFE_MUSIC_LABELS, NIGHTLIFE_TIER_LABELS, NIGHTLIFE_VENUE_TYPE_LABELS } from "../types/nightlife";
 
 type Props = {
@@ -22,23 +22,18 @@ const REGION_LABELS: Record<string, string> = {
   "KwaZulu-Natal": "KwaZulu-Natal",
 };
 
-const LAYER_CONFIG: { type: ListingType; label: string; color: string }[] = [
+type PublicLayer = Exclude<Filters["category"], "all">;
+
+const LAYER_CONFIG: { type: PublicLayer; label: string; color: string }[] = [
   { type: "accommodation",      label: "Stays",       color: "#0f766e" },
   { type: "workspace",          label: "Workspace",   color: "#a21caf" },
-  { type: "tourism_experience", label: "Experiences", color: "#d97706" },
-  { type: "restaurant",         label: "Eats",        color: "#dc2626" },
-  { type: "transport_node",     label: "Transport",   color: "#475569" },
-  { type: "estate_living_zone", label: "Estates",     color: "#92400e" },
-  { type: "event_space",        label: "Events",      color: "#db2777" },
+  { type: "events",             label: "Events",      color: "#db2777" },
+  { type: "nightlife",          label: "Nightlife",   color: "#4f46e5" },
+  { type: "restaurant",         label: "Restaurants", color: "#ea580c" },
 ];
 
-function toggleLayer(filters: Filters, type: ListingType): Filters {
-  const hidden = filters.hiddenLayers ?? [];
-  const isHidden = hidden.includes(type);
-  return {
-    ...filters,
-    hiddenLayers: isHidden ? hidden.filter((t) => t !== type) : [...hidden, type],
-  };
+function toggleLayer(filters: Filters, type: PublicLayer): Filters {
+  return { ...filters, category: filters.category === type ? "all" : type };
 }
 
 export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, onChange, isOpen = false, onClose }: Props) {
@@ -97,7 +92,7 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Layers</p>
         <div className="flex flex-wrap gap-1.5">
           {LAYER_CONFIG.map(({ type, label, color }) => {
-            const hidden = (filters.hiddenLayers ?? []).includes(type);
+            const hidden = filters.category !== "all" && filters.category !== type;
             return (
               <button
                 key={type}
@@ -140,9 +135,9 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="all">All</option>
           <option value="accommodation">Accommodation</option>
           <option value="workspace">Workspace</option>
-          <option value="restaurant">Restaurants</option>
           <option value="events">Events</option>
           <option value="nightlife">Nightlife</option>
+          <option value="restaurant">Restaurants</option>
         </select>
       </label>
       <label className="label">

@@ -140,7 +140,7 @@ class ListingBase(BaseModel):
     source_url: str | None = None
     source_note: str | None = None
     featured: bool = False
-    verified_status: bool = False
+    verified_status: bool | Literal["demo_verified"] = False
     partner_status: PartnerStatusLiteral = "seed"
     diaspora_relevant: bool = False
     luxury_relevant: bool = False
@@ -319,6 +319,34 @@ RestaurantApprovalStatusLiteral = Literal[
     "rejected",
 ]
 
+ProviderTypeLiteral = Literal["accommodation", "workspace", "nightlife", "restaurant", "event"]
+
+ProviderCrmStatusLiteral = Literal[
+    "prospect_only",
+    "contacted",
+    "loi_requested",
+    "loi_sent",
+    "negotiation",
+    "loi_signed",
+    "provider_approved",
+    "rejected",
+    "inactive",
+    "public_marker_live",
+]
+
+OutreachChannelLiteral = Literal[
+    "email",
+    "phone",
+    "whatsapp",
+    "instagram",
+    "linkedin",
+    "in_person",
+    "referral",
+    "website_form",
+]
+
+ProviderPriorityLiteral = Literal["low", "medium", "high", "strategic"]
+
 
 class RestaurantProspectBase(BaseModel):
     name: str = Field(min_length=2)
@@ -354,5 +382,42 @@ class RestaurantProspect(RestaurantProspectBase):
 
     @classmethod
     def from_create(cls, payload: RestaurantProspectCreate) -> "RestaurantProspect":
+        timestamp = utc_now()
+        return cls(id=str(uuid4()), created_at=timestamp, updated_at=timestamp, **payload.model_dump())
+
+
+class ProviderCrmBase(BaseModel):
+    provider_type: ProviderTypeLiteral
+    provider_record_id: str
+    provider_name: str = Field(min_length=2)
+    province: str
+    city: str
+    current_status: ProviderCrmStatusLiteral = "prospect_only"
+    assigned_to: str | None = None
+    priority: ProviderPriorityLiteral = "medium"
+    outreach_channel: OutreachChannelLiteral | None = None
+    outreach_note: str | None = None
+    next_followup_date: str | None = None
+    loi_sent_at: str | None = None
+    loi_signed_at: str | None = None
+    provider_approved_at: str | None = None
+    public_listing_created_at: str | None = None
+
+
+class ProviderCrmCreate(ProviderCrmBase):
+    pass
+
+
+class ProviderCrmUpdate(ProviderCrmBase):
+    pass
+
+
+class ProviderCrm(ProviderCrmBase):
+    id: str
+    created_at: str
+    updated_at: str
+
+    @classmethod
+    def from_create(cls, payload: ProviderCrmCreate) -> "ProviderCrm":
         timestamp = utc_now()
         return cls(id=str(uuid4()), created_at=timestamp, updated_at=timestamp, **payload.model_dump())

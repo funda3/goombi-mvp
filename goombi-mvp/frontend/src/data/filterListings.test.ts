@@ -80,6 +80,39 @@ test("filters approved public restaurant listings by restaurant category", () =>
   ).toEqual([restaurant]);
 });
 
+test("excludes restaurant audit and unapproved seed records from public filters", () => {
+  const approved: Listing = {
+    ...baseListing,
+    id: "restaurant-approved",
+    name: "Approved Kitchen",
+    category: "restaurant",
+    listing_type: "restaurant",
+    max_guests: null,
+    rooms: null,
+    cuisine_tags: ["South African"],
+    source_type: "manual_public_source",
+  };
+  const auditSeed = {
+    ...approved,
+    id: "restaurant-audit",
+    name: "Audit Prospect Kitchen",
+    source_type: "restaurant_audit_seed",
+  } as unknown as Listing;
+  const oldManualSeed: Listing = {
+    ...approved,
+    id: "restaurant-manual-seed",
+    name: "Old Manual Restaurant",
+    source_type: "manual_seed",
+  };
+
+  expect(
+    filterListings([approved, auditSeed, oldManualSeed], {
+      ...defaultFilters,
+      category: "restaurant",
+    }),
+  ).toEqual([approved]);
+});
+
 test("hiddenLayers hides listings of the specified layer type", () => {
   const tourismListing: Listing = {
     ...baseListing,
@@ -92,8 +125,9 @@ test("hiddenLayers hides listings of the specified layer type", () => {
     ...baseListing,
     id: "rest-1",
     name: "Waterfront Eats",
-    category: "accommodation",
+    category: "restaurant",
     listing_type: "restaurant",
+    source_type: "manual_public_source",
   };
 
   // Hide tourism_experience — only accommodation and restaurant should remain
@@ -138,8 +172,9 @@ test("minGuests filter does not remove restaurants with null max_guests", () => 
     ...baseListing,
     id: "rest-null",
     name: "Open Kitchen",
-    category: "accommodation",
+    category: "restaurant",
     listing_type: "restaurant",
+    source_type: "manual_public_source",
     max_guests: null,
     rooms: null,
   };

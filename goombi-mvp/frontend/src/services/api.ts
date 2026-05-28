@@ -1,6 +1,7 @@
 import type { BookingEnquiryDraft, Enquiry, EnquiryDraft, Listing, ListingDraft } from "../types/listing";
 import type { EventCategory, EventRecord, EventRecurringType } from "../types/event";
 import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenue, NightlifeVenueType } from "../types/nightlife";
+import type { ProviderCrmDraft, ProviderCrmRecord } from "../types/providerCrm";
 import type { RestaurantProspect, RestaurantProspectDraft } from "../types/restaurantProspect";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000`;
@@ -81,6 +82,34 @@ export const api = {
     request<RestaurantProspect>(`/api/restaurant-prospects/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   deleteRestaurantProspect: (id: string) =>
     request<void>(`/api/restaurant-prospects/${id}`, { method: "DELETE" }),
+  providerCrm: (filters?: {
+    provider_type?: string;
+    province?: string;
+    city?: string;
+    current_status?: string;
+    priority?: string;
+    assigned_to?: string;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.provider_type) params.set("provider_type", filters.provider_type);
+    if (filters?.province) params.set("province", filters.province);
+    if (filters?.city) params.set("city", filters.city);
+    if (filters?.current_status) params.set("current_status", filters.current_status);
+    if (filters?.priority) params.set("priority", filters.priority);
+    if (filters?.assigned_to) params.set("assigned_to", filters.assigned_to);
+    const query = params.toString();
+    return request<ProviderCrmRecord[]>(`/api/provider-crm${query ? `?${query}` : ""}`);
+  },
+  createProviderCrm: (payload: ProviderCrmDraft) =>
+    request<ProviderCrmRecord>("/api/provider-crm", { method: "POST", body: JSON.stringify(payload) }),
+  updateProviderCrm: (id: string, payload: ProviderCrmDraft) =>
+    request<ProviderCrmRecord>(`/api/provider-crm/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  deleteProviderCrm: (id: string) => request<void>(`/api/provider-crm/${id}`, { method: "DELETE" }),
+  createPublicListingFromCrm: (id: string) =>
+    request<{ crm: ProviderCrmRecord; listing: Listing; compliance_note: string }>(
+      `/api/provider-crm/${id}/create-public-listing`,
+      { method: "POST" },
+    ),
   createEnquiry: (payload: EnquiryDraft) =>
     request("/api/enquiries", { method: "POST", body: JSON.stringify(payload) }),
   createBookingEnquiry: (payload: BookingEnquiryDraft) =>

@@ -37,14 +37,16 @@ def client(tmp_path) -> TestClient:
     events_path = tmp_path / "events.json"
     nightlife_path = tmp_path / "nightlife.json"
     restaurant_prospects_path = tmp_path / "restaurant_prospects.json"
+    provider_crm_path = tmp_path / "provider_crm.json"
     listings_path.write_text("[]", encoding="utf-8")
     enquiries_path.write_text("[]", encoding="utf-8")
     restaurant_prospects_path.write_text("[]", encoding="utf-8")
+    provider_crm_path.write_text("[]", encoding="utf-8")
     seed_events = pathlib.Path(__file__).parent.parent / "app" / "data" / "events.json"
     seed_nightlife = pathlib.Path(__file__).parent.parent / "app" / "data" / "nightlife.json"
     events_path.write_text(seed_events.read_text(encoding="utf-8"), encoding="utf-8")
     nightlife_path.write_text(seed_nightlife.read_text(encoding="utf-8"), encoding="utf-8")
-    return TestClient(create_app(JsonStore(listings_path, enquiries_path, events_path, nightlife_path, restaurant_prospects_path)))
+    return TestClient(create_app(JsonStore(listings_path, enquiries_path, events_path, nightlife_path, restaurant_prospects_path, provider_crm_path)))
 
 
 def restaurant_prospect_payload(name: str = "Prospect Kitchen") -> dict:
@@ -65,6 +67,26 @@ def restaurant_prospect_payload(name: str = "Prospect Kitchen") -> dict:
         "latitude": -26.1076,
         "longitude": 28.0567,
         "coordinate_accuracy": "city_or_suburb_centroid_estimate",
+    }
+
+
+def crm_payload(provider_record_id: str = "restaurant-prospect-1", name: str = "Prospect Kitchen") -> dict:
+    return {
+        "provider_type": "restaurant",
+        "provider_record_id": provider_record_id,
+        "provider_name": name,
+        "province": "Gauteng",
+        "city": "Johannesburg",
+        "current_status": "prospect_only",
+        "assigned_to": "operator",
+        "priority": "high",
+        "outreach_channel": "whatsapp",
+        "outreach_note": "Initial outreach queue.",
+        "next_followup_date": None,
+        "loi_sent_at": None,
+        "loi_signed_at": None,
+        "provider_approved_at": None,
+        "public_listing_created_at": None,
     }
 
 
@@ -193,6 +215,98 @@ def test_public_listings_contain_no_restaurant_audit_seed_records(tmp_path):
     api = _seed_client(tmp_path)
     public_listings = api.get("/api/listings").json()
     assert [item for item in public_listings if item.get("source_type") == "restaurant_audit_seed"] == []
+    assert [
+        item for item in public_listings
+        if item.get("listing_type") == "restaurant" and item.get("source_type") == "manual_seed"
+    ] == []
+
+
+def test_public_listings_include_approved_demo_restaurants(tmp_path):
+    api = _seed_client(tmp_path)
+    public_listings = api.get("/api/listings").json()
+    demo_restaurants = {
+        item["id"]: item
+        for item in public_listings
+        if item.get("category") == "restaurant" and item.get("source_type") == "manual_public_source"
+    }
+
+    assert {"demo-restaurant-sandton-bistro", "demo-restaurant-cape-town-food-hall", "demo-restaurant-durban-grill"} <= set(demo_restaurants)
+    assert all(item["verified_status"] == "demo_verified" for item in demo_restaurants.values())
+    assert all("not sourced from TripAdvisor" in item.get("source_note", "") for item in demo_restaurants.values())
+
+
+def test_listing_category_filter_returns_restaurants(tmp_path):
+    api = _seed_client(tmp_path)
+    response = api.get("/api/listings", params={"category": "restaurant"})
+    assert response.status_code == 200
+    restaurants = response.json()
+
+    assert len(restaurants) >= 3
+    assert all(item.get("category") == "restaurant" or item.get("listing_type") == "restaurant" for item in restaurants)
+    assert any(item["id"] == "demo-restaurant-sandton-bistro" for item in restaurants)
+
+
+def test_provider_crm_crud_and_filters(tmp_path):
+    api = client(tmp_path)
+    created = api.post("/api/provider-crm", json=crm_payload()).json()
+    assert created["provider_name"] == "Prospect Kitchen"
+    assert created["current_status"] == "prospect_only"
+
+    filtered = api.get(
+        "/api/provider-crm",
+        params={
+            "provider_type": "restaurant",
+            "province": "Gauteng",
+            "city": "Johannesburg",
+            "current_status": "prospect_only",
+            "priority": "high",
+            "assigned_to": "operator",
+        },
+    ).json()
+    assert [item["id"] for item in filtered] == [created["id"]]
+
+    updated_payload = {**crm_payload(name="Updated Kitchen"), "current_status": "contacted"}
+    updated = api.put(f"/api/provider-crm/{created['id']}", json=updated_payload)
+    assert updated.status_code == 200
+    assert updated.json()["current_status"] == "contacted"
+    assert api.delete(f"/api/provider-crm/{created['id']}").status_code == 204
+    assert api.get(f"/api/provider-crm/{created['id']}").status_code == 404
+
+
+def test_provider_crm_seed_imports_restaurant_prospects(tmp_path):
+    api = _seed_client(tmp_path)
+    records = api.get("/api/provider-crm", params={"provider_type": "restaurant"}).json()
+    assert len(records) >= 200
+    assert all(item["current_status"] == "prospect_only" for item in records)
+
+
+def test_provider_approval_required_before_public_marker_creation(tmp_path):
+    api = client(tmp_path)
+    prospect = api.post("/api/restaurant-prospects", json=restaurant_prospect_payload()).json()
+    crm = api.post("/api/provider-crm", json=crm_payload(prospect["id"], prospect["name"])).json()
+
+    response = api.post(f"/api/provider-crm/{crm['id']}/create-public-listing")
+    assert response.status_code == 409
+    assert "provider approval" in response.json()["detail"]
+    public_listings = api.get("/api/listings").json()
+    assert all(item.get("source_type") != "restaurant_audit_seed" for item in public_listings)
+
+
+def test_public_marker_creation_updates_crm_status(tmp_path):
+    api = client(tmp_path)
+    prospect = api.post("/api/restaurant-prospects", json=restaurant_prospect_payload()).json()
+    crm = api.post(
+        "/api/provider-crm",
+        json={**crm_payload(prospect["id"], prospect["name"]), "current_status": "provider_approved"},
+    ).json()
+
+    response = api.post(f"/api/provider-crm/{crm['id']}/create-public-listing")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["crm"]["current_status"] == "public_marker_live"
+    assert payload["crm"]["public_listing_created_at"] is not None
+    assert payload["listing"]["source_type"] == "provider_approved"
+    assert payload["listing"]["listing_type"] == "restaurant"
 
 
 def test_get_events_returns_seed_records(tmp_path):
@@ -694,9 +808,11 @@ _ALL_LAYER_PAYLOADS = [
         "capacity": 20,
     }),
     ("restaurant", {
+        "category": "restaurant",
         "listing_type": "restaurant",
         "rooms": None,
         "max_guests": None,
+        "source_type": "manual_public_source",
     }),
     ("transport_node", {
         "listing_type": "transport_node",

@@ -11,6 +11,9 @@ from .models import (
     ListingCreate,
     ListingUpdate,
     NightlifeVenue,
+    ProviderCrm,
+    ProviderCrmCreate,
+    ProviderCrmUpdate,
     RestaurantProspect,
     RestaurantProspectCreate,
     RestaurantProspectUpdate,
@@ -24,6 +27,7 @@ ENQUIRIES_FILE = DATA_DIR / "enquiries.json"
 EVENTS_FILE = DATA_DIR / "events.json"
 NIGHTLIFE_FILE = DATA_DIR / "nightlife.json"
 RESTAURANT_PROSPECTS_FILE = DATA_DIR / "restaurant_prospects.json"
+PROVIDER_CRM_FILE = DATA_DIR / "provider_crm.json"
 _LOCK = Lock()
 
 
@@ -35,17 +39,20 @@ class JsonStore:
         events_path: Path = EVENTS_FILE,
         nightlife_path: Path = NIGHTLIFE_FILE,
         restaurant_prospects_path: Path = RESTAURANT_PROSPECTS_FILE,
+        provider_crm_path: Path = PROVIDER_CRM_FILE,
     ):
         self.listings_path = listings_path
         self.enquiries_path = enquiries_path
         self.events_path = events_path
         self.nightlife_path = nightlife_path
         self.restaurant_prospects_path = restaurant_prospects_path
+        self.provider_crm_path = provider_crm_path
         self._ensure_file(self.listings_path)
         self._ensure_file(self.enquiries_path)
         self._ensure_file(self.events_path)
         self._ensure_file(self.nightlife_path)
         self._ensure_file(self.restaurant_prospects_path)
+        self._ensure_file(self.provider_crm_path)
 
     @staticmethod
     def _ensure_file(path: Path) -> None:
@@ -157,4 +164,51 @@ class JsonStore:
         if len(remaining) == len(records):
             return False
         self._write(self.restaurant_prospects_path, remaining)
+        return True
+
+    def list_provider_crm(self) -> list[ProviderCrm]:
+        return [ProviderCrm.model_validate(item) for item in self._read(self.provider_crm_path)]
+
+    def get_provider_crm(self, crm_id: str) -> ProviderCrm | None:
+        return next((item for item in self.list_provider_crm() if item.id == crm_id), None)
+
+    def create_provider_crm(self, payload: ProviderCrmCreate) -> ProviderCrm:
+        record = ProviderCrm.from_create(payload)
+        records = self._read(self.provider_crm_path)
+        records.append(record.model_dump())
+        self._write(self.provider_crm_path, records)
+        return record
+
+    def update_provider_crm(self, crm_id: str, payload: ProviderCrmUpdate) -> ProviderCrm | None:
+        records = self._read(self.provider_crm_path)
+        for index, item in enumerate(records):
+            if item["id"] == crm_id:
+                updated = ProviderCrm(
+                    id=crm_id,
+                    created_at=item["created_at"],
+                    updated_at=utc_now(),
+                    **payload.model_dump(),
+                )
+                records[index] = updated.model_dump()
+                self._write(self.provider_crm_path, records)
+                return updated
+        return None
+
+    def patch_provider_crm(self, crm_id: str, changes: dict[str, Any]) -> ProviderCrm | None:
+        records = self._read(self.provider_crm_path)
+        for index, item in enumerate(records):
+            if item["id"] == crm_id:
+                merged = {**item, **changes, "updated_at": utc_now()}
+                updated = ProviderCrm.model_validate(merged)
+                records[index] = updated.model_dump()
+                self._write(self.provider_crm_path, records)
+                return updated
+        return None
+
+    def delete_provider_crm(self, crm_id: str) -> bool:
+        records = self._read(self.provider_crm_path)
+        remaining = [item for item in records if item["id"] != crm_id]
+        if len(remaining) == len(records):
+            return False
+        self._write(self.provider_crm_path, remaining)
         return True

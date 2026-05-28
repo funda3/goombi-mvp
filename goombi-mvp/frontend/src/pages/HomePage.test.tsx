@@ -7,7 +7,15 @@ import type { NightlifeVenue } from "../types/nightlife";
 import { HomePage } from "./HomePage";
 
 vi.mock("../components/BottomPanel", () => ({ BottomPanel: () => null }));
-vi.mock("../components/FilterPanel", () => ({ FilterPanel: () => null }));
+vi.mock("../components/FilterPanel", () => ({
+  FilterPanel: ({ filters, onChange }: { filters: { category: string }; onChange: (filters: unknown) => void }) => (
+    <div data-testid="filter-panel">
+      <button type="button" onClick={() => onChange({ ...filters, category: "all" })}>All layers</button>
+      <button type="button" onClick={() => onChange({ ...filters, category: "restaurant" })}>Restaurants only</button>
+      <button type="button" onClick={() => onChange({ ...filters, category: "events" })}>Events only</button>
+    </div>
+  ),
+}));
 vi.mock("../components/JourneyPlannerModal", () => ({ JourneyPlannerModal: () => null }));
 vi.mock("../components/SearchBar", () => ({ SearchBar: () => <div data-testid="search-bar" /> }));
 vi.mock("../components/MapCanvas", () => ({
@@ -190,16 +198,93 @@ test("marker click opens a single bottom sheet and selecting another marker upda
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("beta");
 });
 
+const makeRestaurant = (id: string, name: string, sourceType: Listing["source_type"] = "manual_public_source"): Listing => ({
+  ...makeListing(id, name),
+  category: "restaurant",
+  listing_type: "restaurant",
+  suburb: "Sandton",
+  max_guests: null,
+  rooms: null,
+  cuisine_tags: ["South African"],
+  source_type: sourceType,
+});
+
 test("unapproved restaurant prospects are not rendered on the public map", async () => {
-  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
+  mockListings.mockResolvedValue([
+    makeListing("alpha", "Alpha Lodge"),
+    makeRestaurant("restaurant-approved", "Approved Kitchen"),
+    makeRestaurant("restaurant-manual-seed", "Old Manual Restaurant", "manual_seed"),
+  ]);
   mockEvents.mockResolvedValue([]);
   mockNightlife.mockResolvedValue([]);
 
   render(<HomePage />);
 
   await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
+  expect(screen.getByTestId("marker-restaurant-approved")).toBeInTheDocument();
+  expect(screen.queryByTestId("marker-restaurant-manual-seed")).not.toBeInTheDocument();
   expect(screen.queryByText("Prospect Kitchen")).not.toBeInTheDocument();
   expect(mockListings).toHaveBeenCalledTimes(1);
+});
+
+test("restaurant layer renders only approved restaurant public markers", async () => {
+  mockListings.mockResolvedValue([
+    makeListing("alpha", "Alpha Lodge"),
+    makeRestaurant("restaurant-approved", "Approved Kitchen"),
+    makeRestaurant("restaurant-manual-seed", "Old Manual Restaurant", "manual_seed"),
+  ]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Restaurants only" }));
+
+  expect(screen.getByTestId("marker-restaurant-approved")).toBeInTheDocument();
+  expect(screen.queryByTestId("marker-alpha")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("marker-restaurant-manual-seed")).not.toBeInTheDocument();
+});
+
+test("events layer still renders event markers", async () => {
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge"), makeRestaurant("restaurant-approved", "Approved Kitchen")]);
+  mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
+  mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Events only" }));
+
+  expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument();
+  expect(screen.queryByTestId("nightlife-marker-nightlife-kzn-origin")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("marker-restaurant-approved")).not.toBeInTheDocument();
+});
+
+test("all mode shows accommodation workspace events nightlife and restaurants", async () => {
+  const workspace: Listing = {
+    ...makeListing("workspace", "Sandton Workspace"),
+    category: "workspace",
+    listing_type: "workspace",
+    provider_name: "Workspace Co",
+    workspace_type: "coworking",
+    pricing_status: "not_publicly_available",
+    source_url: "https://example.com",
+    source_note: "Seeded",
+  };
+  mockListings.mockResolvedValue([
+    makeListing("alpha", "Alpha Lodge"),
+    workspace,
+    makeRestaurant("restaurant-approved", "Approved Kitchen"),
+  ]);
+  mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
+  mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
+  expect(screen.getByTestId("marker-workspace")).toBeInTheDocument();
+  expect(screen.getByTestId("marker-restaurant-approved")).toBeInTheDocument();
+  expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument();
+  expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
 });
 
 test("close button hides the bottom sheet and clears marker selection", async () => {

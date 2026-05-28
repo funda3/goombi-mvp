@@ -10,10 +10,13 @@ export function MapLegend() {
           <span className="h-3 w-3 rotate-45 rounded-[2px] bg-fuchsia-700" />Square = Workspace
         </li>
         <li className="flex items-center gap-2">
-          <span className="goombi-event-star-marker inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] text-rose-600">★</span>Star/Pulse = Event
+          <span className="goombi-event-star-marker inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] text-rose-600">*</span>Star/Pulse = Event
         </li>
         <li className="flex items-center gap-2">
-          <span className="goombi-nightlife-moon-marker inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] text-indigo-700">☾</span>Moon/Pulse = Nightlife
+          <span className="goombi-nightlife-moon-marker inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] text-indigo-700">N</span>Moon/Pulse = Nightlife
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-600 text-[10px] text-white">F</span>Fork/Food pin = Restaurant
         </li>
       </ul>
     </aside>
