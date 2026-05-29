@@ -166,6 +166,17 @@ export function LeafletMap({
     });
   }
 
+  function safariIcon(isSelected: boolean) {
+    const size = isSelected ? 30 : 26;
+    const border = isSelected ? "#92400e" : "#ffffff";
+    return divIcon({
+      html: `<div class="goombi-safari-lion-marker" title="Safari & Wildlife" aria-label="Safari & Wildlife" style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;background:#f59e0b;border:${isSelected ? 3 : 2}px solid ${border};box-sizing:border-box;color:#1f2937;font-size:${Math.round(size * 0.62)}px;line-height:1;box-shadow:0 6px 14px rgba(120,53,15,0.28);">&#129409;</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+      className: "",
+    });
+  }
+
   function formatSafariType(value?: string | null) {
     return value
       ? value.split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")
@@ -234,6 +245,18 @@ export function LeafletMap({
               </Marker>
             );
           }
+          if (lt === "safari") {
+            return (
+              <Marker
+                key={listing.id}
+                position={[listing.latitude, listing.longitude]}
+                icon={safariIcon(isHighlighted)}
+                eventHandlers={{ click: () => onSelect(listing) }}
+              >
+                <Tooltip><span>{listing.name}<br />{formatSafariType(listing.safari_type)}</span></Tooltip>
+              </Marker>
+            );
+          }
           const fillColor =
             lt === "accommodation"
               ? listing.verified_status ? "#0f766e" : "#e8790a"
@@ -251,11 +274,7 @@ export function LeafletMap({
               }}
               eventHandlers={{ click: () => onSelect(listing) }}
             >
-              <Tooltip>
-                {lt === "safari" ? (
-                  <span>{listing.name}<br />{formatSafariType(listing.safari_type)}</span>
-                ) : listing.name}
-              </Tooltip>
+              <Tooltip>{listing.name}</Tooltip>
             </CircleMarker>
           );
         })}
@@ -335,3 +354,4 @@ export function LeafletMap({
     </div>
   );
 }
+
