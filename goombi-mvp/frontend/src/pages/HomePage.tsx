@@ -28,21 +28,14 @@ import { appHref } from "../utils/routes";
 
 const JHB: [number, number] = [-26.1076, 28.0567];
 
-function showRestaurantProspectsOnMap(): boolean {
-  return ["1", "true", "yes", "on"].includes(
-    String(import.meta.env.VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP ?? "").trim().toLowerCase(),
-  );
-}
-
 function toDemoRestaurantListing(marker: RestaurantProspectPublicMarker): Listing {
   const timestamp = new Date().toISOString();
   return {
     id: `demo-prospect-${marker.id}`,
     name: marker.name,
-    category: "restaurant",
-    listing_type: "restaurant",
-    approval_status: marker.approval_status,
-    demo_visibility: marker.demo_visibility,
+    category: marker.category,
+    listing_type: marker.listing_type,
+    region: marker.region,
     province: marker.province,
     city: marker.city,
     suburb: marker.suburb,
@@ -52,9 +45,9 @@ function toDemoRestaurantListing(marker: RestaurantProspectPublicMarker): Listin
     price_per_night: 0,
     max_guests: null,
     rooms: null,
-    description: "Demo prospect marker for provider approval workflow.",
-    short_description: "Demo prospect marker for provider approval workflow.",
-    long_description: "Provider approval pending.",
+    description: marker.description_goombi,
+    short_description: marker.description_goombi,
+    long_description: marker.description_goombi,
     amenities: [],
     photos: [],
     images: [],
@@ -62,16 +55,16 @@ function toDemoRestaurantListing(marker: RestaurantProspectPublicMarker): Listin
     owner_name: "",
     owner_phone: "",
     cuisine_tags: marker.cuisine_tags,
-    price_band_goombi: marker.price_band ?? null,
+    price_band_goombi: marker.price_band_goombi ?? marker.price_band ?? null,
     provider_type: marker.cuisine_tags.join(", "),
-    verified_status: false,
-    source_type: "manual_seed",
-    source_note: "Internal demo prospect marker.",
+    verified_status: marker.verified_status,
+    partner_status: marker.partner_status,
+    source_type: marker.source_type,
+    source_note: "Demo public restaurant marker.",
     created_at: timestamp,
     updated_at: timestamp,
   };
 }
-
 export function HomePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [events, setEvents] = useState<EventRecord[]>([]);
@@ -195,12 +188,11 @@ export function HomePage() {
   }, [filteredNightlife, filters.category]);
 
   useEffect(() => {
-    const demoModeEnabled = showRestaurantProspectsOnMap();
     Promise.all([
       api.listings(),
       api.events(),
       api.nightlife(),
-      demoModeEnabled ? api.restaurantProspectsPublic() : Promise.resolve(null),
+      api.restaurantProspectsPublic(),
     ])
       .then(([listingData, eventData, nightlifeData, restaurantProspects]) => {
         const publicListings = listingData.filter((item) => getListingType(item) !== "estate_living_zone");
@@ -407,3 +399,4 @@ export function HomePage() {
     </>
   );
 }
+

@@ -29,6 +29,7 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
       (
         listing.category === "restaurant" &&
         (
+          listing.source_type === "demo_public_restaurant" ||
           listing.demo_visibility === true ||
           listing.source_type === "provider_approved" ||
           listing.source_type === "manual_public_source"
@@ -66,3 +67,4 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     );
   });
 }
+

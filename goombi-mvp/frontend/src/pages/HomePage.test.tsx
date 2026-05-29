@@ -190,7 +190,6 @@ const makeNightlife = (id: string, name: string): NightlifeVenue => ({
 });
 
 beforeEach(() => {
-  vi.stubEnv("VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP", "false");
   mockListings.mockReset();
   mockEvents.mockReset();
   mockNightlife.mockReset();
@@ -201,15 +200,11 @@ beforeEach(() => {
     restaurants: [],
     counts: {
       visible_restaurant_demo_prospects: 0,
-      approved_restaurants: 0,
-      pending_approval: 0,
+      source_records_total: 0,
     },
   });
 });
 
-afterEach(() => {
-  vi.unstubAllEnvs();
-});
 
 test("marker click opens a single bottom sheet and selecting another marker updates it", async () => {
   const alpha = makeListing("alpha", "Alpha Lodge");
@@ -478,42 +473,52 @@ test("floating nearby overlays stay removed across province and layer changes", 
   expect(screen.getByTestId("nearby-services-panel")).toBeInTheDocument();
 });
 
-test("demo mode renders all restaurant prospects as map markers", async () => {
-  vi.stubEnv("VITE_SHOW_RESTAURANT_PROSPECTS_ON_MAP", "true");
+test("public restaurant prospects render as demo-safe map markers", async () => {
   mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
   mockRestaurantProspectsPublic.mockResolvedValue({
     restaurants: [
       {
         id: "prospect-1",
         name: "Prospect One",
+        category: "restaurant",
+        listing_type: "restaurant",
+        region: "Gauteng",
         province: "Gauteng",
         city: "Johannesburg",
         suburb: "Sandton",
         cuisine_tags: ["Steakhouse"],
         price_band: "$$",
+        price_band_goombi: "$$",
+        description_goombi: "Demo restaurant marker for Goombi map testing.",
         latitude: -26.1,
         longitude: 28.05,
-        approval_status: "prospect_only",
-        demo_visibility: true,
+        source_type: "demo_public_restaurant",
+        verified_status: false,
+        partner_status: "seed",
       },
       {
         id: "prospect-2",
         name: "Prospect Two",
+        category: "restaurant",
+        listing_type: "restaurant",
+        region: "Gauteng",
         province: "Gauteng",
         city: "Johannesburg",
         suburb: "Rosebank",
         cuisine_tags: ["Sushi"],
         price_band: "$$$",
+        price_band_goombi: "$$$",
+        description_goombi: "Demo restaurant marker for Goombi map testing.",
         latitude: -26.12,
         longitude: 28.04,
-        approval_status: "contacted",
-        demo_visibility: true,
+        source_type: "demo_public_restaurant",
+        verified_status: false,
+        partner_status: "seed",
       },
     ],
     counts: {
       visible_restaurant_demo_prospects: 2,
-      approved_restaurants: 0,
-      pending_approval: 2,
+      source_records_total: 2,
     },
   });
 
@@ -521,6 +526,16 @@ test("demo mode renders all restaurant prospects as map markers", async () => {
 
   await waitFor(() => expect(screen.getByTestId("marker-demo-prospect-prospect-1")).toBeInTheDocument());
   expect(screen.getByTestId("marker-demo-prospect-prospect-2")).toBeInTheDocument();
+  expect(mockRestaurantProspectsPublic).toHaveBeenCalledTimes(1);
+
+  fireEvent.click(screen.getByRole("button", { name: "Restaurants only" }));
+  expect(screen.getByTestId("marker-demo-prospect-prospect-1")).toBeInTheDocument();
+  expect(screen.getByTestId("marker-demo-prospect-prospect-2")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByTestId("marker-demo-prospect-prospect-1"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Prospect One");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("restaurant");
+  expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
 });
 
 test("close button hides the bottom sheet and clears marker selection", async () => {
@@ -654,3 +669,4 @@ test("nightlife bottom sheet shows nearby accommodation workspace and events", a
   expect(within(sheet).getByText("Durban Workspace")).toBeInTheDocument();
   expect(within(sheet).getByText("Durban After Dark")).toBeInTheDocument();
 });
+

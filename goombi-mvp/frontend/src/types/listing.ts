@@ -108,7 +108,7 @@ export type Listing = {
   estate_type?: string | null;
   lifestyle_summary?: string | null;
   long_stay_relevant?: boolean;
-  source_type: "manual_seed" | "provider_approved" | "manual_public_source";
+  source_type: "manual_seed" | "provider_approved" | "manual_public_source" | "demo_public_restaurant";
   created_at: string;
   updated_at: string;
 };
@@ -190,3 +190,4 @@ export function displayCategory(listing: Listing): string {
     default: return "Accommodation";
   }
 }
+

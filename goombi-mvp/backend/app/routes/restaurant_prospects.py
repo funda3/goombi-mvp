@@ -1,5 +1,3 @@
-import os
-
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 
 from ..models import (
@@ -15,32 +13,27 @@ from ..models import (
 router = APIRouter(prefix="/api/restaurant-prospects", tags=["restaurant-prospects"])
 
 
-_PENDING_APPROVAL_STATUSES = {
-    "prospect_only",
-    "contacted",
-    "loi_requested",
-    "loi_signed",
-}
 
 
-def _show_restaurant_prospects_on_map() -> bool:
-    value = os.environ.get("SHOW_RESTAURANT_PROSPECTS_ON_MAP", "")
-    return value.strip().lower() in {"1", "true", "yes", "on"}
+def _has_valid_coordinates(prospect: RestaurantProspect) -> bool:
+    return -90 <= prospect.latitude <= 90 and -180 <= prospect.longitude <= 180
 
 
 def _to_public_marker(prospect: RestaurantProspect) -> RestaurantProspectPublicMarker:
+    price_band = prospect.price_band or None
     return RestaurantProspectPublicMarker(
         id=prospect.id,
         name=prospect.name,
+        region=prospect.province,
         province=prospect.province,
         city=prospect.city,
         suburb=prospect.suburb,
         cuisine_tags=prospect.cuisine_tags,
-        price_band=prospect.price_band,
+        price_band=price_band,
+        price_band_goombi=price_band,
+        description_goombi="Demo restaurant marker for Goombi map testing. Public display uses safe fields only.",
         latitude=prospect.latitude,
         longitude=prospect.longitude,
-        approval_status=prospect.approval_status,
-        demo_visibility=True,
     )
 
 
@@ -67,23 +60,15 @@ def get_restaurant_prospects(
 @router.get("/public", response_model=RestaurantProspectPublicResponse)
 def get_public_restaurant_prospects(request: Request) -> RestaurantProspectPublicResponse:
     prospects = request.app.state.store.list_restaurant_prospects()
-    include_all = _show_restaurant_prospects_on_map()
-
-    if include_all:
-        visible = prospects
-    else:
-        visible = [item for item in prospects if item.approval_status == "provider_approved"]
+    visible = [item for item in prospects if _has_valid_coordinates(item)]
 
     markers = [_to_public_marker(item) for item in visible]
-    approved_count = sum(1 for item in prospects if item.approval_status == "provider_approved")
-    pending_count = sum(1 for item in prospects if item.approval_status in _PENDING_APPROVAL_STATUSES)
 
     return RestaurantProspectPublicResponse(
         restaurants=markers,
         counts=RestaurantProspectPublicCounts(
             visible_restaurant_demo_prospects=len(markers),
-            approved_restaurants=approved_count,
-            pending_approval=pending_count,
+            source_records_total=len(prospects),
         ),
     )
 
