@@ -64,9 +64,12 @@ vi.mock("react-leaflet", () => ({
   }) => {
     const iconHtml = icon?.options?.html ?? "";
     const isSafari = iconHtml.includes("goombi-safari-lion-marker");
+    const isEvent = iconHtml.includes("goombi-event-bold-marker");
+    const isNightlife = iconHtml.includes("goombi-nightlife-bold-marker");
+    const testId = isSafari ? "safari-marker" : isEvent ? "event-marker" : isNightlife ? "nightlife-marker" : "workspace-marker";
     return (
       <button
-        data-testid={isSafari ? "safari-marker" : "workspace-marker"}
+        data-testid={testId}
         aria-label={`Marker at ${position[0]},${position[1]}`}
         data-icon-html={iconHtml}
         onClick={eventHandlers?.click}
@@ -405,25 +408,36 @@ test("all public layer types render the correct marker type", () => {
   expect(screen.getAllByTestId("safari-marker")).toHaveLength(1);
 });
 
-test("renders event markers and handles event click", () => {
+test("renders bolder event markers and handles event click", () => {
   const onSelectEvent = vi.fn();
   const event = makeEvent();
   render(<LeafletMap listings={[makeListing({ id: "acc-1" })]} events={[event]} onSelect={() => undefined} onSelectEvent={onSelectEvent} />);
 
-  expect(screen.getByText("Durban July")).toBeInTheDocument();
-  const markers = screen.getAllByRole("button", { name: /Marker at/i });
-  fireEvent.click(markers[1]);
+  const marker = screen.getByTestId("event-marker");
+  expect(marker).toHaveTextContent("Durban July");
+  expect(marker.getAttribute("data-icon-html")).toContain("goombi-event-bold-marker");
+  expect(marker.getAttribute("data-icon-html")).toContain("#e11d48");
+  expect(marker.getAttribute("data-icon-html")).toContain("width:30px");
+  expect(marker.getAttribute("data-icon-html")).toContain("&#9733;");
+
+  fireEvent.click(marker);
 
   expect(onSelectEvent).toHaveBeenCalledWith(event);
 });
 
-test("renders nightlife marker and handles nightlife click", () => {
+test("renders bolder solid nightlife marker and handles nightlife click", () => {
   const onSelectNightlife = vi.fn();
   const venue = makeNightlife();
   render(<LeafletMap listings={[]} nightlife={[venue]} onSelect={() => undefined} onSelectNightlife={onSelectNightlife} />);
 
-  expect(screen.getByText("Origin Nightclub")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: /Marker at/i }));
+  const marker = screen.getByTestId("nightlife-marker");
+  expect(marker).toHaveTextContent("Origin Nightclub");
+  expect(marker.getAttribute("data-icon-html")).toContain("goombi-nightlife-bold-marker");
+  expect(marker.getAttribute("data-icon-html")).toContain("#4f46e5");
+  expect(marker.getAttribute("data-icon-html")).toContain("width:30px");
+  expect(marker.getAttribute("data-icon-html")).toContain("&#9790;");
+
+  fireEvent.click(marker);
 
   expect(onSelectNightlife).toHaveBeenCalledWith(venue);
 });

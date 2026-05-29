@@ -134,27 +134,26 @@ export function LeafletMap({
   }
 
   function eventIcon(isSelected: boolean) {
-    const size = isSelected ? 26 : 22;
-    const ring = isSelected ? "goombi-event-pulse goombi-event-selected" : "goombi-event-pulse";
+    const size = isSelected ? 34 : 30;
+    const border = isSelected ? "#831843" : "#ffffff";
     return divIcon({
-      html: `<div class="goombi-event-marker-wrap"><span class="${ring}"></span><span class="goombi-event-star" style="font-size:${size}px;">★</span></div>`,
-      iconSize: [size + 8, size + 8],
-      iconAnchor: [(size + 8) / 2, (size + 8) / 2],
+      html: `<div class="goombi-event-bold-marker" title="Event" aria-label="Event" style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;background:#e11d48;border:${isSelected ? 3 : 2}px solid ${border};box-sizing:border-box;color:#fff;font-size:${Math.round(size * 0.6)}px;font-weight:900;line-height:1;box-shadow:0 7px 16px rgba(190,18,60,0.32);">&#9733;</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
       className: "",
     });
   }
 
   function nightlifeIcon(isSelected: boolean) {
-    const size = isSelected ? 24 : 20;
-    const ring = isSelected ? "goombi-nightlife-pulse goombi-nightlife-selected" : "goombi-nightlife-pulse";
+    const size = isSelected ? 34 : 30;
+    const border = isSelected ? "#1e1b4b" : "#ffffff";
     return divIcon({
-      html: `<div class="goombi-nightlife-marker-wrap"><span class="${ring}"></span><span class="goombi-nightlife-moon" style="font-size:${size}px;">☾</span></div>`,
-      iconSize: [size + 8, size + 8],
-      iconAnchor: [(size + 8) / 2, (size + 8) / 2],
+      html: `<div class="goombi-nightlife-bold-marker" title="Nightlife" aria-label="Nightlife" style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;background:#4f46e5;border:${isSelected ? 3 : 2}px solid ${border};box-sizing:border-box;color:#fff;font-size:${Math.round(size * 0.64)}px;font-weight:900;line-height:1;box-shadow:0 7px 16px rgba(67,56,202,0.34);">&#9790;</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
       className: "",
     });
   }
-
   function restaurantIcon(isSelected: boolean) {
     const size = isSelected ? 28 : 24;
     const border = isSelected ? "#f59e0b" : "#ffffff";
