@@ -29,6 +29,7 @@ vi.mock("../components/FilterPanel", () => ({
     <div data-testid="filter-panel">
       <button type="button" onClick={() => onChange({ ...filters, category: "all" })}>All layers</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "restaurant" })}>Restaurants only</button>
+      <button type="button" onClick={() => onChange({ ...filters, category: "safari" })}>Safari only</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "events" })}>Events only</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "nightlife" })}>Nightlife only</button>
       <button type="button" onClick={() => onChange({ ...filters, region: "KwaZulu-Natal" })}>KwaZulu-Natal province</button>
@@ -244,6 +245,25 @@ const makeRestaurant = (id: string, name: string, sourceType: Listing["source_ty
   source_type: sourceType,
 });
 
+const makeSafari = (id: string, name: string): Listing => ({
+  ...makeListing(id, name),
+  category: "safari",
+  listing_type: "safari",
+  safari_type: "national_park",
+  region: "Limpopo & Mpumalanga",
+  province: "Limpopo",
+  city: "Hoedspruit",
+  suburb: "Kruger National Park",
+  latitude: -24,
+  longitude: 31.5,
+  max_guests: null,
+  rooms: null,
+  price_per_night: 115,
+  price_amount: 115,
+  price_unit: "day_entry",
+  tags: ["Big Five"],
+});
+
 test("unapproved restaurant prospects are not rendered on the public map", async () => {
   mockListings.mockResolvedValue([
     makeListing("alpha", "Alpha Lodge"),
@@ -279,6 +299,27 @@ test("restaurant layer renders only approved restaurant public markers", async (
   expect(screen.queryByTestId("marker-restaurant-manual-seed")).not.toBeInTheDocument();
 });
 
+test("safari layer renders only safari listing markers", async () => {
+  mockListings.mockResolvedValue([
+    makeListing("alpha", "Alpha Lodge"),
+    makeRestaurant("restaurant-approved", "Approved Kitchen"),
+    makeSafari("safari-kruger-national-park-01", "Kruger National Park"),
+  ]);
+  mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
+  mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Safari only" }));
+
+  expect(screen.getByTestId("marker-safari-kruger-national-park-01")).toBeInTheDocument();
+  expect(screen.queryByTestId("marker-alpha")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("marker-restaurant-approved")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("event-marker-event-kzn-durban-july")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("nightlife-marker-nightlife-kzn-origin")).not.toBeInTheDocument();
+});
+
 test("events layer still renders event markers", async () => {
   mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge"), makeRestaurant("restaurant-approved", "Approved Kitchen")]);
   mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
@@ -309,6 +350,7 @@ test("all mode shows accommodation workspace events nightlife and restaurants", 
     makeListing("alpha", "Alpha Lodge"),
     workspace,
     makeRestaurant("restaurant-approved", "Approved Kitchen"),
+    makeSafari("safari-kruger-national-park-01", "Kruger National Park"),
   ]);
   mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
   mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
@@ -318,6 +360,7 @@ test("all mode shows accommodation workspace events nightlife and restaurants", 
   await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
   expect(screen.getByTestId("marker-workspace")).toBeInTheDocument();
   expect(screen.getByTestId("marker-restaurant-approved")).toBeInTheDocument();
+  expect(screen.getByTestId("marker-safari-kruger-national-park-01")).toBeInTheDocument();
   expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument();
   expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
 });
@@ -340,9 +383,10 @@ test("clicking each marker family updates the shared nearby services target", as
     latitude: -26.11,
     longitude: 28.06,
   };
+  const safari = makeSafari("safari-kruger-national-park-01", "Kruger National Park");
   const event = makeEvent("event-kzn-durban-july", "Durban July");
   const venue = makeNightlife("nightlife-kzn-origin", "Origin Nightclub");
-  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge"), workspace, restaurant]);
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge"), workspace, restaurant, safari]);
   mockEvents.mockResolvedValue([event]);
   mockNightlife.mockResolvedValue([venue]);
 
@@ -365,6 +409,11 @@ test("clicking each marker family updates the shared nearby services target", as
   expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Approved Kitchen");
   expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("restaurant");
   expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-26.11,28.06");
+
+  fireEvent.click(screen.getByTestId("marker-safari-kruger-national-park-01"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Kruger National Park");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("listing");
+  expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-24,31.5");
 
   fireEvent.click(screen.getByTestId("event-marker-event-kzn-durban-july"));
   expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Durban July");

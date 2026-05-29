@@ -14,6 +14,7 @@ ListingTypeLiteral = Literal[
     "workspace",
     "tourism_experience",
     "restaurant",
+    "safari",
     "transport_node",
     "estate_living_zone",
     "event_space",
@@ -93,7 +94,7 @@ PartnerStatusLiteral = Literal[
 
 class ListingBase(BaseModel):
     name: str = Field(min_length=2)
-    category: Literal["bnb", "guesthouse", "accommodation", "workspace", "restaurant"]
+    category: Literal["bnb", "guesthouse", "accommodation", "workspace", "restaurant", "safari"]
     # Spatial layer — defaults from category if omitted (migration-safe)
     listing_type: ListingTypeLiteral | None = None
     accommodation_type: Literal["bnb", "guesthouse"] | None = None
@@ -104,6 +105,15 @@ class ListingBase(BaseModel):
     description_goombi: str | None = None
     workspace_type: Literal[
         "coworking", "meeting_room", "boardroom", "serviced_office", "virtual_office"
+    ] | None = None
+    safari_type: Literal[
+        "national_park",
+        "private_reserve",
+        "game_reserve",
+        "nature_reserve",
+        "world_heritage_site",
+        "cultural_reserve",
+        "game_farm",
     ] | None = None
     province: str = "Gauteng"
     region: str | None = None
@@ -161,6 +171,8 @@ class ListingBase(BaseModel):
                 self.listing_type = "workspace"
             elif self.category == "restaurant":
                 self.listing_type = "restaurant"
+            elif self.category == "safari":
+                self.listing_type = "safari"
             else:
                 self.listing_type = "accommodation"
 

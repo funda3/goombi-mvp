@@ -80,6 +80,35 @@ test("filters approved public restaurant listings by restaurant category", () =>
   ).toEqual([restaurant]);
 });
 
+test("filters safari records by category and safari region", () => {
+  const safari: Listing = {
+    ...baseListing,
+    id: "safari-kruger-national-park-01",
+    name: "Kruger National Park",
+    category: "safari",
+    listing_type: "safari",
+    safari_type: "national_park",
+    region: "Limpopo & Mpumalanga",
+    province: "Limpopo",
+    city: "Hoedspruit",
+    suburb: "Kruger National Park",
+    max_guests: null,
+    rooms: null,
+    price_per_night: 115,
+    price_amount: 115,
+    price_unit: "day_entry",
+    tags: ["Big Five", "national park"],
+  };
+
+  expect(
+    filterListings([baseListing, safari], {
+      ...defaultFilters,
+      category: "safari",
+      region: "Limpopo & Mpumalanga",
+    }),
+  ).toEqual([safari]);
+});
+
 test("excludes restaurant audit and unapproved seed records from public filters", () => {
   const approved: Listing = {
     ...baseListing,

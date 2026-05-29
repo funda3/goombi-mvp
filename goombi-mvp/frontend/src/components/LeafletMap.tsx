@@ -40,6 +40,7 @@ const LAYER_COLORS: Record<ListingType, string> = {
   workspace: "#a21caf",          // purple — rendered as diamond Marker, not CircleMarker
   tourism_experience: "#d97706", // amber
   restaurant: "#dc2626",         // red
+  safari: "#f59e0b",             // amber
   transport_node: "#475569",     // slate
   estate_living_zone: "#92400e", // warm amber-brown (distinct from all other layers)
   event_space: "#db2777",        // pink
@@ -165,6 +166,12 @@ export function LeafletMap({
     });
   }
 
+  function formatSafariType(value?: string | null) {
+    return value
+      ? value.split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")
+      : "Safari & Wildlife";
+  }
+
   return (
     <div className="absolute inset-0">
       <MapContainer
@@ -244,7 +251,11 @@ export function LeafletMap({
               }}
               eventHandlers={{ click: () => onSelect(listing) }}
             >
-              <Tooltip>{listing.name}</Tooltip>
+              <Tooltip>
+                {lt === "safari" ? (
+                  <span>{listing.name}<br />{formatSafariType(listing.safari_type)}</span>
+                ) : listing.name}
+              </Tooltip>
             </CircleMarker>
           );
         })}

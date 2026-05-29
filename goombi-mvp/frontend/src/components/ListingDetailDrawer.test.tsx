@@ -309,3 +309,51 @@ test("tourism_experience: shows capacity as guest limit when present", () => {
   });
   expect(screen.getByText(/up to 20 guests/i)).toBeInTheDocument();
 });
+
+test("safari: shows wildlife badges, price, tags, description, and availability CTA", () => {
+  renderDrawer({
+    ...base,
+    id: "safari-madikwe-game-reserve-01",
+    name: "Madikwe Game Reserve",
+    category: "safari",
+    listing_type: "safari",
+    safari_type: "private_reserve",
+    price_per_night: 5200,
+    price_amount: 5200,
+    price_unit: "person_night",
+    max_guests: null,
+    rooms: null,
+    tags: ["Big Five", "private reserve"],
+    description: "Private reserve safari stay with guided game drives.",
+    booking_url: "https://example.com/book",
+  });
+
+  expect(screen.getAllByText("Safari & Wildlife").length).toBeGreaterThan(0);
+  expect(screen.getByText("SAFARI & WILDLIFE")).toBeInTheDocument();
+  expect(screen.getAllByText("Private Reserve").length).toBeGreaterThan(0);
+  expect(screen.getByText("From R5200/person/night")).toBeInTheDocument();
+  expect(screen.getByText("Big Five")).toBeInTheDocument();
+  expect(screen.getByText("private reserve")).toBeInTheDocument();
+  expect(screen.getByText("Private reserve safari stay with guided game drives.")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /check availability/i })).toHaveAttribute("href", "https://example.com/book");
+});
+
+test("safari: shows day-entry price for national parks", () => {
+  renderDrawer({
+    ...base,
+    id: "safari-kruger-national-park-01",
+    name: "Kruger National Park",
+    category: "safari",
+    listing_type: "safari",
+    safari_type: "national_park",
+    price_per_night: 115,
+    price_amount: 115,
+    price_unit: "day_entry",
+    max_guests: null,
+    rooms: null,
+  });
+
+  expect(screen.getByText("Day entry R115")).toBeInTheDocument();
+  expect(screen.getAllByText("National Park").length).toBeGreaterThan(0);
+});
+

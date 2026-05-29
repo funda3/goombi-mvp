@@ -299,7 +299,7 @@ test("renders the layer filter dropdown", async () => {
   expect(screen.getByRole("combobox", { name: "Layer" })).toBeInTheDocument();
 });
 
-test("layer dropdown has All layers and all 7 layer options", async () => {
+test("layer dropdown has All layers and all 8 layer options", async () => {
   setup();
   await waitForTable();
   const select = screen.getByRole("combobox", { name: "Layer" }) as HTMLSelectElement;
@@ -310,10 +310,11 @@ test("layer dropdown has All layers and all 7 layer options", async () => {
   expect(values).toContain("workspace");
   expect(values).toContain("tourism_experience");
   expect(values).toContain("restaurant");
+  expect(values).toContain("safari");
   expect(values).toContain("transport_node");
   expect(values).toContain("estate_living_zone");
   expect(values).toContain("event_space");
-  expect(select.options).toHaveLength(8); // "all" + 7 types
+  expect(select.options).toHaveLength(9); // "all" + 8 types
 });
 
 test("Layer column sort button renders in table header", async () => {

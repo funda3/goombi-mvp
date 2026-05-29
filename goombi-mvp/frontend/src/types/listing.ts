@@ -3,13 +3,22 @@ import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenueType } from "./n
 
 export type AccommodationType = "bnb" | "guesthouse";
 export type WorkspaceType = "coworking" | "meeting_room" | "boardroom" | "serviced_office" | "virtual_office";
-export type ListingCategory = AccommodationType | "accommodation" | "workspace" | "restaurant";
+export type SafariType =
+  | "national_park"
+  | "private_reserve"
+  | "game_reserve"
+  | "nature_reserve"
+  | "world_heritage_site"
+  | "cultural_reserve"
+  | "game_farm";
+export type ListingCategory = AccommodationType | "accommodation" | "workspace" | "restaurant" | "safari";
 
 export type ListingType =
   | "accommodation"
   | "workspace"
   | "tourism_experience"
   | "restaurant"
+  | "safari"
   | "transport_node"
   | "estate_living_zone"
   | "event_space";
@@ -29,6 +38,7 @@ export const ALL_LISTING_TYPES: ListingType[] = [
   "workspace",
   "tourism_experience",
   "restaurant",
+  "safari",
   "transport_node",
   "estate_living_zone",
   "event_space",
@@ -48,6 +58,7 @@ export type Listing = {
   provider_name?: string | null;
   provider_type?: string | null;
   workspace_type?: WorkspaceType | null;
+  safari_type?: SafariType | null;
   province: string;
   region?: string | null;
   city: string;
@@ -136,8 +147,8 @@ export type Enquiry = {
 };
 
 export type Filters = {
-  region: "all" | "Gauteng" | "Western Cape" | "KwaZulu-Natal";
-  category: "all" | "accommodation" | "workspace" | "restaurant" | "events" | "nightlife";
+  region: "all" | "Gauteng" | "Western Cape" | "KwaZulu-Natal" | "Limpopo & Mpumalanga" | "Eastern & Northern Cape";
+  category: "all" | "accommodation" | "workspace" | "restaurant" | "safari" | "events" | "nightlife";
   eventCategory: "all" | EventCategory;
   nightlifeMusicFocus: "all" | NightlifeMusicFocus;
   nightlifeVenueType: "all" | NightlifeVenueType;
@@ -157,6 +168,7 @@ export function getListingType(listing: Listing): ListingType {
   if (listing.listing_type) return listing.listing_type;
   if (listing.category === "workspace") return "workspace";
   if (listing.category === "restaurant") return "restaurant";
+  if (listing.category === "safari") return "safari";
   return "accommodation";
 }
 
@@ -171,6 +183,7 @@ export function displayCategory(listing: Listing): string {
     case "workspace": return "Workspace";
     case "tourism_experience": return "Tourism Experience";
     case "restaurant": return "Restaurant";
+    case "safari": return "Safari & Wildlife";
     case "transport_node": return "Transport";
     case "event_space": return "Event Space";
     case "estate_living_zone": return "Estate Living";

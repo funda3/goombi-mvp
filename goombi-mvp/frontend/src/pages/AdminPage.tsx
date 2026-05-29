@@ -22,6 +22,7 @@ const LAYER_LABELS: Record<ListingType, string> = {
   workspace: "Workspace",
   tourism_experience: "Experiences",
   restaurant: "Eats",
+  safari: "Safari & Wildlife",
   transport_node: "Transport",
   estate_living_zone: "Estates",
   event_space: "Events",
@@ -95,6 +96,8 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
         ? "workspace"
         : row.category === "restaurant"
           ? "restaurant"
+        : row.category === "safari"
+          ? "safari"
         : row.category === "bnb" || row.category === "guesthouse"
           ? row.category
           : "accommodation",
@@ -450,7 +453,7 @@ export function AdminPage() {
           <div className="mt-5 grid gap-3">
             <label className="label">Name<input className="field" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
             <div className="grid grid-cols-2 gap-3">
-              <label className="label">Category<select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as ListingDraft["category"] })}><option value="guesthouse">Guesthouse</option><option value="bnb">B&B</option><option value="accommodation">Accommodation</option><option value="workspace">Workspace</option><option value="restaurant">Restaurant</option></select></label>
+              <label className="label">Category<select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as ListingDraft["category"] })}><option value="guesthouse">Guesthouse</option><option value="bnb">B&B</option><option value="accommodation">Accommodation</option><option value="workspace">Workspace</option><option value="restaurant">Restaurant</option><option value="safari">Safari & Wildlife</option></select></label>
               <label className="label">Suburb<input className="field" list="known-suburbs" required value={draft.suburb} onChange={(event) => setDraft({ ...draft, suburb: event.target.value })} /></label>
             </div>
             <datalist id="known-suburbs">{suburbs.map((suburb) => <option key={suburb} value={suburb} />)}</datalist>

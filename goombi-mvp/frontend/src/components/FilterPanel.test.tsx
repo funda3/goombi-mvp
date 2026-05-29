@@ -17,13 +17,13 @@ function renderPanel(overrides = {}) {
   );
 }
 
-test("renders exactly 5 public layer buttons", () => {
+test("renders exactly 6 public layer buttons", () => {
   renderPanel();
-  const layerNames = ["Stays", "Workspace", "Events", "Nightlife", "Restaurants"];
+  const layerNames = ["Stays", "Workspace", "Events", "Nightlife", "Restaurants", "Safari & Wildlife"];
   layerNames.forEach((name) => {
     expect(screen.getByRole("button", { name })).toBeInTheDocument();
   });
-  expect(layerNames).toHaveLength(5);
+  expect(layerNames).toHaveLength(6);
 });
 
 test("old generic layer buttons are not rendered", () => {
@@ -82,6 +82,11 @@ test("category filter includes Nightlife option", () => {
 test("category filter includes Restaurants option", () => {
   renderPanel();
   expect(screen.getByRole("option", { name: "Restaurants" })).toBeInTheDocument();
+});
+
+test("category filter includes Safari & Wildlife option", () => {
+  renderPanel();
+  expect(screen.getByRole("option", { name: "Safari & Wildlife" })).toBeInTheDocument();
 });
 
 test("event type filter renders all event categories", () => {

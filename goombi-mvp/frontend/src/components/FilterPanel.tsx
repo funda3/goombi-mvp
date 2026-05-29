@@ -22,6 +22,8 @@ const REGION_LABELS: Record<string, string> = {
   Gauteng: "Gauteng",
   "Western Cape": "Western Cape",
   "KwaZulu-Natal": "KwaZulu-Natal",
+  "Limpopo & Mpumalanga": "Limpopo & Mpumalanga",
+  "Eastern & Northern Cape": "Eastern & Northern Cape",
 };
 
 type PublicLayer = Exclude<Filters["category"], "all">;
@@ -32,6 +34,7 @@ const LAYER_CONFIG: { type: PublicLayer; label: string; color: string }[] = [
   { type: "events",             label: "Events",      color: "#db2777" },
   { type: "nightlife",          label: "Nightlife",   color: "#4f46e5" },
   { type: "restaurant",         label: "Restaurants", color: "#ea580c" },
+  { type: "safari",             label: "Safari & Wildlife", color: "#f59e0b" },
 ];
 
 function toggleLayer(filters: Filters, type: PublicLayer): Filters {
@@ -133,6 +136,8 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="Gauteng">Gauteng</option>
           <option value="Western Cape">Western Cape</option>
           <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+          <option value="Limpopo & Mpumalanga">Limpopo & Mpumalanga</option>
+          <option value="Eastern & Northern Cape">Eastern & Northern Cape</option>
         </select>
       </label>
       <label className="label">
@@ -148,6 +153,7 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="events">Events</option>
           <option value="nightlife">Nightlife</option>
           <option value="restaurant">Restaurants</option>
+          <option value="safari">Safari & Wildlife</option>
         </select>
       </label>
       <label className="label">

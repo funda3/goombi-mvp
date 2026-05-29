@@ -19,7 +19,7 @@ export const defaultFilters: Filters = {
 
 export function filterListings(listings: Listing[], filters: Filters): Listing[] {
   return listings.filter((listing) => {
-    const matchesRegion = filters.region === "all" || listing.province === filters.region;
+    const matchesRegion = filters.region === "all" || listing.region === filters.region || listing.province === filters.region;
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
     const effectiveType = getListingType(listing);
     const isEstate = effectiveType === "estate_living_zone";
@@ -36,6 +36,7 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
       );
     const recordCategory =
       effectiveType === "restaurant" ? "restaurant" :
+      effectiveType === "safari" ? "safari" :
       effectiveType === "workspace" ? "workspace" :
       "accommodation";
     const matchesCategory =

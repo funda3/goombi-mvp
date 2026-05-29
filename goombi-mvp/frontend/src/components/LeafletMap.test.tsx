@@ -22,14 +22,17 @@ vi.mock("react-leaflet", () => ({
     children,
     eventHandlers,
     center,
+    pathOptions,
   }: {
     children?: React.ReactNode;
     eventHandlers?: { click?: () => void };
     center: [number, number];
+    pathOptions?: { fillColor?: string };
   }) => (
     <button
       data-testid="circle-marker"
       aria-label={`Marker at ${center[0]},${center[1]}`}
+      data-fill-color={pathOptions?.fillColor}
       onClick={eventHandlers?.click}
     >
       {children}
@@ -232,16 +235,35 @@ test("tourism_experience listings render as circle-markers (not workspace marker
   expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
 });
 
+test("safari listings render as amber circle markers with safari type tooltip", () => {
+  const safariListing = makeListing({
+    id: "safari-kruger-national-park-01",
+    name: "Kruger National Park",
+    category: "safari",
+    listing_type: "safari",
+    safari_type: "national_park",
+    max_guests: null,
+    rooms: null,
+  });
+  render(<LeafletMap listings={[safariListing]} onSelect={() => undefined} />);
+
+  const marker = screen.getByTestId("circle-marker");
+  expect(marker).toHaveAttribute("data-fill-color", "#f59e0b");
+  expect(marker).toHaveTextContent("Kruger National Park");
+  expect(marker).toHaveTextContent("National Park");
+});
+
 test("multiple layer types render with their layer-specific marker types", () => {
   const listings = [
     makeListing({ id: "acc-1", listing_type: "accommodation" }),
     makeListing({ id: "rest-1", listing_type: "restaurant", category: "accommodation" }),
+    makeListing({ id: "safari-1", listing_type: "safari", category: "safari", safari_type: "game_reserve" }),
     makeListing({ id: "evt-1", listing_type: "event_space", category: "accommodation" }),
     makeListing({ id: "estate-1", listing_type: "estate_living_zone", category: "accommodation" }),
   ];
   render(<LeafletMap listings={listings} onSelect={() => undefined} />);
 
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(2);
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(3);
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(1);
 });
 
@@ -262,23 +284,22 @@ test("property_opportunity and business_hub are not valid listing_types", () => 
   expect(ALL_LISTING_TYPES).not.toContain("property_opportunity");
   expect(ALL_LISTING_TYPES).not.toContain("business_hub");
   expect(ALL_LISTING_TYPES).not.toContain("relocation_zone");
-  expect(ALL_LISTING_TYPES).toHaveLength(7);
+  expect(ALL_LISTING_TYPES).toHaveLength(8);
 });
 
-test("exactly 7 layer types are defined", () => {
+test("exactly 8 layer types are defined", () => {
   const expected = [
     "accommodation",
     "workspace",
     "tourism_experience",
     "restaurant",
+    "safari",
     "transport_node",
     "estate_living_zone",
     "event_space",
   ];
   expect(ALL_LISTING_TYPES).toEqual(expected);
 });
-
-// ── Public marker rendering coverage ─────────────────────────────────────────
 
 test("restaurant listing renders as food-pin marker", () => {
   const listing = makeListing({
@@ -327,6 +348,7 @@ test("all public layer types render the correct marker type", () => {
     makeListing({ id: "acc", listing_type: "accommodation" }),
     makeListing({ id: "tour", listing_type: "tourism_experience", category: "accommodation" }),
     makeListing({ id: "rest", listing_type: "restaurant", category: "accommodation", max_guests: null, rooms: null }),
+    makeListing({ id: "safari", listing_type: "safari", category: "safari", safari_type: "private_reserve", max_guests: null, rooms: null }),
     makeListing({ id: "trans", listing_type: "transport_node", category: "accommodation", max_guests: null, rooms: null }),
     makeListing({ id: "estate", listing_type: "estate_living_zone", category: "accommodation", max_guests: null, rooms: null }),
     makeListing({ id: "event", listing_type: "event_space", category: "accommodation", max_guests: null, rooms: null }),
@@ -344,7 +366,7 @@ test("all public layer types render the correct marker type", () => {
   render(<LeafletMap listings={[...listings, workspace]} onSelect={() => undefined} />);
 
   // estate markers are suppressed from public map rendering
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(4);
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(5);
   // workspace and restaurant render custom Marker icons
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(2);
 });
