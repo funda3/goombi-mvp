@@ -3,16 +3,16 @@ import { MapPin, X } from "lucide-react";
 
 import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchNearbyServices } from "../services/overpass";
-import type { Listing } from "../types/listing";
+import type { SelectedNearbyTarget } from "../types/nearbyTarget";
 import type { NearbyServicesResult, ServiceGroup } from "../types/services";
 import { ServiceCard } from "./ServiceCard";
 
 type Props = {
-  selected?: Listing;
+  selectedTarget?: SelectedNearbyTarget;
   onShowOnMap?: (lat: number, lon: number, label: string) => void;
 };
 
-export function BottomPanel({ selected, onShowOnMap }: Props) {
+export function BottomPanel({ selectedTarget, onShowOnMap }: Props) {
   const isMobile = useIsMobile();
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
@@ -21,22 +21,28 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
   const [servicesMessage, setServicesMessage] = useState("Nearby services require listing coordinates.");
   const serviceCacheRef = useRef(new Map<string, NearbyServicesResult>());
 
-  const hasCoordinates = selected
-    ? Number.isFinite(selected.latitude) && Number.isFinite(selected.longitude)
+  const hasCoordinates = selectedTarget
+    ? Number.isFinite(selectedTarget.latitude) && Number.isFinite(selectedTarget.longitude)
     : false;
 
-  const coordKey = selected
-    ? `${selected.latitude.toFixed(4)},${selected.longitude.toFixed(4)}`
+  const coordKey = selectedTarget && hasCoordinates
+    ? `${selectedTarget.sourceType}:${selectedTarget.id}:${selectedTarget.latitude.toFixed(4)},${selectedTarget.longitude.toFixed(4)}`
     : null;
 
   useEffect(() => {
     setMobileExpanded(false);
-  }, [selected?.id]);
+  }, [selectedTarget?.id]);
 
   useEffect(() => {
-    if (!selected) return;
-    const key = coordKey!;
-    const cached = serviceCacheRef.current.get(key);
+    if (!selectedTarget) return;
+    if (!hasCoordinates || !coordKey) {
+      setServiceGroups([]);
+      setServicesStatus("empty");
+      setServicesMessage("Nearby services require listing coordinates.");
+      return;
+    }
+
+    const cached = serviceCacheRef.current.get(coordKey);
     if (cached) {
       setServiceGroups(cached.services);
       setServicesStatus(cached.status);
@@ -49,44 +55,44 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
     setServicesMessage("Nearby services require listing coordinates.");
     setServiceGroups([]);
     fetchNearbyServices({
-      lat: selected.latitude,
-      lon: selected.longitude,
-      province: selected.province,
-      city: selected.city,
-      suburb: selected.suburb,
+      lat: selectedTarget.latitude,
+      lon: selectedTarget.longitude,
+      province: selectedTarget.province,
+      city: selectedTarget.city,
+      suburb: selectedTarget.suburb,
     })
       .then((result) => {
-        serviceCacheRef.current.set(key, result);
+        serviceCacheRef.current.set(coordKey, result);
         setServiceGroups(result.services);
         setServicesStatus(result.status);
         setServicesMessage(result.message);
       })
       .finally(() => setServicesLoading(false));
-  }, [coordKey, selected]);
+  }, [coordKey, hasCoordinates, selectedTarget]);
 
   const hasServiceResults = serviceGroups.some((g) => g.nearest !== null);
   const isFallback = servicesStatus === "fallback";
 
   const serviceContent = (
     <div className="px-3 pb-3">
-      {!selected && (
-        <p className="py-2 text-sm text-slate-500">Select a listing on the map to see nearby services.</p>
+      {!selectedTarget && (
+        <p className="py-2 text-sm text-slate-500">Select a marker on the map to see nearby services.</p>
       )}
-      {selected && servicesLoading && (
+      {selectedTarget && servicesLoading && (
         <p className="py-2 text-sm text-slate-500">Loading nearby services...</p>
       )}
-      {selected && !servicesLoading && isFallback && hasServiceResults && (
+      {selectedTarget && !servicesLoading && isFallback && hasServiceResults && (
         <p className="mb-2 inline-flex w-fit items-center rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-700">
           Demo-safe nearby estimates
         </p>
       )}
-      {selected && !servicesLoading && hasServiceResults && (
+      {selectedTarget && !servicesLoading && hasServiceResults && (
         <>
           <p className="mb-2 text-xs text-slate-400">
-            Near {selected.name} · within 5 km
-            {isFallback ? " · fallback estimates shown" : ""}
+            Near {selectedTarget.name} - within 5 km
+            {isFallback ? " - fallback estimates shown" : ""}
           </p>
-          <div className="grid grid-cols-2 gap-2 max-h-[340px] overflow-y-auto">
+          <div className="grid max-h-[340px] grid-cols-2 gap-2 overflow-y-auto">
             {serviceGroups
               .filter((g) => g.nearest !== null)
               .map((g) => (
@@ -95,23 +101,23 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
           </div>
         </>
       )}
-      {selected && !servicesLoading && servicesStatus === "fallback" && !hasServiceResults && (
+      {selectedTarget && !servicesLoading && servicesStatus === "fallback" && !hasServiceResults && (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">Demo-safe nearby estimates shown.</p>
       )}
-      {selected && !servicesLoading && servicesStatus === "live" && serviceGroups.length > 0 && !hasServiceResults && (
+      {selectedTarget && !servicesLoading && servicesStatus === "live" && serviceGroups.length > 0 && !hasServiceResults && (
         <p className="py-2 text-sm text-slate-500">No nearby services found.</p>
       )}
-      {selected && !servicesLoading && servicesStatus === "empty" && !hasCoordinates && (
+      {selectedTarget && !servicesLoading && servicesStatus === "empty" && !hasCoordinates && (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">Nearby services require listing coordinates.</p>
       )}
-      {selected && !servicesLoading && servicesStatus === "empty" && hasCoordinates && (
+      {selectedTarget && !servicesLoading && servicesStatus === "empty" && hasCoordinates && (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">{servicesMessage || "Demo-safe nearby estimates shown."}</p>
       )}
     </div>
   );
 
   if (isMobile) {
-    if (!selected) return null;
+    if (!selectedTarget) return null;
 
     return (
       <>
@@ -121,7 +127,7 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
               className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
               onClick={() => setMobileExpanded(false)}
             />
-            <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-2xl bg-white/95 shadow-panel backdrop-blur h-[70vh]">
+            <div className="fixed inset-x-0 bottom-0 z-50 flex h-[70vh] flex-col overflow-hidden rounded-t-2xl bg-white/95 shadow-panel backdrop-blur">
               <div className="flex shrink-0 items-center justify-between px-3 pb-2 pt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
                 <button
@@ -153,8 +159,8 @@ export function BottomPanel({ selected, onShowOnMap }: Props) {
   }
 
   return (
-    <section className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto rounded-lg border border-white/70 bg-white/95 shadow-panel md:left-[22rem]">
-      <div className="px-3 pt-2.5 pb-2">
+    <section className="pointer-events-auto absolute bottom-4 left-4 right-4 z-20 rounded-lg border border-white/70 bg-white/95 shadow-panel md:left-[22rem]">
+      <div className="px-3 pb-2 pt-2.5">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nearby Services</p>
       </div>
       {serviceContent}

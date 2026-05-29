@@ -4,15 +4,26 @@ import { vi } from "vitest";
 import type { EventRecord } from "../types/event";
 import type { Listing } from "../types/listing";
 import type { NightlifeVenue } from "../types/nightlife";
+import type { SelectedNearbyTarget } from "../types/nearbyTarget";
 import { HomePage } from "./HomePage";
 
-vi.mock("../components/BottomPanel", () => ({ BottomPanel: () => (
-  <section data-testid="nearby-services-panel">
-    <div data-testid="nearby-service-card">
-      <span data-testid="nearby-fallback-badge">Fallback estimate</span>
-    </div>
-  </section>
-) }));
+vi.mock("../components/BottomPanel", () => ({
+  BottomPanel: ({ selectedTarget }: { selectedTarget?: SelectedNearbyTarget }) => (
+    <section data-testid="nearby-services-panel">
+      <div data-testid="nearby-target-id">{selectedTarget?.id ?? "none"}</div>
+      <div data-testid="nearby-target-name">{selectedTarget?.name ?? "none"}</div>
+      <div data-testid="nearby-target-source">{selectedTarget?.sourceType ?? "none"}</div>
+      <div data-testid="nearby-target-coordinates">
+        {selectedTarget ? `${selectedTarget.latitude},${selectedTarget.longitude}` : "none"}
+      </div>
+      {selectedTarget && (
+        <div data-testid="nearby-service-card">
+          <span data-testid="nearby-fallback-badge">Fallback estimate</span>
+        </div>
+      )}
+    </section>
+  ),
+}));
 vi.mock("../components/FilterPanel", () => ({
   FilterPanel: ({ filters, onChange }: { filters: { category: string; region?: string }; onChange: (filters: unknown) => void }) => (
     <div data-testid="filter-panel">
@@ -311,6 +322,61 @@ test("all mode shows accommodation workspace events nightlife and restaurants", 
   expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
 });
 
+test("clicking each marker family updates the shared nearby services target", async () => {
+  const workspace: Listing = {
+    ...makeListing("workspace", "Sandton Workspace"),
+    category: "workspace",
+    listing_type: "workspace",
+    provider_name: "Workspace Co",
+    workspace_type: "coworking",
+    pricing_status: "not_publicly_available",
+    source_url: "https://example.com",
+    source_note: "Seeded",
+    latitude: -26.1,
+    longitude: 28.05,
+  };
+  const restaurant = {
+    ...makeRestaurant("restaurant-approved", "Approved Kitchen"),
+    latitude: -26.11,
+    longitude: 28.06,
+  };
+  const event = makeEvent("event-kzn-durban-july", "Durban July");
+  const venue = makeNightlife("nightlife-kzn-origin", "Origin Nightclub");
+  mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge"), workspace, restaurant]);
+  mockEvents.mockResolvedValue([event]);
+  mockNightlife.mockResolvedValue([venue]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-alpha")).toBeInTheDocument());
+
+  fireEvent.click(screen.getByTestId("marker-alpha"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Alpha Lodge");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("listing");
+  expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-26.05,28.02");
+  expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
+
+  fireEvent.click(screen.getByTestId("marker-workspace"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Sandton Workspace");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("listing");
+  expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-26.1,28.05");
+
+  fireEvent.click(screen.getByTestId("marker-restaurant-approved"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Approved Kitchen");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("restaurant");
+  expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-26.11,28.06");
+
+  fireEvent.click(screen.getByTestId("event-marker-event-kzn-durban-july"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Durban July");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("event");
+  expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-29.8437,31.0124");
+
+  fireEvent.click(screen.getByTestId("nightlife-marker-nightlife-kzn-origin"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Origin Nightclub");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("nightlife");
+  expect(screen.getByTestId("nearby-target-coordinates")).toHaveTextContent("-29.7269,31.0842");
+});
+
 test("nightlife near me floating overlay is not rendered while nightlife markers remain", async () => {
   mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
   mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
@@ -343,12 +409,13 @@ test("floating nearby overlays stay removed across province and layer changes", 
   await waitFor(() => expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument());
   expect(screen.getByTestId("nightlife-marker-nightlife-kzn-origin")).toBeInTheDocument();
   expect(screen.getByTestId("nearby-services-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
 
   fireEvent.click(screen.getByRole("button", { name: "KwaZulu-Natal province" }));
   fireEvent.click(screen.getByRole("button", { name: "Events only" }));
 
   expect(screen.getByTestId("event-marker-event-kzn-durban-july")).toBeInTheDocument();
+  fireEvent.click(screen.getByTestId("event-marker-event-kzn-durban-july"));
+  expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
   expect(screen.queryByText(/what'?s happening nearby/i)).not.toBeInTheDocument();
   expect(screen.queryByText(/happening nearby/i)).not.toBeInTheDocument();
   expect(screen.queryByText(/nightlife near me/i)).not.toBeInTheDocument();
@@ -422,6 +489,7 @@ test("close button hides the bottom sheet and clears marker selection", async ()
 
   expect(within(screen.getByTestId("listing-detail-drawer")).queryByRole("heading", { name: "Alpha Lodge" })).not.toBeInTheDocument();
   expect(screen.getByTestId("selected-marker")).toHaveTextContent("none");
+  expect(screen.getByTestId("nearby-target-id")).toHaveTextContent("none");
   expect(screen.getByTestId("listing-detail-drawer").className).toContain("translate-y-[110%]");
 });
 
