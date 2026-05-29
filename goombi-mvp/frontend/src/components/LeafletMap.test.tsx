@@ -55,19 +55,26 @@ vi.mock("react-leaflet", () => ({
     children,
     eventHandlers,
     position,
+    icon,
   }: {
     children?: React.ReactNode;
     eventHandlers?: { click?: () => void };
     position: [number, number];
-  }) => (
-    <button
-      data-testid="workspace-marker"
-      aria-label={`Marker at ${position[0]},${position[1]}`}
-      onClick={eventHandlers?.click}
-    >
-      {children}
-    </button>
-  ),
+    icon?: { options?: { html?: string } };
+  }) => {
+    const iconHtml = icon?.options?.html ?? "";
+    const isSafari = iconHtml.includes("goombi-safari-lion-marker");
+    return (
+      <button
+        data-testid={isSafari ? "safari-marker" : "workspace-marker"}
+        aria-label={`Marker at ${position[0]},${position[1]}`}
+        data-icon-html={iconHtml}
+        onClick={eventHandlers?.click}
+      >
+        {children}
+      </button>
+    );
+  },
   Tooltip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   useMap: () => ({ setView: mockSetView, fitBounds: mockFitBounds }),
 }));
@@ -235,7 +242,7 @@ test("tourism_experience listings render as circle-markers (not workspace marker
   expect(screen.queryByTestId("workspace-marker")).not.toBeInTheDocument();
 });
 
-test("safari listings render as amber circle markers with safari type tooltip", () => {
+test("safari listings render as lion markers with safari type tooltip", () => {
   const safariListing = makeListing({
     id: "safari-kruger-national-park-01",
     name: "Kruger National Park",
@@ -247,8 +254,10 @@ test("safari listings render as amber circle markers with safari type tooltip", 
   });
   render(<LeafletMap listings={[safariListing]} onSelect={() => undefined} />);
 
-  const marker = screen.getByTestId("circle-marker");
-  expect(marker).toHaveAttribute("data-fill-color", "#f59e0b");
+  const marker = screen.getByTestId("safari-marker");
+  expect(marker.getAttribute("data-icon-html")).toContain("goombi-safari-lion-marker");
+  expect(marker.getAttribute("data-icon-html")).toContain("#f59e0b");
+  expect(marker.getAttribute("data-icon-html")).toContain("&#129409;");
   expect(marker).toHaveTextContent("Kruger National Park");
   expect(marker).toHaveTextContent("National Park");
 });
@@ -263,8 +272,9 @@ test("multiple layer types render with their layer-specific marker types", () =>
   ];
   render(<LeafletMap listings={listings} onSelect={() => undefined} />);
 
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(3);
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(2);
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(1);
+  expect(screen.getAllByTestId("safari-marker")).toHaveLength(1);
 });
 
 test("estate_living_zone listing does not render a public marker", () => {
@@ -366,9 +376,10 @@ test("all public layer types render the correct marker type", () => {
   render(<LeafletMap listings={[...listings, workspace]} onSelect={() => undefined} />);
 
   // estate markers are suppressed from public map rendering
-  expect(screen.getAllByTestId("circle-marker")).toHaveLength(5);
+  expect(screen.getAllByTestId("circle-marker")).toHaveLength(4);
   // workspace and restaurant render custom Marker icons
   expect(screen.getAllByTestId("workspace-marker")).toHaveLength(2);
+  expect(screen.getAllByTestId("safari-marker")).toHaveLength(1);
 });
 
 test("renders event markers and handles event click", () => {
@@ -393,3 +404,4 @@ test("renders nightlife marker and handles nightlife click", () => {
 
   expect(onSelectNightlife).toHaveBeenCalledWith(venue);
 });
+

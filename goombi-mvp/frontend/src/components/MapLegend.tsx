@@ -18,6 +18,9 @@ export function MapLegend() {
         <li className="flex items-center gap-2">
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-600 text-[10px] text-white">F</span>Fork/Food pin = Restaurant
         </li>
+        <li className="flex items-center gap-2">
+          <span aria-label="Safari & Wildlife lion marker" className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white bg-amber-500 text-[11px] shadow-sm">&#129409;</span>Lion = Safari & Wildlife
+        </li>
       </ul>
     </aside>
   );

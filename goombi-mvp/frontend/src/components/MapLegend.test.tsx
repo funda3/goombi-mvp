@@ -10,4 +10,6 @@ test("map legend includes the public Goombi marker layers", () => {
   expect(screen.getByText("Star/Pulse = Event")).toBeInTheDocument();
   expect(screen.getByText("Moon/Pulse = Nightlife")).toBeInTheDocument();
   expect(screen.getByText("Fork/Food pin = Restaurant")).toBeInTheDocument();
+  expect(screen.getByText("Lion = Safari & Wildlife")).toBeInTheDocument();
+  expect(screen.getByLabelText("Safari & Wildlife lion marker")).toBeInTheDocument();
 });
