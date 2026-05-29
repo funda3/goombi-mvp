@@ -33,21 +33,26 @@ export type RestaurantProspectDraft = Omit<RestaurantProspect, "id" | "created_a
 export type RestaurantProspectPublicMarker = {
   id: string;
   name: string;
+  category: "restaurant";
+  listing_type: "restaurant";
+  region: string;
   province: string;
   city: string;
   suburb: string;
   cuisine_tags: string[];
   price_band?: string | null;
+  price_band_goombi?: string | null;
+  description_goombi: string;
   latitude: number;
   longitude: number;
-  approval_status: RestaurantApprovalStatus;
-  demo_visibility: true;
+  source_type: "demo_public_restaurant";
+  verified_status: false;
+  partner_status: "seed";
 };
 
 export type RestaurantProspectPublicCounts = {
   visible_restaurant_demo_prospects: number;
-  approved_restaurants: number;
-  pending_approval: number;
+  source_records_total: number;
 };
 
 export type RestaurantProspectPublicResponse = {

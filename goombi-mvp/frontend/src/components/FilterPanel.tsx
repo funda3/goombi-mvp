@@ -121,8 +121,7 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
         <div className="rounded-md border border-orange-100 bg-orange-50/70 p-3 text-xs text-slate-700">
           <p className="font-bold uppercase tracking-wide text-orange-800">Restaurants (Demo Mode)</p>
           <p className="mt-1">Visible demo prospects: {restaurantCounts.visible_restaurant_demo_prospects}</p>
-          <p>Approved restaurants: {restaurantCounts.approved_restaurants}</p>
-          <p>Pending approval: {restaurantCounts.pending_approval}</p>
+          <p>Source records: {restaurantCounts.source_records_total}</p>
         </div>
       )}
       <label className="label">
