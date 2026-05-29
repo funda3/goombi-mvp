@@ -401,21 +401,26 @@ class RestaurantProspect(RestaurantProspectBase):
 class RestaurantProspectPublicMarker(BaseModel):
     id: str
     name: str
+    category: Literal["restaurant"] = "restaurant"
+    listing_type: Literal["restaurant"] = "restaurant"
+    region: str
     province: str
     city: str
     suburb: str
     cuisine_tags: list[str] = Field(default_factory=list)
     price_band: str | None = None
+    price_band_goombi: str | None = None
+    description_goombi: str
     latitude: float
     longitude: float
-    approval_status: RestaurantApprovalStatusLiteral
-    demo_visibility: bool = True
+    source_type: Literal["demo_public_restaurant"] = "demo_public_restaurant"
+    verified_status: bool = False
+    partner_status: Literal["seed"] = "seed"
 
 
 class RestaurantProspectPublicCounts(BaseModel):
     visible_restaurant_demo_prospects: int
-    approved_restaurants: int
-    pending_approval: int
+    source_records_total: int
 
 
 class RestaurantProspectPublicResponse(BaseModel):

@@ -563,9 +563,8 @@ def test_safari_seed_regions_use_supported_discovery_taxonomy(tmp_path):
     }
 
 
-def test_public_restaurant_prospect_payload_excludes_internal_fields(tmp_path, monkeypatch):
+def test_public_restaurant_prospect_payload_excludes_internal_fields(tmp_path):
     """Public demo payload must only expose safe restaurant prospect fields."""
-    monkeypatch.setenv("SHOW_RESTAURANT_PROSPECTS_ON_MAP", "true")
     api = _seed_client(tmp_path)
     response = api.get("/api/restaurant-prospects/public")
     assert response.status_code == 200
@@ -573,33 +572,55 @@ def test_public_restaurant_prospect_payload_excludes_internal_fields(tmp_path, m
     payload = response.json()
     assert "restaurants" in payload
     assert "counts" in payload
-    assert len(payload["restaurants"]) > 0
+    assert len(payload["restaurants"]) == 230
+    assert payload["counts"]["visible_restaurant_demo_prospects"] == 230
+    assert payload["counts"]["source_records_total"] == 230
+    assert "approved_restaurants" not in payload["counts"]
+    assert "pending_approval" not in payload["counts"]
 
     sample = payload["restaurants"][0]
     expected_keys = {
         "id",
         "name",
+        "category",
+        "listing_type",
+        "region",
         "province",
         "city",
         "suburb",
         "cuisine_tags",
         "price_band",
+        "price_band_goombi",
+        "description_goombi",
         "latitude",
         "longitude",
-        "approval_status",
-        "demo_visibility",
+        "source_type",
+        "verified_status",
+        "partner_status",
     }
     assert set(sample.keys()) == expected_keys
-    assert sample["demo_visibility"] is True
-    assert "notes_internal" not in sample
-    assert "source_document" not in sample
-    assert "public_contact_url" not in sample
-    assert "public_website_url" not in sample
+    assert sample["category"] == "restaurant"
+    assert sample["listing_type"] == "restaurant"
+    assert sample["source_type"] == "demo_public_restaurant"
+    assert sample["verified_status"] is False
+    assert sample["partner_status"] == "seed"
+    blocked_keys = {
+        "notes_internal",
+        "source_document",
+        "public_contact_url",
+        "public_website_url",
+        "approval_status",
+        "audit_status",
+        "phone",
+        "email",
+        "contact",
+        "whatsapp",
+    }
+    assert blocked_keys.isdisjoint(sample.keys())
 
 
-def test_public_restaurant_prospect_payload_respects_flag(tmp_path, monkeypatch):
-    """Without demo flag, public prospects endpoint should only expose approved prospects."""
-    monkeypatch.delenv("SHOW_RESTAURANT_PROSPECTS_ON_MAP", raising=False)
+def test_public_restaurant_prospect_payload_includes_prospect_only_demo_markers(tmp_path):
+    """Safe public projection includes coordinate-backed demo prospects without mutating approval state."""
     api = client(tmp_path)
 
     pending = restaurant_prospect_payload("Pending Kitchen")
@@ -610,8 +631,12 @@ def test_public_restaurant_prospect_payload_respects_flag(tmp_path, monkeypatch)
     api.post("/api/restaurant-prospects", json=approved)
 
     payload = api.get("/api/restaurant-prospects/public").json()
-    assert len(payload["restaurants"]) == 1
-    assert all(item["approval_status"] == "provider_approved" for item in payload["restaurants"])
+    assert len(payload["restaurants"]) == 2
+    assert {item["source_type"] for item in payload["restaurants"]} == {"demo_public_restaurant"}
+    assert {item["verified_status"] for item in payload["restaurants"]} == {False}
+
+    source_records = api.get("/api/restaurant-prospects").json()
+    assert {item["approval_status"] for item in source_records} == {"prospect_only", "provider_approved"}
 
 
 def test_nearby_services_fallback_works(tmp_path, monkeypatch):
