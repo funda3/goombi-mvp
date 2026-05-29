@@ -335,7 +335,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       aria-label="Listing detail"
       data-placement="right-drawer"
       data-testid="listing-detail-drawer"
-      className={`fixed bottom-0 z-40 flex h-[78vh] max-h-[82vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out inset-x-2 sm:inset-x-4 md:bottom-auto md:left-auto md:right-20 md:top-24 md:h-auto md:max-h-[32rem] md:w-[min(28rem,calc(100vw-7rem))] md:rounded-xl md:shadow-[0_18px_44px_rgba(15,23,42,0.22)] ${listing ? "translate-y-0 pointer-events-auto md:translate-x-0" : "translate-y-[110%] pointer-events-none md:translate-y-0 md:translate-x-[120%]"}`}
+      className={`fixed bottom-0 z-40 flex h-[78vh] max-h-[82vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out inset-x-2 sm:inset-x-4 md:bottom-52 md:left-auto md:right-20 md:top-24 md:h-auto md:max-h-none md:w-[min(28rem,calc(100vw-7rem))] md:rounded-xl md:shadow-[0_18px_44px_rgba(15,23,42,0.22)] ${listing ? "translate-y-0 pointer-events-auto md:translate-x-0" : "translate-y-[110%] pointer-events-none md:translate-y-0 md:translate-x-[120%]"}`}
     >
       <div className="flex shrink-0 justify-center pt-3 pb-1">
         <div className="h-1 w-12 rounded-full bg-slate-200" />

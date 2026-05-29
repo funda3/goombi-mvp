@@ -67,8 +67,9 @@ export function NightlifeDetailSheet({ venue, allListings, allEvents, onClose }:
   return (
     <aside
       aria-label="Nightlife detail"
+      data-placement="right-drawer"
       data-testid="nightlife-bottom-sheet"
-      className={`fixed bottom-0 z-40 flex h-[62vh] min-h-[55vh] max-h-[70vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out md:h-[50vh] md:min-h-[40vh] md:max-h-[60vh] ${venue ? "translate-y-0 pointer-events-auto" : "translate-y-[110%] pointer-events-none"} inset-x-2 sm:inset-x-4 md:inset-x-auto md:left-1/2 md:w-[min(92vw,640px)] md:-translate-x-1/2`}
+      className={`fixed bottom-0 z-40 flex h-[62vh] min-h-[55vh] max-h-[70vh] transform-gpu flex-col rounded-t-2xl border border-white/70 bg-white/95 shadow-[0_-10px_32px_rgba(15,23,42,0.24)] backdrop-blur transition-transform duration-300 ease-out md:bottom-52 md:left-auto md:right-20 md:top-24 md:h-auto md:min-h-0 md:max-h-none md:w-[min(28rem,calc(100vw-7rem))] md:rounded-xl md:shadow-[0_18px_44px_rgba(15,23,42,0.22)] ${venue ? "translate-y-0 pointer-events-auto md:translate-x-0" : "translate-y-[110%] pointer-events-none md:translate-y-0 md:translate-x-[120%]"} inset-x-2 sm:inset-x-4 md:inset-x-auto`}
     >
       <div className="flex shrink-0 justify-center pb-1 pt-3">
         <div className="h-1 w-12 rounded-full bg-slate-200" />

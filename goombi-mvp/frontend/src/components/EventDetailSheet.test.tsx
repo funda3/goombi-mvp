@@ -73,3 +73,15 @@ test("shows event details and nearby accommodation/workspace section", () => {
   expect(screen.getByText("Berea Stay")).toBeInTheDocument();
   expect(screen.getByText("Durban Workspace")).toBeInTheDocument();
 });
+
+test("uses right-side desktop bounds above nearby services", () => {
+  render(<EventDetailSheet event={event} allListings={[nearbyAccommodation, nearbyWorkspace]} onClose={() => undefined} />);
+
+  const sheet = screen.getByTestId("event-bottom-sheet");
+  expect(sheet).toHaveAttribute("data-placement", "right-drawer");
+  expect(sheet.className).toContain("md:right-20");
+  expect(sheet.className).toContain("md:top-24");
+  expect(sheet.className).toContain("md:bottom-52");
+  expect(sheet.className).toContain("md:max-h-none");
+  expect(sheet.querySelector(".overflow-y-auto")).toBeInTheDocument();
+});
