@@ -3,8 +3,10 @@ import type { EventCategory, EventRecord, EventRecurringType } from "../types/ev
 import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenue, NightlifeVenueType } from "../types/nightlife";
 import type { ProviderCrmDraft, ProviderCrmRecord } from "../types/providerCrm";
 import type {
+  RestaurantProspectPublicApiMarker,
   RestaurantProspect,
   RestaurantProspectDraft,
+  RestaurantProspectPublicCounts,
   RestaurantProspectPublicResponse,
 } from "../types/restaurantProspect";
 import type { NearbyServicesApiResponse } from "../types/services";
@@ -24,6 +26,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return undefined as T;
   }
   return response.json() as Promise<T>;
+}
+
+function normalizeRestaurantProspectsPublicResponse(
+  payload: RestaurantProspectPublicResponse | RestaurantProspectPublicApiMarker[],
+): RestaurantProspectPublicResponse {
+  if (Array.isArray(payload)) {
+    const derivedCounts: RestaurantProspectPublicCounts = {
+      visible_restaurant_demo_prospects: payload.length,
+      source_records_total: payload.length,
+    };
+    return { restaurants: payload, counts: derivedCounts };
+  }
+
+  const restaurants = Array.isArray(payload.restaurants) ? payload.restaurants : [];
+  const fallbackCounts: RestaurantProspectPublicCounts = {
+    visible_restaurant_demo_prospects: restaurants.length,
+    source_records_total: restaurants.length,
+  };
+
+  return {
+    restaurants,
+    counts: payload.counts ?? fallbackCounts,
+  };
 }
 
 export const api = {
@@ -83,7 +108,12 @@ export const api = {
   },
   createRestaurantProspect: (payload: RestaurantProspectDraft) =>
     request<RestaurantProspect>("/api/restaurant-prospects", { method: "POST", body: JSON.stringify(payload) }),
-  restaurantProspectsPublic: () => request<RestaurantProspectPublicResponse>("/api/restaurant-prospects/public"),
+  restaurantProspectsPublic: async () => {
+    const payload = await request<RestaurantProspectPublicResponse | RestaurantProspectPublicApiMarker[]>(
+      "/api/restaurant-prospects/public",
+    );
+    return normalizeRestaurantProspectsPublicResponse(payload);
+  },
   updateRestaurantProspect: (id: string, payload: RestaurantProspectDraft) =>
     request<RestaurantProspect>(`/api/restaurant-prospects/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   deleteRestaurantProspect: (id: string) =>

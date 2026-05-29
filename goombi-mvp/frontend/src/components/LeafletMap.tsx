@@ -177,6 +177,13 @@ export function LeafletMap({
     });
   }
 
+  function formatRestaurantLabel(listing: Listing) {
+    const cuisines = Array.isArray(listing.cuisine_tags)
+      ? listing.cuisine_tags.map((item) => item.trim()).filter(Boolean)
+      : [];
+    return cuisines.length > 0 ? cuisines.slice(0, 2).join(" | ") : "Restaurant";
+  }
+
   function formatSafariType(value?: string | null) {
     return value
       ? value.split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")
@@ -241,7 +248,7 @@ export function LeafletMap({
                 icon={restaurantIcon(isHighlighted)}
                 eventHandlers={{ click: () => onSelect(listing) }}
               >
-                <Tooltip>{listing.name}</Tooltip>
+                <Tooltip><span>{listing.name}<br />{formatRestaurantLabel(listing)}</span></Tooltip>
               </Marker>
             );
           }

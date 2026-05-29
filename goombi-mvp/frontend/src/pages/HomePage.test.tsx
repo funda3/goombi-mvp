@@ -259,6 +259,20 @@ const makeSafari = (id: string, name: string): Listing => ({
   tags: ["Big Five"],
 });
 
+const makePublicProspect = (id: string, name: string, suburb: string) => ({
+  id,
+  name,
+  province: "Gauteng",
+  city: "Johannesburg",
+  suburb,
+  cuisine_tags: ["Contemporary"],
+  price_band: "$$",
+  latitude: -26.1,
+  longitude: 28.05,
+  approval_status: "prospect_only",
+  demo_visibility: true,
+});
+
 test("unapproved restaurant prospects are not rendered on the public map", async () => {
   mockListings.mockResolvedValue([
     makeListing("alpha", "Alpha Lodge"),
@@ -477,44 +491,8 @@ test("public restaurant prospects render as demo-safe map markers", async () => 
   mockListings.mockResolvedValue([makeListing("alpha", "Alpha Lodge")]);
   mockRestaurantProspectsPublic.mockResolvedValue({
     restaurants: [
-      {
-        id: "prospect-1",
-        name: "Prospect One",
-        category: "restaurant",
-        listing_type: "restaurant",
-        region: "Gauteng",
-        province: "Gauteng",
-        city: "Johannesburg",
-        suburb: "Sandton",
-        cuisine_tags: ["Steakhouse"],
-        price_band: "$$",
-        price_band_goombi: "$$",
-        description_goombi: "Demo restaurant marker for Goombi map testing.",
-        latitude: -26.1,
-        longitude: 28.05,
-        source_type: "demo_public_restaurant",
-        verified_status: false,
-        partner_status: "seed",
-      },
-      {
-        id: "prospect-2",
-        name: "Prospect Two",
-        category: "restaurant",
-        listing_type: "restaurant",
-        region: "Gauteng",
-        province: "Gauteng",
-        city: "Johannesburg",
-        suburb: "Rosebank",
-        cuisine_tags: ["Sushi"],
-        price_band: "$$$",
-        price_band_goombi: "$$$",
-        description_goombi: "Demo restaurant marker for Goombi map testing.",
-        latitude: -26.12,
-        longitude: 28.04,
-        source_type: "demo_public_restaurant",
-        verified_status: false,
-        partner_status: "seed",
-      },
+      makePublicProspect("prospect-1", "Prospect One", "Sandton"),
+      makePublicProspect("prospect-2", "Prospect Two", "Rosebank"),
     ],
     counts: {
       visible_restaurant_demo_prospects: 2,
@@ -536,6 +514,57 @@ test("public restaurant prospects render as demo-safe map markers", async () => 
   expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Prospect One");
   expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("restaurant");
   expect(screen.getByTestId("nearby-fallback-badge")).toHaveTextContent("Fallback estimate");
+});
+
+test("restaurants mode renders 233 restaurant markers including 230 demo prospects", async () => {
+  const seedRestaurants = [
+    makeRestaurant("restaurant-approved-1", "Approved Kitchen 1"),
+    makeRestaurant("restaurant-approved-2", "Approved Kitchen 2"),
+    makeRestaurant("restaurant-approved-3", "Approved Kitchen 3"),
+  ];
+  const accommodation = makeListing("alpha", "Alpha Lodge");
+  const safari = makeSafari("safari-kruger-national-park-01", "Kruger National Park");
+
+  const prospects = Array.from({ length: 230 }, (_, index) =>
+    makePublicProspect(
+      `prospect-${index + 1}`,
+      `Prospect ${index + 1}`,
+      `Suburb ${index + 1}`,
+    ),
+  );
+
+  mockListings.mockResolvedValue([accommodation, safari, ...seedRestaurants]);
+  mockRestaurantProspectsPublic.mockResolvedValue({
+    restaurants: prospects,
+    counts: {
+      visible_restaurant_demo_prospects: 230,
+      source_records_total: 230,
+    },
+  });
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-demo-prospect-prospect-230")).toBeInTheDocument());
+
+  fireEvent.click(screen.getByRole("button", { name: "Restaurants only" }));
+
+  const mapCanvas = screen.getByTestId("map-canvas");
+  const restaurantMarkers = within(mapCanvas)
+    .getAllByRole("button")
+    .filter((node) => node.getAttribute("data-testid")?.startsWith("marker-"));
+  expect(restaurantMarkers).toHaveLength(233);
+
+  fireEvent.click(screen.getByRole("button", { name: "Safari only" }));
+  expect(screen.queryByTestId("marker-demo-prospect-prospect-1")).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "All layers" }));
+  expect(screen.queryByTestId("marker-demo-prospect-prospect-1")).toBeInTheDocument();
+  expect(screen.queryByTestId("marker-alpha")).toBeInTheDocument();
+  expect(screen.queryByTestId("marker-safari-kruger-national-park-01")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByTestId("marker-demo-prospect-prospect-1"));
+  expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Prospect 1");
+  expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("restaurant");
 });
 
 test("close button hides the bottom sheet and clears marker selection", async () => {

@@ -18,8 +18,8 @@ import { getListingType, type Listing } from "../types/listing";
 import type { NightlifeVenue } from "../types/nightlife";
 import type { SelectedNearbyTarget } from "../types/nearbyTarget";
 import type {
+  RestaurantProspectPublicApiMarker,
   RestaurantProspectPublicCounts,
-  RestaurantProspectPublicMarker,
 } from "../types/restaurantProspect";
 import type { ServiceMarker } from "../types/services";
 import type { FlyTo } from "../components/LeafletMap";
@@ -28,14 +28,18 @@ import { appHref } from "../utils/routes";
 
 const JHB: [number, number] = [-26.1076, 28.0567];
 
-function toDemoRestaurantListing(marker: RestaurantProspectPublicMarker): Listing {
+function toDemoRestaurantListing(marker: RestaurantProspectPublicApiMarker): Listing {
   const timestamp = new Date().toISOString();
+  const cuisineTags = Array.isArray(marker.cuisine_tags) ? marker.cuisine_tags.filter(Boolean) : [];
+  const description = marker.description_goombi ?? "Demo restaurant marker for Goombi map testing.";
+  const region = marker.region ?? marker.province;
+
   return {
-    id: `demo-prospect-${marker.id}`,
+    id: marker.id.startsWith("demo-prospect-") ? marker.id : `demo-prospect-${marker.id}`,
     name: marker.name,
-    category: marker.category,
-    listing_type: marker.listing_type,
-    region: marker.region,
+    category: "restaurant",
+    listing_type: "restaurant",
+    region,
     province: marker.province,
     city: marker.city,
     suburb: marker.suburb,
@@ -45,21 +49,23 @@ function toDemoRestaurantListing(marker: RestaurantProspectPublicMarker): Listin
     price_per_night: 0,
     max_guests: null,
     rooms: null,
-    description: marker.description_goombi,
-    short_description: marker.description_goombi,
-    long_description: marker.description_goombi,
+    description,
+    short_description: description,
+    long_description: description,
     amenities: [],
     photos: [],
     images: [],
     tags: [],
     owner_name: "",
     owner_phone: "",
-    cuisine_tags: marker.cuisine_tags,
+    cuisine_tags: cuisineTags,
     price_band_goombi: marker.price_band_goombi ?? marker.price_band ?? null,
-    provider_type: marker.cuisine_tags.join(", "),
-    verified_status: marker.verified_status,
-    partner_status: marker.partner_status,
-    source_type: marker.source_type,
+    provider_type: cuisineTags.join(", "),
+    approval_status: marker.approval_status,
+    demo_visibility: marker.demo_visibility ?? true,
+    verified_status: false,
+    partner_status: "seed",
+    source_type: "demo_public_restaurant",
     source_note: "Demo public restaurant marker.",
     created_at: timestamp,
     updated_at: timestamp,

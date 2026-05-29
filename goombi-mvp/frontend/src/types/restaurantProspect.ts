@@ -48,14 +48,40 @@ export type RestaurantProspectPublicMarker = {
   source_type: "demo_public_restaurant";
   verified_status: false;
   partner_status: "seed";
+  approval_status?: RestaurantApprovalStatus;
+  demo_visibility?: boolean;
+};
+
+export type RestaurantProspectPublicApiMarker = {
+  id: string;
+  name: string;
+  category?: "restaurant";
+  listing_type?: "restaurant";
+  region?: string;
+  province: string;
+  city: string;
+  suburb: string;
+  cuisine_tags?: string[];
+  price_band?: string | null;
+  price_band_goombi?: string | null;
+  description_goombi?: string;
+  latitude: number;
+  longitude: number;
+  source_type?: "demo_public_restaurant";
+  verified_status?: false;
+  partner_status?: "seed";
+  approval_status?: RestaurantApprovalStatus;
+  demo_visibility?: boolean;
 };
 
 export type RestaurantProspectPublicCounts = {
   visible_restaurant_demo_prospects: number;
   source_records_total: number;
+  approved_restaurants?: number;
+  pending_approval?: number;
 };
 
 export type RestaurantProspectPublicResponse = {
-  restaurants: RestaurantProspectPublicMarker[];
+  restaurants: RestaurantProspectPublicApiMarker[];
   counts: RestaurantProspectPublicCounts;
 };

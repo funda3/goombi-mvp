@@ -321,8 +321,31 @@ test("restaurant listing renders as food-pin marker", () => {
     rooms: null,
   });
   render(<LeafletMap listings={[listing]} onSelect={() => undefined} />);
-  expect(screen.getByTestId("workspace-marker")).toBeInTheDocument();
+  const marker = screen.getByTestId("workspace-marker");
+  expect(marker).toBeInTheDocument();
+  expect(marker.getAttribute("data-icon-html")).toContain("#dc2626");
+  expect(marker).toHaveTextContent("Open Kitchen");
+  expect(marker).toHaveTextContent("Restaurant");
   expect(screen.queryByTestId("circle-marker")).not.toBeInTheDocument();
+});
+
+test("demo restaurant marker tooltip includes cuisine label", () => {
+  const listing = makeListing({
+    id: "demo-prospect-1",
+    name: "Prospect Grill",
+    category: "restaurant",
+    listing_type: "restaurant",
+    cuisine_tags: ["Steakhouse", "Seafood"],
+    source_type: "demo_public_restaurant",
+    max_guests: null,
+    rooms: null,
+  });
+
+  render(<LeafletMap listings={[listing]} onSelect={() => undefined} />);
+
+  const marker = screen.getByTestId("workspace-marker");
+  expect(marker).toHaveTextContent("Prospect Grill");
+  expect(marker).toHaveTextContent("Steakhouse | Seafood");
 });
 
 test("transport_node listing renders as circle-marker", () => {

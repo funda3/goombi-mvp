@@ -80,6 +80,46 @@ test("filters approved public restaurant listings by restaurant category", () =>
   ).toEqual([restaurant]);
 });
 
+test("demo_public_restaurant records are visible in all and restaurant categories only", () => {
+  const demoRestaurant: Listing = {
+    ...baseListing,
+    id: "demo-prospect-restaurant-1",
+    name: "Demo Prospect Kitchen",
+    category: "restaurant",
+    listing_type: "restaurant",
+    max_guests: null,
+    rooms: null,
+    source_type: "demo_public_restaurant",
+    demo_visibility: true,
+  };
+
+  expect(filterListings([baseListing, demoRestaurant], { ...defaultFilters })).toContainEqual(demoRestaurant);
+  expect(
+    filterListings([baseListing, demoRestaurant], {
+      ...defaultFilters,
+      category: "restaurant",
+    }),
+  ).toEqual([demoRestaurant]);
+  expect(
+    filterListings([baseListing, demoRestaurant], {
+      ...defaultFilters,
+      category: "safari",
+    }),
+  ).toEqual([]);
+  expect(
+    filterListings([baseListing, demoRestaurant], {
+      ...defaultFilters,
+      category: "workspace",
+    }),
+  ).toEqual([]);
+  expect(
+    filterListings([baseListing, demoRestaurant], {
+      ...defaultFilters,
+      category: "accommodation",
+    }),
+  ).toEqual([baseListing]);
+});
+
 test("filters safari records by category and safari region", () => {
   const safari: Listing = {
     ...baseListing,
