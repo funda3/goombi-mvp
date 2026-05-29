@@ -184,13 +184,13 @@ export function HomePage() {
   }, [displayedListings, filters.category, highlightedListingIds, listings]);
 
   const mapEvents = useMemo(() => {
-    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant") return [];
+    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "safari") return [];
     if (filters.category === "nightlife") return nearbyEventsForNightlife;
     return filteredEvents;
   }, [filteredEvents, filters.category, nearbyEventsForNightlife]);
 
   const mapNightlife = useMemo(() => {
-    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "events") return [];
+    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "safari" || filters.category === "events") return [];
     return filteredNightlife;
   }, [filteredNightlife, filters.category]);
 

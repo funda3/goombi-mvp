@@ -12,10 +12,30 @@ import { appHref } from "../utils/routes";
 const LAYER_LABELS: Record<string, string> = {
   tourism_experience: "Tourism Experience",
   restaurant: "Restaurant / Eatery",
+  safari: "Safari & Wildlife",
   transport_node: "Transport Node",
   event_space: "Event Space",
   estate_living_zone: "Estate Living",
 };
+
+const SAFARI_TYPE_LABELS: Record<string, string> = {
+  national_park: "National Park",
+  private_reserve: "Private Reserve",
+  game_reserve: "Game Reserve",
+  nature_reserve: "Nature Reserve",
+  world_heritage_site: "World Heritage Site",
+  cultural_reserve: "Cultural Reserve",
+  game_farm: "Game Farm",
+};
+
+function safariPriceLabel(listing: Listing) {
+  const price = listing.price_amount ?? listing.price_per_night;
+  if (!price) return "Price on request";
+  if (listing.safari_type === "private_reserve" || listing.safari_type === "game_farm") {
+    return `From R${price}/person/night`;
+  }
+  return `Day entry R${price}`;
+}
 
 const PARTNER_STATUS_LABELS: Record<string, string> = {
   seed: "Seed listing",
@@ -80,7 +100,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       </div>
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase text-emerald-700">{displayCategory(listing)}</p>
+          <p className={`text-xs font-bold uppercase ${layerType === "safari" ? "text-amber-700" : "text-emerald-700"}`}>{displayCategory(listing)}</p>
           <h2 className="mt-1 text-2xl font-semibold text-slate-950">{listing.name}</h2>
         </div>
         {listing.verified_status && (
@@ -96,12 +116,17 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
           const lt = getListingType(listing);
           if (lt !== "accommodation" && lt !== "workspace" && LAYER_LABELS[lt]) {
             return (
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${lt === "safari" ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}`}>
                 {LAYER_LABELS[lt]}
               </span>
             );
           }
         })()}
+        {layerType === "safari" && listing.safari_type && (
+          <span className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-semibold text-orange-800">
+            {SAFARI_TYPE_LABELS[listing.safari_type] ?? listing.safari_type.replace(/_/g, " ")}
+          </span>
+        )}
         {listing.partner_status && listing.partner_status !== "seed" && (
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
             listing.partner_status === "active"
@@ -216,6 +241,18 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
             </>
           )}
 
+          {layerType === "safari" && (
+            <>
+              <strong className="text-lg text-slate-950">{safariPriceLabel(listing)}</strong>
+              {listing.safari_type && (
+                <span><strong className="text-slate-950">Safari type:</strong> {SAFARI_TYPE_LABELS[listing.safari_type] ?? listing.safari_type.replace(/_/g, " ")}</span>
+              )}
+              <span className="w-fit rounded-md bg-amber-50 px-2 py-1 text-xs font-bold text-amber-950">
+                SAFARI & WILDLIFE
+              </span>
+            </>
+          )}
+
           {/* Transport node: node type from provider_type, full address */}
           {layerType === "transport_node" && (
             <>
@@ -251,7 +288,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
       </div>
 
       {/* Contact / external links for estate listings uses discovery-only wording; no booking CTA */}
-      {!isDemoProspectRestaurant && (listing.website_url || (!isEstateZone && listing.booking_url) || listing.whatsapp_url || listing.contact_phone || listing.contact_email) && (
+      {!isDemoProspectRestaurant && layerType !== "safari" && (listing.website_url || (!isEstateZone && listing.booking_url) || listing.whatsapp_url || listing.contact_phone || listing.contact_email) && (
         <div className="mt-4 grid gap-2 border-t border-slate-200 pt-4">
           {listing.website_url && (
             <a className="secondary-button flex items-center justify-center gap-2" href={listing.website_url} rel="noreferrer" target="_blank">
@@ -305,6 +342,25 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
             </button>
           )}
           <p><strong className="text-slate-950">Source note:</strong> {listing.source_note}</p>
+        </div>
+      ) : layerType === "safari" ? (
+        <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 text-sm text-slate-700">
+          {listing.booking_url ? (
+            <a className="primary-button flex items-center justify-center gap-2" href={listing.booking_url} rel="noreferrer" target="_blank">
+              <ExternalLink className="h-4 w-4" />Check availability
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="primary-button w-full"
+              onClick={() => setEnquiryOpen(true)}
+            >
+              Check availability
+            </button>
+          )}
+          {listing.source_note && (
+            <p className="text-xs text-slate-500"><strong className="text-slate-700">Source note:</strong> {listing.source_note}</p>
+          )}
         </div>
       ) : isDemoProspectRestaurant ? (
         <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 text-sm text-slate-700">

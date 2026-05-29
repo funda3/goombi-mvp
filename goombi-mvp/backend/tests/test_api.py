@@ -480,6 +480,30 @@ def test_seed_contains_workspace(tmp_path):
     assert len(workspaces) > 0
 
 
+
+def test_seed_contains_exactly_40_safari_records(tmp_path):
+    """Safari seed patch adds exactly 40 public safari records."""
+    seed_path = pathlib.Path(__file__).parent.parent / "app" / "data" / "listings.json"
+    seed_data = json.loads(seed_path.read_text(encoding="utf-8"))
+    assert len(seed_data) == 261
+
+    data = _seed_client(tmp_path).get("/api/listings").json()
+    safari = [r for r in data if r.get("category") == "safari" or r.get("listing_type") == "safari"]
+    assert len(safari) == 40
+    assert all(r.get("category") == "safari" for r in safari)
+    assert all(r.get("listing_type") == "safari" for r in safari)
+    assert {"safari-pilanesberg-national-park-01", "safari-kruger-national-park-01", "safari-addo-elephant-national-park-01"} <= {r["id"] for r in safari}
+
+
+def test_listing_category_filter_returns_safari_records(tmp_path):
+    """GET /api/listings?category=safari returns only safari records."""
+    api = _seed_client(tmp_path)
+    response = api.get("/api/listings", params={"category": "safari"})
+    assert response.status_code == 200
+    safari = response.json()
+    assert len(safari) == 40
+    assert all(item.get("category") == "safari" or item.get("listing_type") == "safari" for item in safari)
+
 def test_seed_excludes_estate_living_zone_from_public_listings(tmp_path):
     """Estate records may exist in seed data but must never appear in public /api/listings."""
     data = _seed_client(tmp_path).get("/api/listings").json()
@@ -517,14 +541,26 @@ def test_all_seed_listings_have_province(tmp_path):
     assert missing == [], f"Listings missing province: {missing}"
 
 
-def test_seed_region_equals_province(tmp_path):
-    """For every seed listing region must equal province."""
+def test_non_safari_seed_region_equals_province(tmp_path):
+    """Legacy seed listings keep region == province; safari uses broader discovery regions."""
     data = _seed_client(tmp_path).get("/api/listings").json()
     mismatches = [
         r["id"] for r in data
-        if r.get("region") and r.get("province") and r["region"] != r["province"]
+        if r.get("listing_type") != "safari" and r.get("region") and r.get("province") and r["region"] != r["province"]
     ]
-    assert mismatches == [], f"region != province for: {mismatches}"
+    assert mismatches == [], f"region != province for non-safari records: {mismatches}"
+
+
+def test_safari_seed_regions_use_supported_discovery_taxonomy(tmp_path):
+    data = _seed_client(tmp_path).get("/api/listings", params={"category": "safari"}).json()
+    regions = {r["region"] for r in data}
+    assert regions == {
+        "Gauteng",
+        "KwaZulu-Natal",
+        "Western Cape",
+        "Limpopo & Mpumalanga",
+        "Eastern & Northern Cape",
+    }
 
 
 def test_public_restaurant_prospect_payload_excludes_internal_fields(tmp_path, monkeypatch):
@@ -943,6 +979,15 @@ _ALL_LAYER_PAYLOADS = [
         "rooms": None,
         "max_guests": None,
         "source_type": "manual_public_source",
+    }),
+    ("safari", {
+        "category": "safari",
+        "listing_type": "safari",
+        "safari_type": "national_park",
+        "rooms": None,
+        "max_guests": None,
+        "price_amount": 115,
+        "price_unit": "day_entry",
     }),
     ("transport_node", {
         "listing_type": "transport_node",
