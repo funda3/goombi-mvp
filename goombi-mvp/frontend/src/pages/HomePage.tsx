@@ -16,6 +16,7 @@ import { api } from "../services/api";
 import type { EventRecord } from "../types/event";
 import { getListingType, type Listing } from "../types/listing";
 import type { NightlifeVenue } from "../types/nightlife";
+import type { SelectedNearbyTarget } from "../types/nearbyTarget";
 import type {
   RestaurantProspectPublicCounts,
   RestaurantProspectPublicMarker,
@@ -79,6 +80,7 @@ export function HomePage() {
   const [selected, setSelected] = useState<Listing>();
   const [selectedEvent, setSelectedEvent] = useState<EventRecord>();
   const [selectedNightlife, setSelectedNightlife] = useState<NightlifeVenue>();
+  const [selectedNearbyTarget, setSelectedNearbyTarget] = useState<SelectedNearbyTarget>();
   const [serviceMarker, setServiceMarker] = useState<ServiceMarker | null>(null);
   const [plannerOpen, setPlannerOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -215,30 +217,66 @@ export function HomePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const listingToNearbyTarget = useCallback((listing: Listing): SelectedNearbyTarget => ({
+    id: listing.id,
+    name: listing.name,
+    latitude: listing.latitude,
+    longitude: listing.longitude,
+    province: listing.province,
+    city: listing.city,
+    suburb: listing.suburb,
+    sourceType: getListingType(listing) === "restaurant" ? "restaurant" : "listing",
+  }), []);
+
+  const eventToNearbyTarget = useCallback((event: EventRecord): SelectedNearbyTarget => ({
+    id: event.id,
+    name: event.name,
+    latitude: event.latitude,
+    longitude: event.longitude,
+    province: event.province,
+    city: event.city,
+    suburb: event.suburb,
+    sourceType: "event",
+  }), []);
+
+  const nightlifeToNearbyTarget = useCallback((venue: NightlifeVenue): SelectedNearbyTarget => ({
+    id: venue.id,
+    name: venue.name,
+    latitude: venue.latitude,
+    longitude: venue.longitude,
+    province: venue.province,
+    city: venue.city,
+    suburb: venue.suburb,
+    sourceType: "nightlife",
+  }), []);
+
   const selectListing = useCallback((listing: Listing) => {
     setSelected(listing);
     setSelectedEvent(undefined);
     setSelectedNightlife(undefined);
+    setSelectedNearbyTarget(listingToNearbyTarget(listing));
     setServiceMarker(null);
-  }, []);
+  }, [listingToNearbyTarget]);
 
   const selectEvent = useCallback((event: EventRecord) => {
     setSelected(undefined);
     setSelectedNightlife(undefined);
     setServiceMarker(null);
     setSelectedEvent(event);
+    setSelectedNearbyTarget(eventToNearbyTarget(event));
     setFlyTo({ lat: event.latitude, lng: event.longitude, zoom: 13 });
     setMapCenter([event.latitude, event.longitude]);
-  }, []);
+  }, [eventToNearbyTarget]);
 
   const selectNightlife = useCallback((venue: NightlifeVenue) => {
     setSelected(undefined);
     setSelectedEvent(undefined);
     setServiceMarker(null);
     setSelectedNightlife(venue);
+    setSelectedNearbyTarget(nightlifeToNearbyTarget(venue));
     setFlyTo({ lat: venue.latitude, lng: venue.longitude, zoom: 13 });
     setMapCenter([venue.latitude, venue.longitude]);
-  }, []);
+  }, [nightlifeToNearbyTarget]);
 
   function handleResultSelect(action: SearchAction) {
     if (action.kind === "suburb") {
@@ -326,7 +364,7 @@ export function HomePage() {
         <ListingDetailDrawer
           listing={selected}
           allListings={listings}
-          onClose={() => { setSelected(undefined); setServiceMarker(null); }}
+          onClose={() => { setSelected(undefined); setSelectedNearbyTarget(undefined); setServiceMarker(null); }}
           onSelect={selectListing}
           onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
           onOpenPlanner={() => setPlannerOpen(true)}
@@ -334,19 +372,19 @@ export function HomePage() {
           onToggleFavourite={toggleFavourite}
         />
         <BottomPanel
-          selected={selected}
+          selectedTarget={selectedNearbyTarget}
           onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
         />
         <EventDetailSheet
           event={selectedEvent}
           allListings={listings}
-          onClose={() => setSelectedEvent(undefined)}
+          onClose={() => { setSelectedEvent(undefined); setSelectedNearbyTarget(undefined); }}
         />
         <NightlifeDetailSheet
           venue={selectedNightlife}
           allListings={listings}
           allEvents={events}
-          onClose={() => setSelectedNightlife(undefined)}
+          onClose={() => { setSelectedNightlife(undefined); setSelectedNearbyTarget(undefined); }}
         />
         {plannerOpen && selected && (
           <JourneyPlannerModal
