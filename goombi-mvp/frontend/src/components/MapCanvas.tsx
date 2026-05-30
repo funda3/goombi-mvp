@@ -34,6 +34,7 @@ const GOOGLE_LAYER_COLORS: Record<string, string> = {
   transport_node: "#475569",
   estate_living_zone: "#92400e",
   event_space: "#db2777",
+  township: "#c2410c",
 };
 
 const MAP_CENTER = { lat: -26.083, lng: 28.022 };
@@ -150,6 +151,34 @@ function GoogleCircleMap({
             color: "#ffffff",
             fontSize: "11px",
             fontWeight: "700",
+          },
+        });
+        marker.addListener("click", () => onSelect(listing));
+        bounds.extend(marker.getPosition());
+        return marker;
+      }
+      if (lt === "township") {
+        const townshipType = listing.township_type ?? "";
+        const townshipLabel = townshipType
+          ? townshipType.split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")
+          : "Township Tourism";
+        const isCulturalOrAttraction = townshipType === "cultural_centre" || townshipType === "attraction";
+        const isRestaurantOrMarket = townshipType === "restaurant" || townshipType === "market";
+
+        const marker = new googleApi.maps.Marker({
+          map,
+          position: { lat: listing.latitude, lng: listing.longitude },
+          title: `${listing.name} - ${townshipLabel}`,
+          icon: {
+            path: isCulturalOrAttraction
+              ? "M 0,-10 10,0 0,10 -10,0 z"
+              : googleApi.maps.SymbolPath.CIRCLE,
+            fillColor: "#c2410c",
+            fillOpacity: 0.94,
+            strokeColor: isHighlighted ? "#f59e0b" : "#ffffff",
+            strokeWeight: isHighlighted ? 3 : 2,
+            scale: isRestaurantOrMarket ? (isHighlighted ? 9 : 7) : (isHighlighted ? 11 : 9),
+            anchor: new googleApi.maps.Point(0, 0),
           },
         });
         marker.addListener("click", () => onSelect(listing));

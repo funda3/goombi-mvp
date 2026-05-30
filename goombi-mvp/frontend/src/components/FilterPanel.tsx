@@ -35,6 +35,7 @@ const LAYER_CONFIG: { type: PublicLayer; label: string; color: string }[] = [
   { type: "nightlife",          label: "Nightlife",   color: "#4f46e5" },
   { type: "restaurant",         label: "Restaurants", color: "#ea580c" },
   { type: "safari",             label: "Safari & Wildlife", color: "#f59e0b" },
+  { type: "township",           label: "Township Tourism", color: "#c2410c" },
 ];
 
 function toggleLayer(filters: Filters, type: PublicLayer): Filters {
@@ -43,6 +44,7 @@ function toggleLayer(filters: Filters, type: PublicLayer): Filters {
 
 export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0, restaurantCounts = null, onChange, isOpen = false, onClose }: Props) {
   const isMobile = useIsMobile();
+  const townshipMode = filters.category === "township";
 
   if (isMobile && !isOpen) return null;
 
@@ -65,8 +67,11 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase text-emerald-700">Goombi</p>
-            <h1 className="mt-1 text-xl font-semibold text-slate-950">{REGION_LABELS[filters.region] ?? "South Africa"}</h1>
+            <h1 className="mt-1 text-xl font-semibold text-slate-950">{townshipMode ? "Township Tourism" : (REGION_LABELS[filters.region] ?? "South Africa")}</h1>
             <p className="mt-1 text-sm text-slate-600">{resultCount} results</p>
+            {townshipMode && (
+              <p className="mt-1 text-xs font-medium text-orange-700">Authentic South African township experiences</p>
+            )}
           </div>
           <SlidersHorizontal className="mt-1 h-5 w-5 text-slate-500" />
         </div>
@@ -153,6 +158,7 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="nightlife">Nightlife</option>
           <option value="restaurant">Restaurants</option>
           <option value="safari">Safari & Wildlife</option>
+          <option value="township">Township Tourism</option>
         </select>
       </label>
       <label className="label">

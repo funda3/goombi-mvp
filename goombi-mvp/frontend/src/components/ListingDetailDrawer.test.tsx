@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import type { Listing } from "../types/listing";
@@ -355,5 +355,88 @@ test("safari: shows day-entry price for national parks", () => {
 
   expect(screen.getByText("Day entry R115")).toBeInTheDocument();
   expect(screen.getAllByText("National Park").length).toBeGreaterThan(0);
+});
+
+test("township stay: shows township badges, stay details, and directions", () => {
+  renderDrawer({
+    ...base,
+    id: "township-soweto-stay-01",
+    name: "Soweto Stay",
+    category: "township",
+    listing_type: "township",
+    township_type: "guesthouse",
+    guest_capacity: 4,
+    bathrooms: 1,
+    price_per_night: 900,
+    max_guests: null,
+    rooms: null,
+  });
+
+  expect(screen.getByText("TOWNSHIP TOURISM")).toBeInTheDocument();
+  expect(screen.getByText("Guesthouse")).toBeInTheDocument();
+  expect(screen.getByText("R900/night")).toBeInTheDocument();
+  expect(screen.getByText(/Up to 4 guests/i)).toBeInTheDocument();
+  expect(screen.getByText(/Bathrooms:/i)).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /Get directions/i })).toHaveAttribute("href", expect.stringContaining("google.com/maps/dir"));
+  expect(screen.getByTestId("enquiry-flow")).toBeInTheDocument();
+});
+
+test("township attraction: shows free entry and no enquiry form", () => {
+  renderDrawer({
+    ...base,
+    id: "township-culture-01",
+    name: "Vilakazi Cultural Centre",
+    category: "township",
+    listing_type: "township",
+    township_type: "cultural_centre",
+    price_per_night: null,
+    max_guests: null,
+    rooms: null,
+  });
+
+  expect(screen.getByText("Free entry")).toBeInTheDocument();
+  expect(screen.queryByTestId("enquiry-flow")).not.toBeInTheDocument();
+});
+
+test("township nearby attraction chip selects and flies to matching listing", () => {
+  const onSelect = vi.fn();
+  const onFlyToListing = vi.fn();
+  const listing = {
+    ...base,
+    id: "township-culture-02",
+    name: "Soweto Cultural Route",
+    category: "township" as const,
+    listing_type: "township" as const,
+    township_type: "cultural_centre" as const,
+    nearby_attractions: ["Vilakazi Street"],
+    max_guests: null,
+    rooms: null,
+    price_per_night: null,
+  };
+  const target = {
+    ...base,
+    id: "township-attraction-02",
+    name: "Vilakazi Street",
+    category: "township" as const,
+    listing_type: "township" as const,
+    township_type: "attraction" as const,
+    max_guests: null,
+    rooms: null,
+    price_per_night: null,
+  };
+
+  render(
+    <ListingDetailDrawer
+      listing={listing}
+      allListings={[listing, target]}
+      onClose={() => undefined}
+      onSelect={onSelect}
+      onFlyToListing={onFlyToListing}
+    />,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "📍 Vilakazi Street" }));
+  expect(onSelect).toHaveBeenCalledWith(target);
+  expect(onFlyToListing).toHaveBeenCalledWith(target);
 });
 

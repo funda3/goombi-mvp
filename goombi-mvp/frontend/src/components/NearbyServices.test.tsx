@@ -174,3 +174,78 @@ test("renders without crashing across multiple listing types", async () => {
     unmount();
   }
 });
+
+test("township mode prioritizes restaurant and transit and omits EV charging", async () => {
+  const payload: NearbyServicesResult = {
+    status: "fallback",
+    message: "Demo nearby services shown",
+    services: [
+      {
+        category: "ev_charging",
+        emoji: "EV",
+        label: "EV Charging",
+        nearest: {
+          id: 10,
+          name: "Estimated EV charging point",
+          lat: -26.10,
+          lon: 28.05,
+          distanceKm: 0.8,
+          source: "fallback",
+          isFallback: true,
+          badgeLabel: "Fallback estimate",
+          reason: "External nearby service provider unavailable",
+        },
+      },
+      {
+        category: "transit",
+        emoji: "Transit",
+        label: "Transport",
+        nearest: {
+          id: 11,
+          name: "Estimated transport stop",
+          lat: -26.11,
+          lon: 28.04,
+          distanceKm: 0.6,
+          source: "fallback",
+          isFallback: true,
+          badgeLabel: "Fallback estimate",
+          reason: "External nearby service provider unavailable",
+        },
+      },
+      {
+        category: "restaurant",
+        emoji: "Food",
+        label: "Restaurant",
+        nearest: {
+          id: 12,
+          name: "Estimated township restaurant",
+          lat: -26.12,
+          lon: 28.06,
+          distanceKm: 0.4,
+          source: "fallback",
+          isFallback: true,
+          badgeLabel: "Fallback estimate",
+          reason: "External nearby service provider unavailable",
+        },
+      },
+    ],
+  };
+  mockFetchNearbyServices.mockResolvedValue(payload);
+
+  const townshipListing: Listing = {
+    ...listing,
+    id: "township-1",
+    category: "township",
+    listing_type: "township",
+    township_type: "cultural_centre",
+  };
+
+  render(<NearbyServices listing={townshipListing} />);
+  fireEvent.click(screen.getByRole("button", { name: /Nearby Services/i }));
+
+  await waitFor(() => expect(screen.getByText("Estimated township restaurant")).toBeInTheDocument());
+  const names = screen.getAllByTestId("nearby-service-card").map((node) => node.textContent ?? "");
+  expect(names[0]).toContain("Estimated township restaurant");
+  expect(screen.getByText("Estimated transport stop")).toBeInTheDocument();
+  expect(screen.queryByText("Estimated EV charging point")).not.toBeInTheDocument();
+});

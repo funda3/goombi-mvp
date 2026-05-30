@@ -183,13 +183,13 @@ export function HomePage() {
   }, [displayedListings, filters.category, highlightedListingIds, listings]);
 
   const mapEvents = useMemo(() => {
-    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "safari") return [];
+    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "safari" || filters.category === "township") return [];
     if (filters.category === "nightlife") return nearbyEventsForNightlife;
     return filteredEvents;
   }, [filteredEvents, filters.category, nearbyEventsForNightlife]);
 
   const mapNightlife = useMemo(() => {
-    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "safari" || filters.category === "events") return [];
+    if (filters.category === "accommodation" || filters.category === "workspace" || filters.category === "restaurant" || filters.category === "safari" || filters.category === "township" || filters.category === "events") return [];
     return filteredNightlife;
   }, [filteredNightlife, filters.category]);
 
@@ -223,6 +223,7 @@ export function HomePage() {
     province: listing.province,
     city: listing.city,
     suburb: listing.suburb,
+    listingCategory: listing.category,
     sourceType: getListingType(listing) === "restaurant" ? "restaurant" : "listing",
   }), []);
 
@@ -364,6 +365,10 @@ export function HomePage() {
           allListings={listings}
           onClose={() => { setSelected(undefined); setSelectedNearbyTarget(undefined); setServiceMarker(null); }}
           onSelect={selectListing}
+          onFlyToListing={(item) => {
+            setFlyTo({ lat: item.latitude, lng: item.longitude, zoom: 15 });
+            setMapCenter([item.latitude, item.longitude]);
+          }}
           onShowOnMap={(lat, lon, label) => setServiceMarker({ lat, lon, label })}
           onOpenPlanner={() => setPlannerOpen(true)}
           isFavourite={selected ? isFavourite(selected.id) : false}

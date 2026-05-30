@@ -21,6 +21,15 @@ export function MapLegend() {
         <li className="flex items-center gap-2">
           <span aria-label="Safari & Wildlife lion marker" className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white bg-amber-500 text-[11px] shadow-sm">&#129409;</span>Lion = Safari & Wildlife
         </li>
+        <li className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-orange-700" />Township stay = Terracotta circle
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-3 w-3 rotate-45 rounded-[2px] bg-orange-700" />Township culture/attraction = Terracotta diamond
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-orange-700" />Township market/restaurant = Small terracotta circle
+        </li>
       </ul>
     </aside>
   );

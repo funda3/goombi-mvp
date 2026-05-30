@@ -485,7 +485,7 @@ def test_seed_contains_exactly_40_safari_records(tmp_path):
     """Safari seed patch adds exactly 40 public safari records."""
     seed_path = pathlib.Path(__file__).parent.parent / "app" / "data" / "listings.json"
     seed_data = json.loads(seed_path.read_text(encoding="utf-8"))
-    assert len(seed_data) == 261
+    assert len(seed_data) == 306
 
     data = _seed_client(tmp_path).get("/api/listings").json()
     safari = [r for r in data if r.get("category") == "safari" or r.get("listing_type") == "safari"]
@@ -503,6 +503,94 @@ def test_listing_category_filter_returns_safari_records(tmp_path):
     safari = response.json()
     assert len(safari) == 40
     assert all(item.get("category") == "safari" or item.get("listing_type") == "safari" for item in safari)
+
+
+def _township_records(api: TestClient) -> list[dict]:
+    return api.get("/api/listings", params={"category": "township"}).json()
+
+
+def test_listings_endpoint_returns_township_records(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    assert len(township) > 0
+
+
+def test_seed_contains_exactly_45_township_records(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    assert len(township) == 45
+
+
+def test_township_records_have_expected_category_and_listing_type(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    assert all(item.get("category") == "township" for item in township)
+    assert all(item.get("listing_type") == "township" for item in township)
+
+
+def test_township_type_values_are_valid(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    allowed = {"guesthouse", "bnb", "cultural_lodge", "cultural_centre", "attraction", "restaurant", "market"}
+    assert all(item.get("township_type") in allowed for item in township)
+
+
+def test_township_region_split_is_15_each(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    by_region: dict[str, int] = {}
+    for item in township:
+        region = item.get("region")
+        by_region[region] = by_region.get(region, 0) + 1
+
+    assert by_region == {
+        "Gauteng": 15,
+        "Western Cape": 15,
+        "KwaZulu-Natal": 15,
+    }
+
+
+def test_township_stay_records_require_price_capacity_and_bathrooms(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    stay_types = {"guesthouse", "bnb", "cultural_lodge"}
+    stay_records = [item for item in township if item.get("township_type") in stay_types]
+
+    assert len(stay_records) > 0
+    assert all(item.get("price_per_night") is not None for item in stay_records)
+    assert all(item.get("guest_capacity") is not None for item in stay_records)
+    assert all(item.get("bathrooms") is not None for item in stay_records)
+
+
+def test_township_non_stay_records_have_null_price_capacity_and_bathrooms(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    non_stay_types = {"attraction", "cultural_centre", "restaurant", "market"}
+    non_stay_records = [item for item in township if item.get("township_type") in non_stay_types]
+
+    assert len(non_stay_records) > 0
+    assert all(item.get("price_per_night") is None for item in non_stay_records)
+    assert all(item.get("guest_capacity") is None for item in non_stay_records)
+    assert all(item.get("bathrooms") is None for item in non_stay_records)
+
+
+def test_township_records_include_nearby_attractions_arrays(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+    assert all(isinstance(item.get("nearby_attractions"), list) for item in township)
+
+
+def test_township_coordinates_are_numeric_and_within_sa_bounds(tmp_path):
+    api = _seed_client(tmp_path)
+    township = _township_records(api)
+
+    for item in township:
+        lat = item.get("latitude")
+        lon = item.get("longitude")
+        assert isinstance(lat, (int, float))
+        assert isinstance(lon, (int, float))
+        assert -35 <= lat <= -22
+        assert 16 <= lon <= 33
 
 def test_seed_excludes_estate_living_zone_from_public_listings(tmp_path):
     """Estate records may exist in seed data but must never appear in public /api/listings."""

@@ -22,6 +22,8 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const matchesRegion = filters.region === "all" || listing.region === filters.region || listing.province === filters.region;
     const matchesSuburb = filters.suburb === "all" || listing.suburb === filters.suburb;
     const effectiveType = getListingType(listing);
+    const isTownshipStay = effectiveType === "township"
+      && (listing.township_type === "guesthouse" || listing.township_type === "bnb" || listing.township_type === "cultural_lodge");
     const isEstate = effectiveType === "estate_living_zone";
     const isWorkspace = effectiveType === "workspace";
     const isPublicRestaurant =
@@ -38,6 +40,7 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const recordCategory =
       effectiveType === "restaurant" ? "restaurant" :
       effectiveType === "safari" ? "safari" :
+      effectiveType === "township" ? "township" :
       effectiveType === "workspace" ? "workspace" :
       "accommodation";
     const matchesCategory =
@@ -46,10 +49,15 @@ export function filterListings(listings: Listing[], filters: Filters): Listing[]
     const matchesWorkspaceType =
       filters.workspaceType === "all" || (isWorkspace && listing.workspace_type === filters.workspaceType);
     const matchesPrice =
-      effectiveType !== "accommodation" ||
-      (listing.price_per_night >= filters.minPrice && listing.price_per_night <= filters.maxPrice);
-    const isStay = effectiveType === "accommodation";
-    const matchesGuests = !isStay || (listing.max_guests != null && listing.max_guests >= filters.minGuests);
+      (effectiveType !== "accommodation" && !isTownshipStay) ||
+      (listing.price_per_night != null && listing.price_per_night >= filters.minPrice && listing.price_per_night <= filters.maxPrice);
+    const matchesGuests =
+      effectiveType !== "accommodation"
+      && !isTownshipStay
+      || (
+        (effectiveType === "accommodation" && listing.max_guests != null && listing.max_guests >= filters.minGuests)
+        || (isTownshipStay && listing.guest_capacity != null && listing.guest_capacity >= filters.minGuests)
+      );
     const matchesVerified = !filters.verifiedOnly || listing.verified_status;
     const matchesLayer =
       filters.hiddenLayers.length === 0 || !filters.hiddenLayers.includes(effectiveType);

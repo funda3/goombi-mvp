@@ -11,7 +11,16 @@ export type SafariType =
   | "world_heritage_site"
   | "cultural_reserve"
   | "game_farm";
-export type ListingCategory = AccommodationType | "accommodation" | "workspace" | "restaurant" | "safari";
+export type TownshipType =
+  | "guesthouse"
+  | "bnb"
+  | "cultural_lodge"
+  | "cultural_centre"
+  | "attraction"
+  | "restaurant"
+  | "market";
+
+export type ListingCategory = AccommodationType | "accommodation" | "workspace" | "restaurant" | "safari" | "township";
 
 export type ListingType =
   | "accommodation"
@@ -21,7 +30,8 @@ export type ListingType =
   | "safari"
   | "transport_node"
   | "estate_living_zone"
-  | "event_space";
+  | "event_space"
+  | "township";
 
 export type PartnerStatus =
   | "seed"
@@ -42,6 +52,7 @@ export const ALL_LISTING_TYPES: ListingType[] = [
   "transport_node",
   "estate_living_zone",
   "event_space",
+  "township",
 ];
 
 export const ALL_PARTNER_STATUSES: PartnerStatus[] = [
@@ -59,6 +70,7 @@ export type Listing = {
   provider_type?: string | null;
   workspace_type?: WorkspaceType | null;
   safari_type?: SafariType | null;
+  township_type?: TownshipType | null;
   province: string;
   region?: string | null;
   city: string;
@@ -66,7 +78,9 @@ export type Listing = {
   address: string;
   latitude: number;
   longitude: number;
-  price_per_night: number;
+  price_per_night: number | null;
+  guest_capacity?: number | null;
+  bathrooms?: number | null;
   max_guests: number | null;
   rooms: number | null;
   description: string;
@@ -76,6 +90,7 @@ export type Listing = {
   photos: string[];
   images?: string[];
   tags?: string[];
+  nearby_attractions?: string[];
   owner_name: string;
   owner_phone: string;
   contact_email?: string | null;
@@ -148,7 +163,7 @@ export type Enquiry = {
 
 export type Filters = {
   region: "all" | "Gauteng" | "Western Cape" | "KwaZulu-Natal" | "Limpopo & Mpumalanga" | "Eastern & Northern Cape";
-  category: "all" | "accommodation" | "workspace" | "restaurant" | "safari" | "events" | "nightlife";
+  category: "all" | "accommodation" | "workspace" | "restaurant" | "safari" | "township" | "events" | "nightlife";
   eventCategory: "all" | EventCategory;
   nightlifeMusicFocus: "all" | NightlifeMusicFocus;
   nightlifeVenueType: "all" | NightlifeVenueType;
@@ -169,6 +184,7 @@ export function getListingType(listing: Listing): ListingType {
   if (listing.category === "workspace") return "workspace";
   if (listing.category === "restaurant") return "restaurant";
   if (listing.category === "safari") return "safari";
+  if (listing.category === "township") return "township";
   return "accommodation";
 }
 
@@ -184,6 +200,7 @@ export function displayCategory(listing: Listing): string {
     case "tourism_experience": return "Tourism Experience";
     case "restaurant": return "Restaurant";
     case "safari": return "Safari & Wildlife";
+    case "township": return "Township Tourism";
     case "transport_node": return "Transport";
     case "event_space": return "Event Space";
     case "estate_living_zone": return "Estate Living";

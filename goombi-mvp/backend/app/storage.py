@@ -63,7 +63,7 @@ class JsonStore:
     @staticmethod
     def _read(path: Path) -> list[dict[str, Any]]:
         with _LOCK:
-            return json.loads(path.read_text(encoding="utf-8") or "[]")
+            return json.loads(path.read_text(encoding="utf-8-sig") or "[]")
 
     @staticmethod
     def _write(path: Path, records: list[dict[str, Any]]) -> None:

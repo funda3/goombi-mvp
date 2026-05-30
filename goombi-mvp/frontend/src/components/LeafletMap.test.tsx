@@ -297,10 +297,10 @@ test("property_opportunity and business_hub are not valid listing_types", () => 
   expect(ALL_LISTING_TYPES).not.toContain("property_opportunity");
   expect(ALL_LISTING_TYPES).not.toContain("business_hub");
   expect(ALL_LISTING_TYPES).not.toContain("relocation_zone");
-  expect(ALL_LISTING_TYPES).toHaveLength(8);
+  expect(ALL_LISTING_TYPES).toHaveLength(9);
 });
 
-test("exactly 8 layer types are defined", () => {
+test("exactly 9 layer types are defined", () => {
   const expected = [
     "accommodation",
     "workspace",
@@ -310,8 +310,46 @@ test("exactly 8 layer types are defined", () => {
     "transport_node",
     "estate_living_zone",
     "event_space",
+    "township",
   ];
   expect(ALL_LISTING_TYPES).toEqual(expected);
+});
+
+test("township stay listings render as terracotta circle markers", () => {
+  const listing = makeListing({
+    id: "township-stay",
+    name: "Soweto Stay",
+    category: "township",
+    listing_type: "township",
+    township_type: "guesthouse",
+    max_guests: null,
+    rooms: null,
+  });
+  render(<LeafletMap listings={[listing]} onSelect={() => undefined} />);
+
+  const marker = screen.getByTestId("circle-marker");
+  expect(marker).toBeInTheDocument();
+  expect(marker).toHaveAttribute("data-fill-color", "#c2410c");
+  expect(marker).toHaveTextContent("Soweto Stay");
+  expect(marker).toHaveTextContent("Guesthouse");
+});
+
+test("township cultural listings render as diamond markers", () => {
+  const listing = makeListing({
+    id: "township-culture",
+    name: "Vilakazi Culture Hub",
+    category: "township",
+    listing_type: "township",
+    township_type: "cultural_centre",
+    max_guests: null,
+    rooms: null,
+  });
+  render(<LeafletMap listings={[listing]} onSelect={() => undefined} />);
+
+  const marker = screen.getByTestId("workspace-marker");
+  expect(marker.getAttribute("data-icon-html")).toContain("#c2410c");
+  expect(marker).toHaveTextContent("Vilakazi Culture Hub");
+  expect(marker).toHaveTextContent("Cultural Centre");
 });
 
 test("restaurant listing renders as food-pin marker", () => {
