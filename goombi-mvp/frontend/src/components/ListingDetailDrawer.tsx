@@ -126,9 +126,9 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
 
       {isTownship && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-bold text-orange-900">TOWNSHIP TOURISM</span>
+          <span data-testid="township-tourism-badge" className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-bold text-white">TOWNSHIP TOURISM</span>
           {listing.township_type && (
-            <span className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-semibold text-orange-800">
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800">
               {TOWNSHIP_TYPE_LABELS[listing.township_type] ?? listing.township_type.replace(/_/g, " ")}
             </span>
           )}
@@ -226,7 +226,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
               )}
             </>
           ) : (
-            <span className="w-fit rounded-md bg-orange-50 px-2 py-1 text-xs font-bold text-orange-900">
+            <span className="w-fit rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-900">
               {listing.price_per_night == null ? "Free entry" : "Entry fee varies"}
             </span>
           )}
@@ -335,7 +335,7 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
               <button
                 key={attraction}
                 type="button"
-                className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-800 hover:bg-orange-100"
+                className="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-900 hover:bg-slate-200"
                 onClick={() => {
                   const needle = attraction.toLowerCase();
                   const found = allListings?.find((item) => {

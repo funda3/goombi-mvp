@@ -107,3 +107,28 @@ test("nightlife filters render tier music and venue controls", () => {
   expect(screen.getByRole("option", { name: "All music styles" })).toBeInTheDocument();
   expect(screen.getByRole("option", { name: "All venue types" })).toBeInTheDocument();
 });
+
+test("Township layer chip uses black styling when selected", () => {
+  renderPanel({ category: "township" });
+  const button = screen.getByRole("button", { name: "Township Tourism" });
+  const style = button.getAttribute("style") ?? "";
+  expect(style).toMatch(/border-color:\s*(#111827|rgb\(17,\s*24,\s*39\))/i);
+  expect(style).toMatch(/background-color:\s*(#111827|rgb\(17,\s*24,\s*39\))/i);
+  expect(style).toMatch(/color:\s*(#fff|#ffffff|rgb\(255,\s*255,\s*255\))/i);
+});
+
+test("Township layer chip uses black border/text when inactive", () => {
+  renderPanel({ category: "accommodation" });
+  const button = screen.getByRole("button", { name: "Township Tourism" });
+  const style = button.getAttribute("style") ?? "";
+  expect(style).toMatch(/border-color:\s*(#111827|rgb\(17,\s*24,\s*39\))/i);
+  expect(style).toMatch(/color:\s*(#111827|rgb\(17,\s*24,\s*39\))/i);
+  expect(style).toMatch(/background-color:\s*transparent/i);
+});
+
+test("township header tagline uses dark accent", () => {
+  renderPanel({ category: "township" });
+  const tagline = screen.getByText("Authentic South African township experiences");
+  expect(tagline.className).toContain("text-slate-900");
+  expect(tagline.className).not.toContain("text-orange-700");
+});

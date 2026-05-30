@@ -22,17 +22,21 @@ vi.mock("react-leaflet", () => ({
     children,
     eventHandlers,
     center,
+    radius,
     pathOptions,
   }: {
     children?: React.ReactNode;
     eventHandlers?: { click?: () => void };
     center: [number, number];
+    radius?: number;
     pathOptions?: { fillColor?: string };
   }) => (
     <button
       data-testid="circle-marker"
       aria-label={`Marker at ${center[0]},${center[1]}`}
+      data-radius={radius}
       data-fill-color={pathOptions?.fillColor}
+      data-stroke-color={(pathOptions as { color?: string } | undefined)?.color}
       onClick={eventHandlers?.click}
     >
       {children}
@@ -315,7 +319,7 @@ test("exactly 9 layer types are defined", () => {
   expect(ALL_LISTING_TYPES).toEqual(expected);
 });
 
-test("township stay listings render as terracotta circle markers", () => {
+test("township stay listings render as black circle markers", () => {
   const listing = makeListing({
     id: "township-stay",
     name: "Soweto Stay",
@@ -329,7 +333,8 @@ test("township stay listings render as terracotta circle markers", () => {
 
   const marker = screen.getByTestId("circle-marker");
   expect(marker).toBeInTheDocument();
-  expect(marker).toHaveAttribute("data-fill-color", "#c2410c");
+  expect(marker).toHaveAttribute("data-fill-color", "#111827");
+  expect(marker).toHaveAttribute("data-stroke-color", "#ffffff");
   expect(marker).toHaveTextContent("Soweto Stay");
   expect(marker).toHaveTextContent("Guesthouse");
 });
@@ -347,9 +352,39 @@ test("township cultural listings render as diamond markers", () => {
   render(<LeafletMap listings={[listing]} onSelect={() => undefined} />);
 
   const marker = screen.getByTestId("workspace-marker");
-  expect(marker.getAttribute("data-icon-html")).toContain("#c2410c");
+  expect(marker.getAttribute("data-icon-html")).toContain("#111827");
+  expect(marker.getAttribute("data-icon-html")).toContain("#ffffff");
   expect(marker).toHaveTextContent("Vilakazi Culture Hub");
   expect(marker).toHaveTextContent("Cultural Centre");
+});
+
+test("township restaurant and market markers remain smaller black circles", () => {
+  const townshipStay = makeListing({
+    id: "township-stay-size",
+    name: "Stay Size",
+    category: "township",
+    listing_type: "township",
+    township_type: "guesthouse",
+    max_guests: null,
+    rooms: null,
+  });
+  const townshipMarket = makeListing({
+    id: "township-market-size",
+    name: "Market Size",
+    category: "township",
+    listing_type: "township",
+    township_type: "market",
+    max_guests: null,
+    rooms: null,
+  });
+
+  render(<LeafletMap listings={[townshipStay, townshipMarket]} onSelect={() => undefined} />);
+
+  const markers = screen.getAllByTestId("circle-marker");
+  expect(markers).toHaveLength(2);
+  expect(markers[0]).toHaveAttribute("data-fill-color", "#111827");
+  expect(markers[1]).toHaveAttribute("data-fill-color", "#111827");
+  expect(Number(markers[0].getAttribute("data-radius"))).toBeGreaterThan(Number(markers[1].getAttribute("data-radius")));
 });
 
 test("restaurant listing renders as food-pin marker", () => {

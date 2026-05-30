@@ -35,7 +35,7 @@ const LAYER_CONFIG: { type: PublicLayer; label: string; color: string }[] = [
   { type: "nightlife",          label: "Nightlife",   color: "#4f46e5" },
   { type: "restaurant",         label: "Restaurants", color: "#ea580c" },
   { type: "safari",             label: "Safari & Wildlife", color: "#f59e0b" },
-  { type: "township",           label: "Township Tourism", color: "#c2410c" },
+  { type: "township",           label: "Township Tourism", color: "#111827" },
 ];
 
 function toggleLayer(filters: Filters, type: PublicLayer): Filters {
@@ -70,7 +70,7 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
             <h1 className="mt-1 text-xl font-semibold text-slate-950">{townshipMode ? "Township Tourism" : (REGION_LABELS[filters.region] ?? "South Africa")}</h1>
             <p className="mt-1 text-sm text-slate-600">{resultCount} results</p>
             {townshipMode && (
-              <p className="mt-1 text-xs font-medium text-orange-700">Authentic South African township experiences</p>
+              <p className="mt-1 text-xs font-semibold text-slate-900">Authentic South African township experiences</p>
             )}
           </div>
           <SlidersHorizontal className="mt-1 h-5 w-5 text-slate-500" />

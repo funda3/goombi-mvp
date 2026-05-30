@@ -44,7 +44,7 @@ const LAYER_COLORS: Record<ListingType, string> = {
   transport_node: "#475569",     // slate
   estate_living_zone: "#92400e", // warm amber-brown (distinct from all other layers)
   event_space: "#db2777",        // pink
-  township: "#c2410c",           // terracotta
+  township: "#111827",           // black-slate for township tourism
 };
 
 /** Captures the Leaflet map instance into a ref so controls outside MapContainer can call it. */
@@ -179,11 +179,11 @@ export function LeafletMap({
 
   function townshipDiamondIcon(isSelected: boolean) {
     const size = isSelected ? 18 : 14;
-    const border = isSelected ? "#f59e0b" : "#ffffff";
+    const border = "#ffffff";
     const outer = Math.round(size * 1.42);
     const pad = Math.round((outer - size) / 2);
     return divIcon({
-      html: `<div style="width:${size}px;height:${size}px;margin:${pad}px;background:#c2410c;border:${isSelected ? 3 : 2}px solid ${border};border-radius:3px;box-sizing:border-box;transform:rotate(45deg);"></div>`,
+      html: `<div style="width:${size}px;height:${size}px;margin:${pad}px;background:#111827;border:${isSelected ? 3 : 2}px solid ${border};border-radius:3px;box-sizing:border-box;transform:rotate(45deg);"></div>`,
       iconSize: [outer, outer],
       iconAnchor: [outer / 2, outer / 2],
       className: "",
@@ -307,9 +307,9 @@ export function LeafletMap({
                 center={[listing.latitude, listing.longitude]}
                 radius={isRestaurantOrMarket ? (isHighlighted ? 11 : 8) : (isHighlighted ? 14 : 11)}
                 pathOptions={{
-                  fillColor: "#c2410c",
+                  fillColor: "#111827",
                   fillOpacity: 0.9,
-                  color: isHighlighted ? "#f59e0b" : "#ffffff",
+                  color: "#ffffff",
                   weight: isHighlighted ? 3 : 2,
                 }}
                 eventHandlers={{ click: () => onSelect(listing) }}

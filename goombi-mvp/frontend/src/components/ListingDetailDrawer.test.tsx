@@ -373,6 +373,9 @@ test("township stay: shows township badges, stay details, and directions", () =>
   });
 
   expect(screen.getByText("TOWNSHIP TOURISM")).toBeInTheDocument();
+  const townshipBadge = screen.getByTestId("township-tourism-badge");
+  expect(townshipBadge.className).toContain("bg-slate-900");
+  expect(townshipBadge.className).toContain("text-white");
   expect(screen.getByText("Guesthouse")).toBeInTheDocument();
   expect(screen.getByText("R900/night")).toBeInTheDocument();
   expect(screen.getByText(/Up to 4 guests/i)).toBeInTheDocument();

@@ -34,7 +34,7 @@ const GOOGLE_LAYER_COLORS: Record<string, string> = {
   transport_node: "#475569",
   estate_living_zone: "#92400e",
   event_space: "#db2777",
-  township: "#c2410c",
+  township: "#111827",
 };
 
 const MAP_CENTER = { lat: -26.083, lng: 28.022 };
@@ -173,9 +173,9 @@ function GoogleCircleMap({
             path: isCulturalOrAttraction
               ? "M 0,-10 10,0 0,10 -10,0 z"
               : googleApi.maps.SymbolPath.CIRCLE,
-            fillColor: "#c2410c",
+            fillColor: "#111827",
             fillOpacity: 0.94,
-            strokeColor: isHighlighted ? "#f59e0b" : "#ffffff",
+            strokeColor: "#ffffff",
             strokeWeight: isHighlighted ? 3 : 2,
             scale: isRestaurantOrMarket ? (isHighlighted ? 9 : 7) : (isHighlighted ? 11 : 9),
             anchor: new googleApi.maps.Point(0, 0),
