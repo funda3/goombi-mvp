@@ -18,6 +18,17 @@ ListingTypeLiteral = Literal[
     "transport_node",
     "estate_living_zone",
     "event_space",
+    "township",
+]
+
+TownshipTypeLiteral = Literal[
+    "guesthouse",
+    "bnb",
+    "cultural_lodge",
+    "cultural_centre",
+    "attraction",
+    "restaurant",
+    "market",
 ]
 
 EventCategoryLiteral = Literal[
@@ -94,9 +105,10 @@ PartnerStatusLiteral = Literal[
 
 class ListingBase(BaseModel):
     name: str = Field(min_length=2)
-    category: Literal["bnb", "guesthouse", "accommodation", "workspace", "restaurant", "safari"]
+    category: Literal["bnb", "guesthouse", "accommodation", "workspace", "restaurant", "safari", "township"]
     # Spatial layer — defaults from category if omitted (migration-safe)
     listing_type: ListingTypeLiteral | None = None
+    township_type: TownshipTypeLiteral | None = None
     accommodation_type: Literal["bnb", "guesthouse"] | None = None
     provider_name: str | None = None
     provider_type: str | None = None
@@ -122,7 +134,9 @@ class ListingBase(BaseModel):
     address: str
     latitude: float
     longitude: float
-    price_per_night: int = Field(default=0, ge=0)
+    price_per_night: int | None = Field(default=0, ge=0)
+    guest_capacity: int | None = Field(default=None, ge=1)
+    bathrooms: int | None = Field(default=None, ge=1)
     # rooms and max_guests are meaningful only for accommodation/workspace records;
     # non-stay listing types (restaurant, transport_node, etc.) may have null.
     max_guests: int | None = None
@@ -134,6 +148,7 @@ class ListingBase(BaseModel):
     photos: list[str] = Field(default_factory=list)
     images: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    nearby_attractions: list[str] = Field(default_factory=list)
     owner_name: str = ""
     owner_phone: str = ""
     contact_email: str | None = None
@@ -173,6 +188,8 @@ class ListingBase(BaseModel):
                 self.listing_type = "restaurant"
             elif self.category == "safari":
                 self.listing_type = "safari"
+            elif self.category == "township":
+                self.listing_type = "township"
             else:
                 self.listing_type = "accommodation"
 
@@ -183,6 +200,44 @@ class ListingBase(BaseModel):
             self.province = self.region
         elif not self.province and not self.region:
             raise ValueError("At least one of 'province' or 'region' must be provided")
+
+        if self.listing_type == "township":
+            if self.township_type is None:
+                raise ValueError("Township records require 'township_type'")
+
+            township_stay_types = {"guesthouse", "bnb", "cultural_lodge"}
+            is_township_stay = self.township_type in township_stay_types
+
+            if is_township_stay:
+                if self.price_per_night is None or self.price_per_night < 1:
+                    raise ValueError("Township stay records require a positive 'price_per_night'")
+
+                if self.guest_capacity is None:
+                    self.guest_capacity = self.max_guests
+                if self.bathrooms is None:
+                    self.bathrooms = self.rooms
+
+                if self.guest_capacity is None or self.guest_capacity < 1:
+                    raise ValueError("Township stay records require positive 'guest_capacity'")
+                if self.bathrooms is None or self.bathrooms < 1:
+                    raise ValueError("Township stay records require positive 'bathrooms'")
+
+                self.max_guests = self.guest_capacity
+                self.rooms = self.bathrooms
+            else:
+                self.price_per_night = None
+                self.guest_capacity = None
+                self.bathrooms = None
+                self.max_guests = None
+                self.rooms = None
+
+            if self.category != "township":
+                self.category = "township"
+
+            return self
+
+        if self.price_per_night is None:
+            self.price_per_night = 0
 
         _stay_types = {"accommodation", "workspace"}
 

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { fetchNearbyServices } from "../services/overpass";
 import type { Listing } from "../types/listing";
-import type { NearbyServicesResult, ServiceGroup } from "../types/services";
+import type { NearbyServicesResult, ServiceCategory, ServiceGroup } from "../types/services";
 
 type Props = {
   listing: Listing;
@@ -58,7 +58,37 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
       .finally(() => setLoading(false));
   }, [expanded, listing.city, listing.id, listing.latitude, listing.longitude, listing.province, listing.suburb]);
 
-  const hasResults = groups.some((g) => g.nearest !== null);
+  const displayGroups = useMemo(() => {
+    if (listing.category !== "township") return groups;
+
+    const priority: ServiceCategory[] = [
+      "restaurant",
+      "atm",
+      "shopping",
+      "supermarket",
+      "transit",
+      "parking",
+      "attraction",
+      "clinic",
+      "hospital",
+      "police",
+      "fuel",
+      "workspace",
+      "gym",
+    ];
+    const order = new Map(priority.map((value, index) => [value, index]));
+
+    return groups
+      .filter((group) => group.category !== "ev_charging")
+      .slice()
+      .sort((a, b) => {
+        const aIdx = order.get(a.category) ?? 999;
+        const bIdx = order.get(b.category) ?? 999;
+        return aIdx - bIdx;
+      });
+  }, [groups, listing.category]);
+
+  const hasResults = displayGroups.some((g) => g.nearest !== null);
   const demoMode = status === "fallback";
   const fallbackBadge = "Fallback estimate";
 
@@ -85,7 +115,7 @@ export function NearbyServices({ listing, onShowOnMap }: Props) {
 
           {!loading && hasResults && (
             <ul className="grid gap-1.5">
-              {groups
+              {displayGroups
                 .filter((g) => g.nearest !== null)
                 .map((g) => (
                   <li key={g.category} className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 text-xs" data-testid="nearby-service-card">

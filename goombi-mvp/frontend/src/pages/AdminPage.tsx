@@ -26,6 +26,7 @@ const LAYER_LABELS: Record<ListingType, string> = {
   transport_node: "Transport",
   estate_living_zone: "Estates",
   event_space: "Events",
+  township: "Township Tourism",
 };
 
 const emptyDraft: ListingDraft = {
@@ -98,6 +99,8 @@ function coerceDraft(row: Record<string, unknown>): ListingDraft {
           ? "restaurant"
         : row.category === "safari"
           ? "safari"
+        : row.category === "township"
+          ? "township"
         : row.category === "bnb" || row.category === "guesthouse"
           ? row.category
           : "accommodation",
@@ -189,7 +192,7 @@ export function AdminPage() {
         case "name":     return dir * a.name.localeCompare(b.name);
         case "layer":    return dir * displayCategory(a).localeCompare(displayCategory(b));
         case "province": return dir * a.province.localeCompare(b.province);
-        case "price":    return dir * (a.price_per_night - b.price_per_night);
+        case "price":    return dir * ((a.price_per_night ?? 0) - (b.price_per_night ?? 0));
         case "verified": return dir * (Number(b.verified_status) - Number(a.verified_status));
         default:         return 0;
       }
@@ -453,7 +456,7 @@ export function AdminPage() {
           <div className="mt-5 grid gap-3">
             <label className="label">Name<input className="field" required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
             <div className="grid grid-cols-2 gap-3">
-              <label className="label">Category<select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as ListingDraft["category"] })}><option value="guesthouse">Guesthouse</option><option value="bnb">B&B</option><option value="accommodation">Accommodation</option><option value="workspace">Workspace</option><option value="restaurant">Restaurant</option><option value="safari">Safari & Wildlife</option></select></label>
+              <label className="label">Category<select className="field" value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as ListingDraft["category"] })}><option value="guesthouse">Guesthouse</option><option value="bnb">B&B</option><option value="accommodation">Accommodation</option><option value="workspace">Workspace</option><option value="restaurant">Restaurant</option><option value="safari">Safari & Wildlife</option><option value="township">Township Tourism</option></select></label>
               <label className="label">Suburb<input className="field" list="known-suburbs" required value={draft.suburb} onChange={(event) => setDraft({ ...draft, suburb: event.target.value })} /></label>
             </div>
             <datalist id="known-suburbs">{suburbs.map((suburb) => <option key={suburb} value={suburb} />)}</datalist>
@@ -480,7 +483,7 @@ export function AdminPage() {
               </>
             ) : (
               <div className="grid grid-cols-3 gap-3">
-                <label className="label">Price<input className="field" min={0} type="number" value={draft.price_per_night} onChange={(event) => setDraft({ ...draft, price_per_night: Number(event.target.value) })} /></label>
+                <label className="label">Price<input className="field" min={0} type="number" value={draft.price_per_night ?? ""} onChange={(event) => setDraft({ ...draft, price_per_night: event.target.value ? Number(event.target.value) : null })} /></label>
                 <label className="label">Guests<input className="field" min={1} type="number" value={draft.max_guests ?? ""} onChange={(event) => setDraft({ ...draft, max_guests: Number(event.target.value) || null })} /></label>
                 <label className="label">Rooms<input className="field" min={1} type="number" value={draft.rooms ?? ""} onChange={(event) => setDraft({ ...draft, rooms: Number(event.target.value) || null })} /></label>
               </div>

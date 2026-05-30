@@ -30,6 +30,7 @@ vi.mock("../components/FilterPanel", () => ({
       <button type="button" onClick={() => onChange({ ...filters, category: "all" })}>All layers</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "restaurant" })}>Restaurants only</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "safari" })}>Safari only</button>
+      <button type="button" onClick={() => onChange({ ...filters, category: "township" })}>Township only</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "events" })}>Events only</button>
       <button type="button" onClick={() => onChange({ ...filters, category: "nightlife" })}>Nightlife only</button>
       <button type="button" onClick={() => onChange({ ...filters, region: "KwaZulu-Natal" })}>KwaZulu-Natal province</button>
@@ -259,6 +260,18 @@ const makeSafari = (id: string, name: string): Listing => ({
   tags: ["Big Five"],
 });
 
+const makeTownship = (id: string, name: string): Listing => ({
+  ...makeListing(id, name),
+  category: "township",
+  listing_type: "township",
+  township_type: "guesthouse",
+  guest_capacity: 4,
+  bathrooms: 1,
+  max_guests: null,
+  rooms: null,
+  price_per_night: 850,
+});
+
 const makePublicProspect = (id: string, name: string, suburb: string) => ({
   id,
   name,
@@ -325,6 +338,25 @@ test("safari layer renders only safari listing markers", async () => {
   expect(screen.getByTestId("marker-safari-kruger-national-park-01")).toBeInTheDocument();
   expect(screen.queryByTestId("marker-alpha")).not.toBeInTheDocument();
   expect(screen.queryByTestId("marker-restaurant-approved")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("event-marker-event-kzn-durban-july")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("nightlife-marker-nightlife-kzn-origin")).not.toBeInTheDocument();
+});
+
+test("township layer renders only township markers and hides events/nightlife", async () => {
+  mockListings.mockResolvedValue([
+    makeListing("alpha", "Alpha Lodge"),
+    makeTownship("township-soweto-stay-01", "Soweto Stay"),
+  ]);
+  mockEvents.mockResolvedValue([makeEvent("event-kzn-durban-july", "Durban July")]);
+  mockNightlife.mockResolvedValue([makeNightlife("nightlife-kzn-origin", "Origin Nightclub")]);
+
+  render(<HomePage />);
+
+  await waitFor(() => expect(screen.getByTestId("marker-township-soweto-stay-01")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Township only" }));
+
+  expect(screen.getByTestId("marker-township-soweto-stay-01")).toBeInTheDocument();
+  expect(screen.queryByTestId("marker-alpha")).not.toBeInTheDocument();
   expect(screen.queryByTestId("event-marker-event-kzn-durban-july")).not.toBeInTheDocument();
   expect(screen.queryByTestId("nightlife-marker-nightlife-kzn-origin")).not.toBeInTheDocument();
 });

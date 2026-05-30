@@ -44,6 +44,7 @@ const LAYER_COLORS: Record<ListingType, string> = {
   transport_node: "#475569",     // slate
   estate_living_zone: "#92400e", // warm amber-brown (distinct from all other layers)
   event_space: "#db2777",        // pink
+  township: "#c2410c",           // terracotta
 };
 
 /** Captures the Leaflet map instance into a ref so controls outside MapContainer can call it. */
@@ -176,6 +177,19 @@ export function LeafletMap({
     });
   }
 
+  function townshipDiamondIcon(isSelected: boolean) {
+    const size = isSelected ? 18 : 14;
+    const border = isSelected ? "#f59e0b" : "#ffffff";
+    const outer = Math.round(size * 1.42);
+    const pad = Math.round((outer - size) / 2);
+    return divIcon({
+      html: `<div style="width:${size}px;height:${size}px;margin:${pad}px;background:#c2410c;border:${isSelected ? 3 : 2}px solid ${border};border-radius:3px;box-sizing:border-box;transform:rotate(45deg);"></div>`,
+      iconSize: [outer, outer],
+      iconAnchor: [outer / 2, outer / 2],
+      className: "",
+    });
+  }
+
   function formatRestaurantLabel(listing: Listing) {
     const cuisines = Array.isArray(listing.cuisine_tags)
       ? listing.cuisine_tags.map((item) => item.trim()).filter(Boolean)
@@ -187,6 +201,12 @@ export function LeafletMap({
     return value
       ? value.split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")
       : "Safari & Wildlife";
+  }
+
+  function formatTownshipType(value?: string | null) {
+    return value
+      ? value.split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ")
+      : "Township Tourism";
   }
 
   return (
@@ -261,6 +281,41 @@ export function LeafletMap({
               >
                 <Tooltip><span>{listing.name}<br />{formatSafariType(listing.safari_type)}</span></Tooltip>
               </Marker>
+            );
+          }
+          if (lt === "township") {
+            const townshipType = listing.township_type ?? "";
+            const isCulturalOrAttraction = townshipType === "cultural_centre" || townshipType === "attraction";
+            const isRestaurantOrMarket = townshipType === "restaurant" || townshipType === "market";
+
+            if (isCulturalOrAttraction) {
+              return (
+                <Marker
+                  key={listing.id}
+                  position={[listing.latitude, listing.longitude]}
+                  icon={townshipDiamondIcon(isHighlighted)}
+                  eventHandlers={{ click: () => onSelect(listing) }}
+                >
+                  <Tooltip><span>{listing.name}<br />{formatTownshipType(listing.township_type)}</span></Tooltip>
+                </Marker>
+              );
+            }
+
+            return (
+              <CircleMarker
+                key={listing.id}
+                center={[listing.latitude, listing.longitude]}
+                radius={isRestaurantOrMarket ? (isHighlighted ? 11 : 8) : (isHighlighted ? 14 : 11)}
+                pathOptions={{
+                  fillColor: "#c2410c",
+                  fillOpacity: 0.9,
+                  color: isHighlighted ? "#f59e0b" : "#ffffff",
+                  weight: isHighlighted ? 3 : 2,
+                }}
+                eventHandlers={{ click: () => onSelect(listing) }}
+              >
+                <Tooltip><span>{listing.name}<br />{formatTownshipType(listing.township_type)}</span></Tooltip>
+              </CircleMarker>
             );
           }
           const fillColor =

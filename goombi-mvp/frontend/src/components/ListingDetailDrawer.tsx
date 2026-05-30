@@ -28,6 +28,16 @@ const SAFARI_TYPE_LABELS: Record<string, string> = {
   game_farm: "Game Farm",
 };
 
+const TOWNSHIP_TYPE_LABELS: Record<string, string> = {
+  guesthouse: "Guesthouse",
+  bnb: "B&B",
+  cultural_lodge: "Cultural Lodge",
+  cultural_centre: "Cultural Centre",
+  attraction: "Attraction",
+  restaurant: "Restaurant",
+  market: "Market",
+};
+
 function safariPriceLabel(listing: Listing) {
   const price = listing.price_amount ?? listing.price_per_night;
   if (!price) return "Price on request";
@@ -53,13 +63,14 @@ type Props = {
   allListings?: Listing[];
   onClose: () => void;
   onSelect?: (listing: Listing) => void;
+  onFlyToListing?: (listing: Listing) => void;
   onShowOnMap?: (lat: number, lon: number, label: string) => void;
   onOpenPlanner?: () => void;
   isFavourite?: boolean;
   onToggleFavourite?: (id: string) => void;
 };
 
-export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onShowOnMap, onOpenPlanner, isFavourite, onToggleFavourite }: Props) {
+export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, onFlyToListing, onShowOnMap, onOpenPlanner, isFavourite, onToggleFavourite }: Props) {
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
@@ -91,6 +102,9 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
 
   const isEstateZone = !!listing && getListingType(listing) === "estate_living_zone";
   const layerType = listing ? getListingType(listing) : null;
+  const isTownship = layerType === "township";
+  const isTownshipStay = !!listing && isTownship
+    && (listing.township_type === "guesthouse" || listing.township_type === "bnb" || listing.township_type === "cultural_lodge");
   const isDemoProspectRestaurant = !!listing && layerType === "restaurant" && listing.demo_visibility === true;
 
   const body = listing ? (
@@ -109,6 +123,17 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
           </span>
         )}
       </div>
+
+      {isTownship && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-bold text-orange-900">TOWNSHIP TOURISM</span>
+          {listing.township_type && (
+            <span className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-semibold text-orange-800">
+              {TOWNSHIP_TYPE_LABELS[listing.township_type] ?? listing.township_type.replace(/_/g, " ")}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Layer type & partner status badges */}
       <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -185,10 +210,31 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
               : "Pricing not publicly available"}
           </strong>
         </div>
+      ) : isTownship ? (
+        <div className="mt-4 grid gap-2 text-sm text-slate-700">
+          <span className="inline-flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{listing.address}</span>
+          {isTownshipStay ? (
+            <>
+              {listing.price_per_night != null && (
+                <strong className="text-lg text-slate-950">R{listing.price_per_night}/night</strong>
+              )}
+              {listing.guest_capacity != null && (
+                <span className="inline-flex items-center gap-2"><Users className="h-4 w-4" />Up to {listing.guest_capacity} guests</span>
+              )}
+              {listing.bathrooms != null && (
+                <span><strong className="text-slate-950">Bathrooms:</strong> {listing.bathrooms}</span>
+              )}
+            </>
+          ) : (
+            <span className="w-fit rounded-md bg-orange-50 px-2 py-1 text-xs font-bold text-orange-900">
+              {listing.price_per_night == null ? "Free entry" : "Entry fee varies"}
+            </span>
+          )}
+        </div>
       ) : (
         <div className="mt-4 grid gap-2 text-sm text-slate-700">
           {/* Price display shared across accommodation, experiences, eats, events */}
-          {listing.price_per_night > 0 && (
+          {listing.price_per_night != null && listing.price_per_night > 0 && (
             <strong className="text-lg text-slate-950">R{listing.price_per_night}/night</strong>
           )}
           {listing.price_from != null && (
@@ -281,11 +327,52 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
         <p className="mt-2 text-sm leading-6 text-slate-500">{listing.long_description}</p>
       )}
 
+      {isTownship && listing.nearby_attractions && listing.nearby_attractions.length > 0 && (
+        <div className="mt-4 grid gap-2">
+          <h3 className="text-sm font-bold text-slate-900">Nearby Township Attractions</h3>
+          <div className="flex flex-wrap gap-2">
+            {listing.nearby_attractions.map((attraction) => (
+              <button
+                key={attraction}
+                type="button"
+                className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-800 hover:bg-orange-100"
+                onClick={() => {
+                  const needle = attraction.toLowerCase();
+                  const found = allListings?.find((item) => {
+                    const hay = item.name.toLowerCase();
+                    return hay === needle || hay.includes(needle) || needle.includes(hay);
+                  });
+                  if (found && onSelect) {
+                    onSelect(found);
+                    onFlyToListing?.(found);
+                  }
+                }}
+              >
+                {`📍 ${attraction}`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap gap-2">
         {listing.amenities.map((amenity) => (
           <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700" key={amenity}>{amenity}</span>
         ))}
       </div>
+
+      {isTownship && (
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <a
+            className="secondary-button flex items-center justify-center gap-2"
+            href={`https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <MapPin className="h-4 w-4" />Get directions
+          </a>
+        </div>
+      )}
 
       {/* Contact / external links for estate listings uses discovery-only wording; no booking CTA */}
       {!isDemoProspectRestaurant && layerType !== "safari" && (listing.website_url || (!isEstateZone && listing.booking_url) || listing.whatsapp_url || listing.contact_phone || listing.contact_email) && (
@@ -366,6 +453,14 @@ export function ListingDetailDrawer({ listing, allListings, onClose, onSelect, o
         <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 text-sm text-slate-700">
           <p className="text-xs text-slate-500">This marker is shown for internal demo visibility only.</p>
         </div>
+      ) : isTownship ? (
+        isTownshipStay ? (
+          <EnquiryFlow listing={listing} />
+        ) : (
+          <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4 text-sm text-slate-700">
+            <p className="text-xs text-slate-500">This township attraction can be explored on-site. Use Get directions for navigation.</p>
+          </div>
+        )
       ) : (
         <EnquiryFlow listing={listing} />
       )}

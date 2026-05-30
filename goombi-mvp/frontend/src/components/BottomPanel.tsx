@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
 
 import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchNearbyServices } from "../services/overpass";
 import type { SelectedNearbyTarget } from "../types/nearbyTarget";
-import type { NearbyServicesResult, ServiceGroup } from "../types/services";
+import type { NearbyServicesResult, ServiceCategory, ServiceGroup } from "../types/services";
 import { ServiceCard } from "./ServiceCard";
 
 type Props = {
@@ -70,7 +70,37 @@ export function BottomPanel({ selectedTarget, onShowOnMap }: Props) {
       .finally(() => setServicesLoading(false));
   }, [coordKey, hasCoordinates, selectedTarget]);
 
-  const hasServiceResults = serviceGroups.some((g) => g.nearest !== null);
+  const displayServiceGroups = useMemo(() => {
+    if (selectedTarget?.listingCategory !== "township") return serviceGroups;
+
+    const priority: ServiceCategory[] = [
+      "restaurant",
+      "atm",
+      "shopping",
+      "supermarket",
+      "transit",
+      "parking",
+      "attraction",
+      "clinic",
+      "hospital",
+      "police",
+      "fuel",
+      "workspace",
+      "gym",
+    ];
+    const order = new Map(priority.map((value, index) => [value, index]));
+
+    return serviceGroups
+      .filter((group) => group.category !== "ev_charging")
+      .slice()
+      .sort((a, b) => {
+        const aIdx = order.get(a.category) ?? 999;
+        const bIdx = order.get(b.category) ?? 999;
+        return aIdx - bIdx;
+      });
+  }, [serviceGroups, selectedTarget?.listingCategory]);
+
+  const hasServiceResults = displayServiceGroups.some((g) => g.nearest !== null);
   const isFallback = servicesStatus === "fallback";
 
   const serviceContent = (
@@ -93,7 +123,7 @@ export function BottomPanel({ selectedTarget, onShowOnMap }: Props) {
             {isFallback ? " - fallback estimates shown" : ""}
           </p>
           <div className="grid max-h-[340px] grid-cols-2 gap-2 overflow-y-auto">
-            {serviceGroups
+            {displayServiceGroups
               .filter((g) => g.nearest !== null)
               .map((g) => (
                 <ServiceCard key={g.category} group={g} onShowOnMap={onShowOnMap} demoMode={isFallback} />
