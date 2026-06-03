@@ -7,9 +7,11 @@ import type { NightlifeVenue } from "../types/nightlife";
 import { ALL_LISTING_TYPES } from "../types/listing";
 
 // Stable mock map methods captured via vi.hoisted so they're available in the factory
-const { mockSetView, mockFitBounds } = vi.hoisted(() => ({
+const { mockSetView, mockFitBounds, mockFlyTo, mockMapState } = vi.hoisted(() => ({
   mockSetView: vi.fn(),
   mockFitBounds: vi.fn(),
+  mockFlyTo: vi.fn(),
+  mockMapState: { zoom: 11 },
 }));
 
 // react-leaflet requires a real DOM with dimensions; mock it for jsdom
@@ -67,15 +69,20 @@ vi.mock("react-leaflet", () => ({
     icon?: { options?: { html?: string } };
   }) => {
     const iconHtml = icon?.options?.html ?? "";
+    const isCluster = iconHtml.includes("goombi-cluster-marker");
+    const clusterFamily = iconHtml.match(/data-cluster-family="([^"]+)"/)?.[1] ?? "mixed";
+    const clusterCount = iconHtml.match(/data-cluster-count="([^"]+)"/)?.[1] ?? "";
     const isSafari = iconHtml.includes("goombi-safari-lion-marker");
     const isEvent = iconHtml.includes("goombi-event-bold-marker");
     const isNightlife = iconHtml.includes("goombi-nightlife-bold-marker");
-    const testId = isSafari ? "safari-marker" : isEvent ? "event-marker" : isNightlife ? "nightlife-marker" : "workspace-marker";
+    const testId = isCluster ? "cluster-marker" : isSafari ? "safari-marker" : isEvent ? "event-marker" : isNightlife ? "nightlife-marker" : "workspace-marker";
     return (
       <button
         data-testid={testId}
         aria-label={`Marker at ${position[0]},${position[1]}`}
         data-icon-html={iconHtml}
+        data-cluster-family={isCluster ? clusterFamily : undefined}
+        data-cluster-count={isCluster ? clusterCount : undefined}
         onClick={eventHandlers?.click}
       >
         {children}
@@ -83,10 +90,24 @@ vi.mock("react-leaflet", () => ({
     );
   },
   Tooltip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  useMap: () => ({ setView: mockSetView, fitBounds: mockFitBounds }),
+  useMap: () => ({
+    setView: mockSetView,
+    fitBounds: mockFitBounds,
+    flyTo: mockFlyTo,
+    getZoom: () => mockMapState.zoom,
+    on: vi.fn(),
+    off: vi.fn(),
+  }),
 }));
 
 import { LeafletMap } from "./LeafletMap";
+
+beforeEach(() => {
+  mockSetView.mockClear();
+  mockFitBounds.mockClear();
+  mockFlyTo.mockClear();
+  mockMapState.zoom = 11;
+});
 
 const makeListing = (overrides: Partial<Listing> = {}): Listing => ({
   id: "test-1",
@@ -158,6 +179,37 @@ const makeNightlife = (overrides: Partial<NightlifeVenue> = {}): NightlifeVenue 
   verified_status: "unverified_public_research",
   ...overrides,
 });
+
+const makeDenseRestaurantListings = (count: number) =>
+  Array.from({ length: count }, (_, index) =>
+    makeListing({
+      id: `restaurant-${index}`,
+      name: `Restaurant ${index}`,
+      category: "restaurant",
+      listing_type: "restaurant",
+      cuisine_tags: ["Demo"],
+      source_type: "demo_public_restaurant",
+      latitude: -26.1 + index * 0.0002,
+      longitude: 28.05 + index * 0.0002,
+      max_guests: null,
+      rooms: null,
+    }),
+  );
+
+const makeDenseTownshipListings = (count: number) =>
+  Array.from({ length: count }, (_, index) =>
+    makeListing({
+      id: `township-${index}`,
+      name: `Township Place ${index}`,
+      category: "township",
+      listing_type: "township",
+      township_type: "guesthouse",
+      latitude: -26.25 + index * 0.0002,
+      longitude: 27.88 + index * 0.0002,
+      max_guests: null,
+      rooms: null,
+    }),
+  );
 
 test("renders the map container and tile layer", () => {
   render(<LeafletMap listings={[]} onSelect={() => undefined} />);
@@ -515,3 +567,73 @@ test("renders bolder solid nightlife marker and handles nightlife click", () => 
   expect(onSelectNightlife).toHaveBeenCalledWith(venue);
 });
 
+test("clusters dense restaurant markers into a red restaurant cluster", () => {
+  mockMapState.zoom = 8;
+  render(<LeafletMap listings={makeDenseRestaurantListings(30)} onSelect={() => undefined} />);
+
+  const cluster = screen.getByTestId("cluster-marker");
+  expect(cluster).toHaveAttribute("data-cluster-family", "restaurant");
+  expect(cluster).toHaveAttribute("data-cluster-count", "30");
+  expect(cluster.getAttribute("data-icon-html")).toContain("goombi-restaurant-cluster");
+  expect(cluster.getAttribute("data-icon-html")).toContain("#dc2626");
+  expect(cluster).toHaveTextContent("30 Restaurant places");
+  expect(screen.queryByText("Restaurant 0")).not.toBeInTheDocument();
+});
+
+test("cluster click fits the clustered marker bounds", () => {
+  mockMapState.zoom = 8;
+  render(<LeafletMap listings={makeDenseRestaurantListings(30)} onSelect={() => undefined} />);
+
+  fireEvent.click(screen.getByTestId("cluster-marker"));
+
+  expect(mockFitBounds).toHaveBeenCalledTimes(1);
+  expect(mockFitBounds).toHaveBeenCalledWith(expect.any(Array), { padding: [52, 52] });
+});
+
+test("renders individual markers again at high zoom", () => {
+  mockMapState.zoom = 15;
+  render(<LeafletMap listings={makeDenseRestaurantListings(30)} onSelect={() => undefined} />);
+
+  expect(screen.queryByTestId("cluster-marker")).not.toBeInTheDocument();
+  const markers = screen.getAllByTestId("workspace-marker");
+  expect(markers).toHaveLength(30);
+  expect(markers[0]).toHaveTextContent("Restaurant 0");
+});
+
+test("township markers cluster into a black township cluster", () => {
+  mockMapState.zoom = 8;
+  render(<LeafletMap listings={makeDenseTownshipListings(30)} onSelect={() => undefined} />);
+
+  const cluster = screen.getByTestId("cluster-marker");
+  expect(cluster).toHaveAttribute("data-cluster-family", "township");
+  expect(cluster.getAttribute("data-icon-html")).toContain("goombi-township-cluster");
+  expect(cluster.getAttribute("data-icon-html")).toContain("#111827");
+  expect(cluster).toHaveTextContent("30 Township Tourism places");
+});
+
+test("mixed dense marker families render as a neutral mixed cluster", () => {
+  mockMapState.zoom = 8;
+  const restaurants = makeDenseRestaurantListings(15);
+  const safaris = Array.from({ length: 15 }, (_, index) =>
+    makeListing({
+      id: `safari-cluster-${index}`,
+      name: `Safari ${index}`,
+      category: "safari",
+      listing_type: "safari",
+      safari_type: "game_reserve",
+      latitude: -26.101 + index * 0.0002,
+      longitude: 28.051 + index * 0.0002,
+      max_guests: null,
+      rooms: null,
+    }),
+  );
+
+  render(<LeafletMap listings={[...restaurants, ...safaris]} onSelect={() => undefined} />);
+
+  const cluster = screen.getByTestId("cluster-marker");
+  expect(cluster).toHaveAttribute("data-cluster-family", "mixed");
+  expect(cluster).toHaveAttribute("data-cluster-count", "30");
+  expect(cluster.getAttribute("data-icon-html")).toContain("goombi-mixed-cluster");
+  expect(cluster.getAttribute("data-icon-html")).toContain("#1f2937");
+  expect(cluster).toHaveTextContent("30 places nearby");
+});

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { divIcon } from "leaflet";
 import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { Map as LeafletMapInstance } from "leaflet";
@@ -10,6 +10,24 @@ import type { ServiceMarker } from "../types/services";
 
 export type FlyTo = { lat: number; lng: number; zoom: number };
 
+type MarkerFamily = "accommodation" | "workspace" | "restaurant" | "safari" | "township" | "event" | "nightlife" | "mixed";
+
+type ClusterPoint = {
+  id: string;
+  name: string;
+  family: MarkerFamily;
+  latitude: number;
+  longitude: number;
+  render: () => React.ReactNode;
+};
+
+type ClusterGroup = {
+  id: string;
+  points: ClusterPoint[];
+  latitude: number;
+  longitude: number;
+  family: MarkerFamily;
+};
 type Props = {
   listings: Listing[];
   events?: EventRecord[];
@@ -57,6 +75,99 @@ function MapRefCapture({ mapRef }: { mapRef: React.MutableRefObject<LeafletMapIn
   return null;
 }
 
+function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    const reportZoom = () => onZoomChange(typeof map.getZoom === "function" ? map.getZoom() : JHB_ZOOM);
+    reportZoom();
+    map.on?.("zoomend", reportZoom);
+    return () => {
+      map.off?.("zoomend", reportZoom);
+    };
+  }, [map, onZoomChange]);
+  return null;
+}
+
+const CLUSTER_MIN_POINTS = 25;
+
+const CLUSTER_COLORS: Record<MarkerFamily, string> = {
+  accommodation: "#0f766e",
+  workspace: "#a21caf",
+  restaurant: "#dc2626",
+  safari: "#f59e0b",
+  township: "#111827",
+  event: "#e11d48",
+  nightlife: "#4f46e5",
+  mixed: "#1f2937",
+};
+
+const CLUSTER_LABELS: Record<MarkerFamily, string> = {
+  accommodation: "Accommodation places",
+  workspace: "Workspace places",
+  restaurant: "Restaurant places",
+  safari: "Safari & Wildlife places",
+  township: "Township Tourism places",
+  event: "Event places",
+  nightlife: "Nightlife places",
+  mixed: "places",
+};
+
+function clusterRadiusForZoom(zoom: number) {
+  if (zoom >= 14) return 0;
+  if (zoom >= 12) return 0.035;
+  if (zoom >= 9) return 0.18;
+  return 1.15;
+}
+
+function familyForListing(listing: Listing): MarkerFamily {
+  const listingType = getListingType(listing);
+  if (listingType === "workspace") return "workspace";
+  if (listingType === "restaurant") return "restaurant";
+  if (listingType === "safari") return "safari";
+  if (listingType === "township") return "township";
+  return "accommodation";
+}
+
+function clusterFamily(points: ClusterPoint[]): MarkerFamily {
+  const families = Array.from(new Set(points.map((point) => point.family)));
+  return families.length === 1 ? families[0] : "mixed";
+}
+
+function bucketKey(point: ClusterPoint, radius: number) {
+  if (radius === 0) {
+    return `${point.latitude.toFixed(5)}:${point.longitude.toFixed(5)}`;
+  }
+  return `${Math.round(point.latitude / radius)}:${Math.round(point.longitude / radius)}`;
+}
+
+function clusterPoints(points: ClusterPoint[], zoom: number): ClusterGroup[] {
+  if (points.length < CLUSTER_MIN_POINTS) {
+    return points.map((point) => ({
+      id: `single-${point.id}`,
+      points: [point],
+      latitude: point.latitude,
+      longitude: point.longitude,
+      family: point.family,
+    }));
+  }
+
+  const radius = clusterRadiusForZoom(zoom);
+  const buckets = new Map<string, ClusterPoint[]>();
+  points.forEach((point) => {
+    const key = bucketKey(point, radius);
+    buckets.set(key, [...(buckets.get(key) ?? []), point]);
+  });
+
+  return Array.from(buckets.entries()).flatMap(([key, bucket]) => {
+    if (bucket.length === 1) {
+      const [point] = bucket;
+      return [{ id: `single-${point.id}`, points: bucket, latitude: point.latitude, longitude: point.longitude, family: point.family }];
+    }
+    const latitude = bucket.reduce((sum, point) => sum + point.latitude, 0) / bucket.length;
+    const longitude = bucket.reduce((sum, point) => sum + point.longitude, 0) / bucket.length;
+    return [{ id: `cluster-${key}`, points: bucket, latitude, longitude, family: clusterFamily(bucket) }];
+  });
+}
 export function LeafletMap({
   listings,
   events = [],
@@ -74,8 +185,9 @@ export function LeafletMap({
   highlightedEventIds = [],
 }: Props) {
   const mapRef = useRef<LeafletMapInstance | null>(null);
-  const highlighted = new Set(highlightedListingIds);
-  const highlightedEvents = new Set(highlightedEventIds);
+  const [zoom, setZoom] = useState(JHB_ZOOM);
+  const highlighted = useMemo(() => new Set(highlightedListingIds), [highlightedListingIds]);
+  const highlightedEvents = useMemo(() => new Set(highlightedEventIds), [highlightedEventIds]);
 
   useEffect(() => {
     if (!flyTo || !mapRef.current) return;
@@ -209,41 +321,41 @@ export function LeafletMap({
       : "Township Tourism";
   }
 
-  return (
-    <div className="absolute inset-0">
-      <MapContainer
-        center={JHB_CENTER}
-        zoom={JHB_ZOOM}
-        minZoom={2}
-        maxZoom={18}
-        className="h-full w-full"
-        scrollWheelZoom
-      >
-        <MapRefCapture mapRef={mapRef} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {serviceMarker && (
-          <CircleMarker
-            center={[serviceMarker.lat, serviceMarker.lon]}
-            radius={11}
-            pathOptions={{
-              fillColor: "#2563eb",
-              fillOpacity: 0.9,
-              color: "#ffffff",
-              weight: 2,
-            }}
-          >
-            <Tooltip permanent direction="top" offset={[0, -12]}>{serviceMarker.label}</Tooltip>
-          </CircleMarker>
-        )}
-        {listings.map((listing) => {
-          const lt = getListingType(listing);
-          if (lt === "estate_living_zone") {
-            return null;
-          }
-          const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
+  function clusterTooltip(group: ClusterGroup) {
+    const count = group.points.length;
+    if (group.family === "mixed") return `${count} places nearby`;
+    return `${count} ${CLUSTER_LABELS[group.family]}`;
+  }
+
+  function clusterIcon(group: ClusterGroup) {
+    const count = group.points.length;
+    const size = count >= 100 ? 44 : count >= 50 ? 40 : 36;
+    const color = CLUSTER_COLORS[group.family];
+    return divIcon({
+      html: `<div class="goombi-cluster-marker goombi-${group.family}-cluster" data-testid="cluster-marker" data-cluster-family="${group.family}" data-cluster-count="${count}" title="${clusterTooltip(group)}" aria-label="${clusterTooltip(group)}" style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;background:${color};border:3px solid #ffffff;box-sizing:border-box;color:#fff;font-size:${count >= 100 ? 13 : 14}px;font-weight:900;line-height:1;box-shadow:0 8px 18px rgba(15,23,42,0.35);">${count}</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+      className: `goombi-${group.family}-cluster`,
+    });
+  }
+
+  function zoomToCluster(group: ClusterGroup) {
+    if (!mapRef.current) return;
+    const coords = group.points.map((point) => [point.latitude, point.longitude] as [number, number]);
+    if (coords.length > 1) {
+      mapRef.current.fitBounds(coords, { padding: [52, 52] });
+    } else {
+      mapRef.current.flyTo?.([group.latitude, group.longitude], Math.min(zoom + 2, 15), { animate: true, duration: 0.8 });
+    }
+  }
+
+  const markerPoints = useMemo<ClusterPoint[]>(() => {
+    const listingPoints = listings
+      .filter((listing) => getListingType(listing) !== "estate_living_zone")
+      .map((listing): ClusterPoint => {
+        const lt = getListingType(listing);
+        const isHighlighted = selectedId === listing.id || highlighted.has(listing.id);
+        const render = () => {
           if (lt === "workspace") {
             return (
               <Marker
@@ -338,30 +450,96 @@ export function LeafletMap({
               <Tooltip>{listing.name}</Tooltip>
             </CircleMarker>
           );
-        })}
-        {events.map((event) => {
-          const isHighlighted = selectedEventId === event.id || highlightedEvents.has(event.id);
+        };
+        return { id: listing.id, name: listing.name, family: familyForListing(listing), latitude: listing.latitude, longitude: listing.longitude, render };
+      });
+
+    const eventPoints = events.map((event): ClusterPoint => {
+      const isHighlighted = selectedEventId === event.id || highlightedEvents.has(event.id);
+      return {
+        id: event.id,
+        name: event.name,
+        family: "event",
+        latitude: event.latitude,
+        longitude: event.longitude,
+        render: () => (
+          <Marker
+            key={event.id}
+            position={[event.latitude, event.longitude]}
+            icon={eventIcon(isHighlighted)}
+            eventHandlers={{ click: () => onSelectEvent?.(event) }}
+          >
+            <Tooltip>{event.name}</Tooltip>
+          </Marker>
+        ),
+      };
+    });
+
+    const nightlifePoints = nightlife.map((venue): ClusterPoint => ({
+      id: venue.id,
+      name: venue.name,
+      family: "nightlife",
+      latitude: venue.latitude,
+      longitude: venue.longitude,
+      render: () => (
+        <Marker
+          key={venue.id}
+          position={[venue.latitude, venue.longitude]}
+          icon={nightlifeIcon(selectedNightlifeId === venue.id)}
+          eventHandlers={{ click: () => onSelectNightlife?.(venue) }}
+        >
+          <Tooltip>{venue.name}</Tooltip>
+        </Marker>
+      ),
+    }));
+
+    return [...listingPoints, ...eventPoints, ...nightlifePoints];
+  }, [events, highlighted, highlightedEvents, listings, nightlife, onSelect, onSelectEvent, onSelectNightlife, selectedEventId, selectedId, selectedNightlifeId]);
+
+  const clusteredMarkers = useMemo(() => clusterPoints(markerPoints, zoom), [markerPoints, zoom]);
+  return (
+    <div className="absolute inset-0">
+      <MapContainer
+        center={JHB_CENTER}
+        zoom={JHB_ZOOM}
+        minZoom={2}
+        maxZoom={18}
+        className="h-full w-full"
+        scrollWheelZoom
+      >
+        <MapRefCapture mapRef={mapRef} />
+        <ZoomTracker onZoomChange={setZoom} />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {serviceMarker && (
+          <CircleMarker
+            center={[serviceMarker.lat, serviceMarker.lon]}
+            radius={11}
+            pathOptions={{
+              fillColor: "#2563eb",
+              fillOpacity: 0.9,
+              color: "#ffffff",
+              weight: 2,
+            }}
+          >
+            <Tooltip permanent direction="top" offset={[0, -12]}>{serviceMarker.label}</Tooltip>
+          </CircleMarker>
+        )}
+        {clusteredMarkers.map((group) => {
+          if (group.points.length === 1) return group.points[0].render();
           return (
             <Marker
-              key={event.id}
-              position={[event.latitude, event.longitude]}
-              icon={eventIcon(isHighlighted)}
-              eventHandlers={{ click: () => onSelectEvent?.(event) }}
+              key={group.id}
+              position={[group.latitude, group.longitude]}
+              icon={clusterIcon(group)}
+              eventHandlers={{ click: () => zoomToCluster(group) }}
             >
-              <Tooltip>{event.name}</Tooltip>
+              <Tooltip>{clusterTooltip(group)}</Tooltip>
             </Marker>
           );
         })}
-        {nightlife.map((venue) => (
-          <Marker
-            key={venue.id}
-            position={[venue.latitude, venue.longitude]}
-            icon={nightlifeIcon(selectedNightlifeId === venue.id)}
-            eventHandlers={{ click: () => onSelectNightlife?.(venue) }}
-          >
-            <Tooltip>{venue.name}</Tooltip>
-          </Marker>
-        ))}
       </MapContainer>
 
       {/* Map control buttons rendered outside Leaflet's canvas for full React event handling */}
@@ -415,4 +593,9 @@ export function LeafletMap({
     </div>
   );
 }
+
+
+
+
+
 

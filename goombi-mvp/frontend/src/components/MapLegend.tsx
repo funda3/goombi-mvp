@@ -4,6 +4,9 @@ export function MapLegend() {
       <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Map Legend</p>
       <ul className="mt-2 grid gap-1.5 text-xs text-slate-700">
         <li className="flex items-center gap-2">
+          <span aria-label="Cluster marker" className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white bg-slate-800 text-[10px] font-black text-white shadow-sm">12</span>Cluster = grouped nearby places
+        </li>
+        <li className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-full bg-teal-700" />Circle = Accommodation
         </li>
         <li className="flex items-center gap-2">
@@ -34,3 +37,4 @@ export function MapLegend() {
     </aside>
   );
 }
+
