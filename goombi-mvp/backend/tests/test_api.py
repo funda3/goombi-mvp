@@ -456,6 +456,52 @@ def _seed_client(tmp_path) -> TestClient:
     return TestClient(create_app(JsonStore(listings_path, enquiries_path)))
 
 
+def _workspace_candidates_gauteng() -> list[dict]:
+    path = pathlib.Path(__file__).parent.parent / "app" / "data" / "workspace_candidates_gauteng.json"
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def test_workspace_candidates_gauteng_file_exists():
+    path = pathlib.Path(__file__).parent.parent / "app" / "data" / "workspace_candidates_gauteng.json"
+    assert path.exists()
+
+
+def test_workspace_candidates_gauteng_ids_are_unique():
+    candidates = _workspace_candidates_gauteng()
+    ids = [item["id"] for item in candidates]
+    assert len(ids) == len(set(ids))
+
+
+def test_workspace_candidates_future_locations_marked_future():
+    candidates = _workspace_candidates_gauteng()
+    allowed_statuses = {"active", "future"}
+    assert all(item.get("status") in allowed_statuses for item in candidates)
+
+    current_year = 2026
+    future_by_year = [
+        item for item in candidates
+        if isinstance(item.get("opening_year"), int) and item["opening_year"] > current_year
+    ]
+    assert all(item.get("status") == "future" for item in future_by_year)
+
+
+def test_workspace_candidates_null_coordinates_require_geocode_review_status():
+    candidates = _workspace_candidates_gauteng()
+    null_coordinate_candidates = [
+        item for item in candidates
+        if item.get("latitude") is None and item.get("longitude") is None
+    ]
+    assert len(null_coordinate_candidates) > 0
+    assert all(item.get("geocode_status") == "needs_coordinate_review" for item in null_coordinate_candidates)
+
+
+def test_workspace_candidates_are_not_returned_by_public_listings_endpoint(tmp_path):
+    api = _seed_client(tmp_path)
+    public_ids = {item["id"] for item in api.get("/api/listings").json()}
+    candidate_ids = {item["id"] for item in _workspace_candidates_gauteng()}
+    assert candidate_ids.isdisjoint(public_ids)
+
+
 def test_get_listings_returns_200_with_seed_data(tmp_path):
     """GET /api/listings with seed data returns 200 and at least one record."""
     api = _seed_client(tmp_path)
