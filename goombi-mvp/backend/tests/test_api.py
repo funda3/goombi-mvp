@@ -461,6 +461,11 @@ def _workspace_candidates_gauteng() -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
+def _workspace_candidates_gauteng_verified() -> list[dict]:
+    path = pathlib.Path(__file__).parent.parent / "app" / "data" / "workspace_candidates_gauteng_verified.json"
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
 def test_workspace_candidates_gauteng_file_exists():
     path = pathlib.Path(__file__).parent.parent / "app" / "data" / "workspace_candidates_gauteng.json"
     assert path.exists()
@@ -500,6 +505,99 @@ def test_workspace_candidates_are_not_returned_by_public_listings_endpoint(tmp_p
     public_ids = {item["id"] for item in api.get("/api/listings").json()}
     candidate_ids = {item["id"] for item in _workspace_candidates_gauteng()}
     assert candidate_ids.isdisjoint(public_ids)
+
+
+def test_workspace_coordinate_verification_workbench_file_exists():
+    path = pathlib.Path(__file__).parent.parent / "app" / "data" / "workspace_candidates_gauteng_verified.json"
+    assert path.exists()
+
+
+def test_workspace_coordinate_verification_readme_exists_and_documents_rules():
+    path = pathlib.Path(__file__).parent.parent / "app" / "data" / "WORKSPACE_COORDINATE_VERIFICATION_README.md"
+    assert path.exists()
+    text = path.read_text(encoding="utf-8")
+    assert "verification workbench" in text
+    assert "official_provider_page" in text
+    assert "google_maps_manual_review" in text
+    assert "openstreetmap_manual_review" in text
+    assert "provider_site_plus_maps_review" in text
+    assert "estimated" in text
+    assert "guessed" in text
+    assert "suburb_centroid" in text
+    assert "city_centroid" in text
+    assert "approximate" in text
+
+
+def test_workspace_coordinate_verification_workbench_count_matches_candidates():
+    assert len(_workspace_candidates_gauteng_verified()) == len(_workspace_candidates_gauteng())
+
+
+def test_workspace_coordinate_verification_workbench_has_required_fields():
+    required_fields = {
+        "id",
+        "provider",
+        "name",
+        "workspace_type",
+        "status",
+        "opening_year",
+        "region",
+        "province",
+        "city",
+        "suburb",
+        "address",
+        "source_type",
+        "source_note",
+        "latitude",
+        "longitude",
+        "geocode_status",
+        "coordinate_source",
+        "coordinate_verified_at",
+        "coordinate_confidence",
+        "coordinate_review_notes",
+        "import_eligible",
+    }
+    records = _workspace_candidates_gauteng_verified()
+    assert records
+    assert all(required_fields.issubset(item.keys()) for item in records)
+
+
+def test_workspace_coordinate_verification_workbench_records_start_blocked():
+    records = _workspace_candidates_gauteng_verified()
+    assert records
+    for item in records:
+        assert item["latitude"] is None
+        assert item["longitude"] is None
+        assert item["geocode_status"] == "needs_coordinate_review"
+        assert item["coordinate_source"] is None
+        assert item["coordinate_verified_at"] is None
+        assert item["coordinate_confidence"] is None
+        assert item["coordinate_review_notes"] == "Pending manual coordinate verification."
+        assert item["import_eligible"] is False
+
+
+def test_workspace_coordinate_verification_workbench_never_marks_null_coordinates_verified():
+    records = _workspace_candidates_gauteng_verified()
+    invalid_verified = [
+        item for item in records
+        if item.get("geocode_status") == "verified" and (item.get("latitude") is None or item.get("longitude") is None)
+    ]
+    assert invalid_verified == []
+
+
+def test_workspace_coordinate_verification_workbench_records_are_not_public_listings(tmp_path):
+    api = _seed_client(tmp_path)
+    public_ids = {item["id"] for item in api.get("/api/listings").json()}
+    workbench_ids = {item["id"] for item in _workspace_candidates_gauteng_verified()}
+    assert workbench_ids.isdisjoint(public_ids)
+
+
+def test_workspace_coordinate_verification_patch_does_not_modify_public_listings_seed():
+    seed_path = pathlib.Path(__file__).parent.parent / "app" / "data" / "listings.json"
+    seed_data = json.loads(seed_path.read_text(encoding="utf-8"))
+    workbench_ids = {item["id"] for item in _workspace_candidates_gauteng_verified()}
+    assert len(seed_data) == 306
+    assert workbench_ids.isdisjoint({item["id"] for item in seed_data})
+    assert all(item.get("source_type") != "workspace_candidate_source" for item in seed_data)
 
 
 def test_get_listings_returns_200_with_seed_data(tmp_path):
