@@ -5,6 +5,8 @@ import { MapLegend } from "./MapLegend";
 test("map legend includes the public Goombi marker layers", () => {
   render(<MapLegend />);
 
+  expect(screen.getByText("Cluster = grouped nearby places")).toBeInTheDocument();
+  expect(screen.getByLabelText("Cluster marker")).toBeInTheDocument();
   expect(screen.getByText("Circle = Accommodation")).toBeInTheDocument();
   expect(screen.getByText("Square = Workspace")).toBeInTheDocument();
   expect(screen.getByText("Bold Star = Event")).toBeInTheDocument();
