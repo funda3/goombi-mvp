@@ -139,6 +139,54 @@ Each listing now carries a `listing_type` field (one of the 7 layer values above
 
 Old seed records without `listing_type` migrate silently — the backend model validator defaults `listing_type` from `category`.
 
+## Workspace Coordinate Verification Workflow
+
+Gauteng workspace expansion uses a two-step verification pipeline. Candidate workspaces are not public listings until their coordinates are manually verified and imported by an operator.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `backend/app/data/workspace_coordinate_manual_review.csv` | Manual review CSV for the 10 priority Gauteng workspace coordinates |
+| `backend/app/data/COORDINATE_VERIFICATION_GUIDE.md` | Operator guide for acceptable coordinate sources and review steps |
+| `backend/app/data/import_verified_workspaces.py` | Append-only import script for rows that pass verification |
+
+The CSV starts with 10 unverified priority rows. Each row must remain blocked until manually reviewed:
+
+- `geocode_status` starts as `pending`
+- `latitude` and `longitude` start blank
+- `coordinate_source`, `coordinate_verified_at`, `coordinate_confidence`, and notes start blank
+- `import_eligible` starts as `false`
+
+### Verification Rules
+
+A workspace row may become import eligible only when all of these are true:
+
+- `geocode_status = verified`
+- `latitude` and `longitude` are valid numeric pin coordinates
+- `coordinate_source` is one of:
+  - `official_provider_page`
+  - `google_maps_manual_review`
+  - `openstreetmap_manual_review`
+  - `provider_site_plus_maps_review`
+- `coordinate_verified_at` is set as `YYYY-MM-DD`
+- `coordinate_confidence` is `medium` or `high`
+- `import_eligible = true`
+
+Never use city centroids, suburb centroids, guessed coordinates, or AI-generated coordinates without manual map verification.
+
+### Import After Verification
+
+Only after rows are manually verified, run:
+
+```powershell
+python C:\Goombi\goombi-mvp\backend\app\data\import_verified_workspaces.py
+```
+
+The script reads the CSV, imports only eligible verified rows, creates a timestamped backup of `listings.json`, and appends new workspace records without overwriting existing records. It prints eligible, imported, and skipped counts.
+
+This workflow is intentionally separate from `listings.json`. Creating or filling the CSV does not add public map markers.
+
 ## Tests
 
 ```powershell

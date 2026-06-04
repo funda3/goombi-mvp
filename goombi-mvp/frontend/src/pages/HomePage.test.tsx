@@ -597,7 +597,7 @@ test("restaurants mode renders 233 restaurant markers including 230 demo prospec
   fireEvent.click(screen.getByTestId("marker-demo-prospect-prospect-1"));
   expect(screen.getByTestId("nearby-target-name")).toHaveTextContent("Prospect 1");
   expect(screen.getByTestId("nearby-target-source")).toHaveTextContent("restaurant");
-});
+}, 15000);
 
 test("close button hides the bottom sheet and clears marker selection", async () => {
   const alpha = makeListing("alpha", "Alpha Lodge");

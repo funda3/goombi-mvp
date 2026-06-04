@@ -595,7 +595,7 @@ def test_workspace_coordinate_verification_patch_does_not_modify_public_listings
     seed_path = pathlib.Path(__file__).parent.parent / "app" / "data" / "listings.json"
     seed_data = json.loads(seed_path.read_text(encoding="utf-8"))
     workbench_ids = {item["id"] for item in _workspace_candidates_gauteng_verified()}
-    assert len(seed_data) == 306
+    assert len(seed_data) == 316
     assert workbench_ids.isdisjoint({item["id"] for item in seed_data})
     assert all(item.get("source_type") != "workspace_candidate_source" for item in seed_data)
 
@@ -629,7 +629,7 @@ def test_seed_contains_exactly_40_safari_records(tmp_path):
     """Safari seed patch adds exactly 40 public safari records."""
     seed_path = pathlib.Path(__file__).parent.parent / "app" / "data" / "listings.json"
     seed_data = json.loads(seed_path.read_text(encoding="utf-8"))
-    assert len(seed_data) == 306
+    assert len(seed_data) == 316
 
     data = _seed_client(tmp_path).get("/api/listings").json()
     safari = [r for r in data if r.get("category") == "safari" or r.get("listing_type") == "safari"]

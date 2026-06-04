@@ -116,7 +116,7 @@ class ListingBase(BaseModel):
     price_band_goombi: str | None = None
     description_goombi: str | None = None
     workspace_type: Literal[
-        "coworking", "meeting_room", "boardroom", "serviced_office", "virtual_office"
+        "coworking", "meeting_room", "boardroom", "serviced_office", "virtual_office", "innovation_hub"
     ] | None = None
     safari_type: Literal[
         "national_park",
@@ -176,7 +176,12 @@ class ListingBase(BaseModel):
     estate_type: str | None = None
     lifestyle_summary: str | None = None
     long_stay_relevant: bool = False
-    source_type: Literal["manual_seed", "provider_approved", "manual_public_source"] = "manual_seed"
+    source_type: Literal[
+        "manual_seed",
+        "provider_approved",
+        "manual_public_source",
+        "verified_workspace_import",
+    ] = "manual_seed"
 
     @model_validator(mode="after")
     def _validate_and_set_defaults(self):

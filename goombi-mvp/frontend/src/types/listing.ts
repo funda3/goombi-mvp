@@ -2,7 +2,7 @@ import type { EventCategory } from "./event";
 import type { NightlifeMusicFocus, NightlifeTier, NightlifeVenueType } from "./nightlife";
 
 export type AccommodationType = "bnb" | "guesthouse";
-export type WorkspaceType = "coworking" | "meeting_room" | "boardroom" | "serviced_office" | "virtual_office";
+export type WorkspaceType = "coworking" | "meeting_room" | "boardroom" | "serviced_office" | "virtual_office" | "innovation_hub";
 export type SafariType =
   | "national_park"
   | "private_reserve"

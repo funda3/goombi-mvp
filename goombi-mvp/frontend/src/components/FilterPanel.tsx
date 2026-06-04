@@ -226,6 +226,7 @@ export function FilterPanel({ filters, suburbs, resultCount, favouriteCount = 0,
           <option value="boardroom">Boardroom</option>
           <option value="serviced_office">Serviced office</option>
           <option value="virtual_office">Virtual office</option>
+          <option value="innovation_hub">Innovation hub</option>
         </select>
       </label>
       <label className="label">
